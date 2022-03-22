@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/energomonitor/bisquitt"
 	"github.com/energomonitor/bisquitt/util/platform"
 	"github.com/urfave/cli/v2"
 )
-
-var Version = ""
 
 const (
 	MqttHostFlag             = "mqtt-host"
@@ -38,7 +37,7 @@ var Application = cli.App{
 	Name:        "bisquitt",
 	Usage:       "A transparent MQTT-SN gateway with DTLS support",
 	ArgsUsage:   " ",
-	Version:     Version,
+	Version:     bisquitt.Version(),
 	Description: "A transparent MQTT-SN gateway with DTLS support.",
 	Flags: []cli.Flag{
 		&cli.StringFlag{

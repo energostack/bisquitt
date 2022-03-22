@@ -1,4 +1,4 @@
-VERSION = 0.2.0
+VERSION := $(shell cat version.txt)
 
 DOCKER_REGISTRY ?= docker.io
 DOCKER_BUILDER_VERSION ?= 1.17.8-bullseye
@@ -12,9 +12,9 @@ endif
 
 .PHONY: build
 build:
-	cd cmd/bisquitt && go build -ldflags="-X 'main.Version=$(VERSION)'" $(EXTRA_BUILD_ARGS)
-	cd cmd/bisquitt-pub && go build -ldflags="-X 'main.Version=$(VERSION)'" $(EXTRA_BUILD_ARGS)
-	cd cmd/bisquitt-sub && go build -ldflags="-X 'main.Version=$(VERSION)'" $(EXTRA_BUILD_ARGS)
+	cd cmd/bisquitt && go build $(EXTRA_BUILD_ARGS)
+	cd cmd/bisquitt-pub && go build $(EXTRA_BUILD_ARGS)
+	cd cmd/bisquitt-sub && go build $(EXTRA_BUILD_ARGS)
 
 .PHONY: update
 update:
