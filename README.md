@@ -182,7 +182,7 @@ Bisquitt is distributed under Eclipse Public License 2.0. See
 [`LICENSE`](LICENSE) for more information.
 
 Code in the `pkg/bisquitt/util/crypto` directory is distributed under the MIT license.
-See [`LICENSE`](pkg/bisquitt/util/crypto/LICENSE) there for more information.
+See [`LICENSE`](util/crypto/LICENSE) there for more information.
 
 [MQTT-SN 1.2]: https://www.oasis-open.org/committees/download.php/66091/MQTT-SN_spec_v1.2.pdf
 [MQTT-SN 2.0 draft]: https://www.oasis-open.org/committees/download.php/68568/mqtt-sn-v2.0-wd09.docx

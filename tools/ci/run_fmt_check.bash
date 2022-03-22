@@ -4,7 +4,7 @@
 # Make sure the code is formatted well.
 #
 
-badly_formatted_files="$(goimports -l cmd pkg tools)"
+badly_formatted_files="$(goimports -l ./)"
 
 if [ -n "$badly_formatted_files" ]; then
 	echo

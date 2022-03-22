@@ -18,26 +18,19 @@ build:
 
 .PHONY: update
 update:
-	cd cmd/bisquitt && go get -u ./...
-	cd cmd/bisquitt-pub && go get -u ./...
-	cd cmd/bisquitt-sub && go get -u ./...
-	cd pkg/bisquitt && go get -u ./...
+	go get -u ./...
 
 .PHONY: tidy
 tidy:
-	cd cmd/bisquitt && go mod tidy
-	cd cmd/bisquitt-pub && go mod tidy
-	cd cmd/bisquitt-sub && go mod tidy
-	cd pkg/bisquitt && go mod tidy
+	go mod tidy
 
 .PHONY: fmt
 fmt:
-	goimports -w cmd pkg tools
+	goimports -w ./
 
 .PHONY: test
 test:
-	cd cmd/bisquitt && go test ./...
-	cd pkg/bisquitt && go test ./...
+	go test ./...
 
 .PHONY: docker/test
 docker/test:

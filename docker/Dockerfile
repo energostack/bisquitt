@@ -6,10 +6,8 @@ FROM golang:${DOCKER_BUILDER_VERSION} as builder
 
 # download dependencies
 WORKDIR /tmp
-RUN mkdir -p cmd/bisquitt/ pkg/bisquitt/
-COPY cmd/bisquitt/go.mod cmd/bisquitt/go.sum cmd/bisquitt/
-COPY pkg/bisquitt/go.mod pkg/bisquitt/go.sum pkg/bisquitt/
-RUN cd cmd/bisquitt/ && go mod download
+COPY go.mod go.sum bisquitt/
+RUN cd bisquitt/ && go mod download
 
 COPY . /opt/bisquitt
 WORKDIR /opt/bisquitt
