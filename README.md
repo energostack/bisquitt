@@ -15,7 +15,7 @@ command-line MQTT-SN clients and can be used as a Go MQTT-SN library.
 
 ## Installation
 
-Bisquitt is currently available only as a Docker image. To pull it, run:
+The easiest way to install Bisquitt is to use its Docker image:
 
 ```console
 $ docker pull energomonitor/bisquitt
@@ -23,6 +23,16 @@ $ docker pull energomonitor/bisquitt
 
 The image contains the gateway itself (`bisquitt`), which is started by default,
 and the command-line MQTT-SN clients (`bisquitt-sub` and `bisquitt-pub`).
+
+Alternatively, you can install the gateway and clients using `go install`:
+
+```console
+$ go install github.com/energomonitor/bisquitt/cmd/bisquitt@latest
+$ go install github.com/energomonitor/bisquitt/cmd/bisquitt-pub@latest
+$ go install github.com/energomonitor/bisquitt/cmd/bisquitt-sub@latest
+```
+
+Note that Bisquitt requires Go 1.16 or higher.
 
 Let us know if you'd like to have additional installation formats available.
 
