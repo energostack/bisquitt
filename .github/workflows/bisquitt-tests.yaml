@@ -1,0 +1,79 @@
+name: bisquitt tests
+
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+
+env:
+  GO111MODULE: on
+  GOPATH: "${{ github.workspace }}/go"
+  AFFECTED_DIR: "${{ github.workspace }}/affected"
+  DOCKER_BUILDKIT: 1
+
+jobs:
+  unit-tests:
+    name: Unit tests - go ${{ matrix.go_version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        go_version: ["1.16.15", "1.17.8"]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: "go/src/github.com/energomonitor/bisquitt"
+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "${{ matrix.go_version }}"
+
+      - name: Download dependencies
+        run: "make tidy"
+        working-directory: "go/src/github.com/energomonitor/bisquitt"
+
+      - name: Run tests
+        run: "go version && make test"
+        working-directory: "go/src/github.com/energomonitor/bisquitt"
+
+  fmt-check:
+    name: Code format - go ${{ matrix.go_version }}
+    strategy:
+      matrix:
+        go_version: ["1.17.8"]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: "go/src/github.com/energomonitor/bisquitt"
+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "${{ matrix.go_version }}"
+
+      - name: Install goimports
+        run: "go get golang.org/x/tools/cmd/goimports"
+        working-directory: "go/src/github.com/energomonitor/bisquitt"
+
+      - name: Run format check
+        run: "./tools/ci/run_fmt_check.bash"
+        working-directory: "go/src/github.com/energomonitor/bisquitt"
+
+  integration-tests:
+    name: Integration tests - builder ${{ matrix.builder_version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        builder_version: ["1.16.15-bullseye", "1.17.8-bullseye"]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: "go/src/github.com/energomonitor/bisquitt"
+
+      - name: Run test
+        run: "make docker/test"
+        env:
+          DOCKER_BUILDER_VERSION: "${{ matrix.builder_version }}"
+        working-directory: "go/src/github.com/energomonitor/bisquitt"

@@ -1,0 +1,8 @@
+---
+client1:
+  1: device/000001/data
+  2: device/000001/config
+"*":
+  1: device/any/data
+  2: device/any/config
+  3: device/any/bcast

@@ -1,0 +1,71 @@
+version: '3.7'
+
+services:
+  bisquitt:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+
+    ports:
+      - "1883:1883/udp"
+
+    environment:
+      MQTT_HOST: mqtt
+      PREDEFINED_TOPIC: messages-predefined;17,messages-predefined-qos3;18
+      DEBUG: 0
+      USER: bisquitt
+      GROUP: bisquitt
+      GORACE: halt_on_error=1
+
+    depends_on:
+      - mqtt
+
+  bisquitt-dtls:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+
+    ports:
+      - "8883:8883/udp"
+
+    environment:
+      MQTT_HOST: mqtt
+      PREDEFINED_TOPIC: messages-predefined;17,messages-predefined-qos3;18
+      DTLS_ENABLED: 1
+      SELF_SIGNED: 1
+      DEBUG: 0
+      USER: bisquitt
+      GROUP: bisquitt
+      GORACE: halt_on_error=1
+
+    depends_on:
+      - mqtt
+
+  bisquitt-test:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+
+    environment:
+      DEBUG: 0
+      DEBUG_SHELL: 0
+      TIMEOUT: 4m
+      GORACE: halt_on_error=1
+
+    volumes:
+      - "./tests:/tests"
+
+    command: /bin/sh /tests/start.sh
+
+    depends_on:
+      - bisquitt
+      - bisquitt-dtls
+
+  mqtt:
+    image: eclipse-mosquitto:1.6.14
+
+    ports:
+      - "1883:1883"
+
+    logging:
+      driver: none

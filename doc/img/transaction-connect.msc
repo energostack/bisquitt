@@ -1,0 +1,15 @@
+msc {
+  arcgradient = 8;
+
+  c [label="MQTT-SN client"],g [label="Bisquitt"],b [label="MQTT broker"];
+
+  c->g [ label = "CONNECT"];
+  c->g [ label = "AUTH", linecolor="blue", textcolor="blue"];
+  g->c [ label = "WILLTOPICREQ", linecolor="blue", textcolor="blue"];
+  c->g [ label = "WILLTOPIC", linecolor="blue", textcolor="blue"];
+  g->c [ label = "WILLMSGREQ", linecolor="blue", textcolor="blue"];
+  c->g [ label = "WILLMSG", linecolor="blue", textcolor="blue"];
+  g->b [ label = "CONNECT"];
+  b->g [ label = "CONNACK"];
+  g->c [ label = "CONNACK"];
+}

@@ -1,0 +1,27 @@
+version: '3.7'
+
+services:
+  bisquitt:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+
+    ports:
+      - "1883:1883/udp"
+
+    environment:
+      MQTT_HOST: mqtt
+      USER: bisquitt
+      GROUP: bisquitt
+
+    depends_on:
+      - mqtt
+
+  mqtt:
+    image: eclipse-mosquitto:1.6.14
+
+    ports:
+      - "1883:1883"
+
+    logging:
+      driver: none
