@@ -185,7 +185,7 @@ var Application = cli.App{
 			Usage: "run gateway as a user",
 			Value: "",
 			EnvVars: []string{
-				"USER",
+				"BISQUITT_USER",
 			},
 			Hidden: !platform.HasSetUser(),
 		},
@@ -194,7 +194,7 @@ var Application = cli.App{
 			Usage: "run gateway as a group",
 			Value: "",
 			EnvVars: []string{
-				"GROUP",
+				"BISQUITT_GROUP",
 			},
 			Hidden: !platform.HasSetGroup(),
 		},

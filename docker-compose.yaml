@@ -11,8 +11,8 @@ services:
 
     environment:
       MQTT_HOST: mqtt
-      USER: bisquitt
-      GROUP: bisquitt
+      BISQUITT_USER: bisquitt
+      BISQUITT_GROUP: bisquitt
 
     depends_on:
       - mqtt
