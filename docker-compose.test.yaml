@@ -13,8 +13,8 @@ services:
       MQTT_HOST: mqtt
       PREDEFINED_TOPIC: messages-predefined;17,messages-predefined-qos3;18
       DEBUG: 0
-      USER: bisquitt
-      GROUP: bisquitt
+      BISQUITT_USER: bisquitt
+      BISQUITT_GROUP: bisquitt
       GORACE: halt_on_error=1
 
     depends_on:
@@ -34,8 +34,8 @@ services:
       DTLS_ENABLED: 1
       SELF_SIGNED: 1
       DEBUG: 0
-      USER: bisquitt
-      GROUP: bisquitt
+      BISQUITT_USER: bisquitt
+      BISQUITT_GROUP: bisquitt
       GORACE: halt_on_error=1
 
     depends_on:

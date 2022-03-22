@@ -64,8 +64,8 @@ open-source MQTT server) using Docker Compose:
          image: energomonitor/bisquitt
          environment:
            MQTT_HOST: mosquitto
-           USER: bisquitt
-           GROUP: bisquitt
+           BISQUITT_USER: bisquitt
+           BISQUITT_GROUP: bisquitt
          ports:
            - "1883:1883/udp"
          depends_on:
