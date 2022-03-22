@@ -181,7 +181,7 @@ Bisquitt is inspired and partially based on [gnatt]. Thank you!
 Bisquitt is distributed under Eclipse Public License 2.0. See
 [`LICENSE`](LICENSE) for more information.
 
-Code in the `pkg/bisquitt/util/crypto` directory is distributed under the MIT license.
+Code in the `util/crypto` directory is distributed under the MIT license.
 See [`LICENSE`](util/crypto/LICENSE) there for more information.
 
 [MQTT-SN 1.2]: https://www.oasis-open.org/committees/download.php/66091/MQTT-SN_spec_v1.2.pdf
