@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/energomonitor/bisquitt/actions/workflows/bisquitt-tests.yaml"><img src="https://img.shields.io/github/workflow/status/energomonitor/bisquitt/bisquitt%20tests?style=flat-square" alt="Build status"></a>
-  <a href="https://pkg.go.dev/github.com/energomonitor/bisquitt"><img src="https://img.shields.io/badge/reference-available-blue?style=flat-square" alt="Reference"></a>
+  <a href="https://pkg.go.dev/github.com/energomonitor/bisquitt"><img src="https://pkg.go.dev/badge/github.com/energomonitor/bisquitt.svg" alt="Go Reference"></a>
   <a href="https://github.com/energomonitor/bisquitt#license"><img src="https://img.shields.io/github/license/energomonitor/bisquitt?style=flat-square" alt="License"></a>
 </p>
 
