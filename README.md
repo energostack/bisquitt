@@ -82,7 +82,7 @@ open-source MQTT server) using Docker Compose:
   1. Run the services:
 
      ```console
-     $ docker compose up
+     $ docker-compose up
      ```
 
 You can now play with Bisquitt using `bisquitt-sub` and `bisquitt-pub`
@@ -90,7 +90,7 @@ command-line MQTT-SN clients. Open a new terminal and open a shell in the
 `bisquitt` service container:
 
 ```console
-$ docker compose exec bisquitt sh
+$ docker-compose exec bisquitt sh
 ```
 
 Inside this shell, use `bisquitt-sub` to subscribe to a topic:
@@ -102,7 +102,7 @@ Inside this shell, use `bisquitt-sub` to subscribe to a topic:
 Now open another shell in the `bisquitt` service container:
 
 ```console
-$ docker compose exec bisquitt sh
+$ docker-compose exec bisquitt sh
 ```
 
 Inside the second shell, use `bisquitt-pub` to send a message to the topic
@@ -136,7 +136,7 @@ For more information on usage, use the `--help` option on `bisquitt`,
 Once you are done playing with Bisquitt, shut down the services:
 
 ```console
-$ docker compose down
+$ docker-compose down
 ```
 
 ## Features
