@@ -93,18 +93,15 @@ type ClientConfig struct {
 	// User is used to authenticate with the MQTT-SN gateway.
 	User string
 	// Password is used to authenticate with the MQTT-SN gateway.
-	Password            []byte
-	CleanSession        bool
-	WillTopic           string
-	WillPayload         []byte
-	WillQOS             uint8
-	WillRetained        bool
-	KeepAlive           time.Duration
-	PingTimeout         time.Duration
-	ConnectTimeout      time.Duration
-	WriteTimeout        time.Duration
-	MessageChannelDepth uint
-	PredefinedTopics    topics.PredefinedTopics
+	Password         []byte
+	CleanSession     bool
+	WillTopic        string
+	WillPayload      []byte
+	WillQOS          uint8
+	WillRetained     bool
+	KeepAlive        time.Duration
+	ConnectTimeout   time.Duration
+	PredefinedTopics topics.PredefinedTopics
 	// TRetry in MQTT-SN specification
 	RetryDelay time.Duration
 	// NRetry in MQTT-SN specification
