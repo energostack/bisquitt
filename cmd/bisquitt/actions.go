@@ -193,7 +193,7 @@ func handleAction() cli.ActionFunc {
 			logger.Info("switched to %s:%s", currentUser.Username, currentGroup.Name)
 		}
 
-		gw := gateway.NewGateway(gwConfig, logger)
+		gw := gateway.NewGateway(logger, gwConfig)
 
 		return gw.ListenAndServe(ctx, fmt.Sprintf("%s:%d", host, port))
 	}

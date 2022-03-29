@@ -44,7 +44,7 @@ type Gateway struct {
 // Timeout for DTLS connection establishment.
 const dtlsConnectTimeout = 30 * time.Second
 
-func NewGateway(cfg *GatewayConfig, log util.Logger) *Gateway {
+func NewGateway(log util.Logger, cfg *GatewayConfig) *Gateway {
 	return &Gateway{
 		cfg: cfg,
 		log: log,
