@@ -82,7 +82,7 @@ func (t *subscribeTransaction) Suback(suback *msgs.SubackMessage) {
 		return
 	}
 
-	t.client.messageHandlers.add(
+	t.client.messageHandlers.store(
 		strings.Split(topicName, "/"),
 		t.callback,
 	)

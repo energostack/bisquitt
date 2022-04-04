@@ -21,7 +21,7 @@ type messageHandlers struct {
 	defaultHandler MessageHandlerFunc
 }
 
-func (mhs *messageHandlers) add(route []string, callback MessageHandlerFunc) {
+func (mhs *messageHandlers) store(route []string, callback MessageHandlerFunc) {
 	mhs.handlers.Store(join(route), &messageHandler{
 		route:    route,
 		callback: callback,
