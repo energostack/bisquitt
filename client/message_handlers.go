@@ -28,6 +28,10 @@ func (mhs *messageHandlers) store(route []string, callback MessageHandlerFunc) {
 	})
 }
 
+func (mhs *messageHandlers) delete(route []string) {
+	mhs.handlers.Delete(join(route))
+}
+
 func (mhs *messageHandlers) handle(client *Client, topic string, msg *msgs.PublishMessage) {
 	var callback MessageHandlerFunc
 	route := split(topic)
