@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 
@@ -16,42 +17,51 @@ type messageHandler struct {
 }
 
 type messageHandlers struct {
-	sync.RWMutex
-	handlers       []*messageHandler
+	handlers       sync.Map
 	defaultHandler MessageHandlerFunc
 }
 
 func (mhs *messageHandlers) add(route []string, callback MessageHandlerFunc) {
-	mhs.Lock()
-	defer mhs.Unlock()
-
-	mhs.handlers = append(mhs.handlers, &messageHandler{
+	mhs.handlers.Store(join(route), &messageHandler{
 		route:    route,
 		callback: callback,
 	})
 }
 
-func (mhs *messageHandlers) setDefaultHandler(callback MessageHandlerFunc) {
-	mhs.Lock()
-	defer mhs.Unlock()
-
-	mhs.defaultHandler = callback
-}
-
 func (mhs *messageHandlers) handle(client *Client, topic string, msg *msgs.PublishMessage) {
-	mhs.RLock()
-	defer mhs.RUnlock()
+	var callback MessageHandlerFunc
+	route := split(topic)
+	mhs.handlers.Range(func(key, value interface{}) bool {
+		mh, ok := value.(*messageHandler)
+		if !ok {
+			panic(fmt.Errorf("unexpected type '%T'", value))
+		}
 
-	for _, mh := range mhs.handlers {
-		if match(mh.route, strings.Split(topic, "/")) {
-			go mh.callback(client, topic, msg)
+		if match(mh.route, route) {
+			callback = mh.callback
+			return false
+		}
+
+		return true
+	})
+
+	if callback != nil {
+		go callback(client, topic, msg)
+		return
+	} else {
+		if mhs.defaultHandler != nil {
+			go mhs.defaultHandler(client, topic, msg)
 			return
 		}
 	}
+}
 
-	if mhs.defaultHandler != nil {
-		go mhs.defaultHandler(client, topic, msg)
-	}
+func join(route []string) string {
+	return strings.Join(route, "/")
+}
+
+func split(topic string) []string {
+	return strings.Split(topic, "/")
 }
 
 // Taken from Paho mqtt client:
