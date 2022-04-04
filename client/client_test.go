@@ -1354,6 +1354,197 @@ func TestSubscribePredefined(t *testing.T) {
 	}
 }
 
+func TestUnsubscribeString(t *testing.T) {
+	assert := assert.New(t)
+
+	clientID := "test-client"
+	topic := "test/a"
+	qos := uint8(0)
+
+	stp := newTestSetup(t, clientID)
+	defer stp.cancel()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		stp.connect(clientID)
+
+		// client --SUBSCRIBE--> GW
+		subscribe := stp.recv().(*msgs.SubscribeMessage)
+		subscribe.QOS = qos
+		assert.Equal([]byte(topic), subscribe.TopicName)
+		assert.Equal(msgs.TIT_STRING, subscribe.TopicIDType)
+
+		// client <--SUBACK-- GW
+		suback := msgs.NewSubackMessage(1, 0, msgs.RC_ACCEPTED)
+		suback.CopyMessageID(subscribe)
+		stp.send(suback)
+
+		// client --UNSUBSCRIBE--> GW
+		unsubscribe := stp.recv().(*msgs.UnsubscribeMessage)
+		assert.Equal([]byte(topic), unsubscribe.TopicName)
+		assert.Equal(msgs.TIT_STRING, unsubscribe.TopicIDType)
+
+		// client <--UNSUBACK-- GW
+		unsuback := msgs.NewUnsubackMessage()
+		unsuback.CopyMessageID(unsubscribe)
+		stp.send(unsuback)
+
+		stp.disconnect()
+	}()
+
+	if err := stp.client.Connect(); err != nil {
+		stp.t.Fatal(err)
+	}
+	assert.Equal(util.StateActive, stp.client.state.Get())
+
+	if err := stp.client.Subscribe(topic, qos, nil); err != nil {
+		stp.t.Fatal(err)
+	}
+
+	if err := stp.client.Unsubscribe(topic); err != nil {
+		stp.t.Fatal(err)
+	}
+
+	if err := stp.client.Disconnect(); err != nil {
+		stp.t.Fatal(err)
+	}
+	assert.Equal(util.StateDisconnected, stp.client.state.Get())
+	stp.assertClientDone()
+
+	wg.Wait()
+}
+
+func TestUnsubscribeShort(t *testing.T) {
+	assert := assert.New(t)
+
+	clientID := "test-client"
+	topic := "ab"
+	qos := uint8(1)
+
+	stp := newTestSetup(t, clientID)
+	defer stp.cancel()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		stp.connect(clientID)
+
+		encodedTopic := msgs.EncodeShortTopic(topic)
+
+		// client --SUBSCRIBE--> GW
+		subscribe := stp.recv().(*msgs.SubscribeMessage)
+		assert.Equal(msgs.TIT_SHORT, subscribe.TopicIDType)
+		assert.Equal(encodedTopic, subscribe.TopicID)
+
+		// client <--SUBACK-- GW
+		suback := msgs.NewSubackMessage(0, 0, msgs.RC_ACCEPTED)
+		suback.CopyMessageID(subscribe)
+		stp.send(suback)
+
+		// client --UNSUBSCRIBE--> GW
+		unsubscribe := stp.recv().(*msgs.UnsubscribeMessage)
+		assert.Equal(msgs.TIT_SHORT, unsubscribe.TopicIDType)
+		assert.Equal(encodedTopic, unsubscribe.TopicID)
+
+		// client <--UNSUBACK-- GW
+		unsuback := msgs.NewUnsubackMessage()
+		unsuback.CopyMessageID(unsubscribe)
+		stp.send(unsuback)
+
+		stp.disconnect()
+	}()
+
+	if err := stp.client.Connect(); err != nil {
+		stp.t.Fatal(err)
+	}
+	assert.Equal(util.StateActive, stp.client.state.Get())
+
+	if err := stp.client.Subscribe(topic, qos, nil); err != nil {
+		stp.t.Fatal(err)
+	}
+
+	if err := stp.client.Unsubscribe(topic); err != nil {
+		stp.t.Fatal(err)
+	}
+
+	if err := stp.client.Disconnect(); err != nil {
+		stp.t.Fatal(err)
+	}
+	assert.Equal(util.StateDisconnected, stp.client.state.Get())
+	stp.assertClientDone()
+
+	wg.Wait()
+}
+
+func TestUnsubscribePredefined(t *testing.T) {
+	assert := assert.New(t)
+
+	clientID := "test-client"
+	topic := "test/a"
+	topicID := uint16(1)
+	qos := uint8(1)
+
+	stp := newTestSetup(t, clientID)
+	defer stp.cancel()
+	stp.client.cfg.PredefinedTopics.Add(clientID, topic, topicID)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		stp.connect(clientID)
+
+		// client --SUBSCRIBE--> GW
+		subscribe := stp.recv().(*msgs.SubscribeMessage)
+		assert.Equal(msgs.TIT_PREDEFINED, subscribe.TopicIDType)
+		assert.Equal(topicID, subscribe.TopicID)
+
+		// client <--SUBACK-- GW
+		suback := msgs.NewSubackMessage(0, 0, msgs.RC_ACCEPTED)
+		suback.CopyMessageID(subscribe)
+		stp.send(suback)
+
+		// client --UNSUBSCRIBE--> GW
+		unsubscribe := stp.recv().(*msgs.UnsubscribeMessage)
+		assert.Equal(msgs.TIT_PREDEFINED, unsubscribe.TopicIDType)
+		assert.Equal(topicID, unsubscribe.TopicID)
+
+		// client <--UNSUBACK-- GW
+		unsuback := msgs.NewUnsubackMessage()
+		unsuback.CopyMessageID(unsubscribe)
+		stp.send(unsuback)
+
+		stp.disconnect()
+	}()
+
+	if err := stp.client.Connect(); err != nil {
+		stp.t.Fatal(err)
+	}
+	assert.Equal(util.StateActive, stp.client.state.Get())
+
+	if err := stp.client.SubscribePredefinedTopic(topicID, qos, nil); err != nil {
+		stp.t.Fatal(err)
+	}
+
+	if err := stp.client.UnsubscribePredefinedTopic(topicID); err != nil {
+		stp.t.Fatal(err)
+	}
+
+	if err := stp.client.Disconnect(); err != nil {
+		stp.t.Fatal(err)
+	}
+	assert.Equal(util.StateDisconnected, stp.client.state.Get())
+	stp.assertClientDone()
+
+	wg.Wait()
+}
+
 func TestPing(t *testing.T) {
 	assert := assert.New(t)
 

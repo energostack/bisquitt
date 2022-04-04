@@ -399,6 +399,38 @@ func (c *Client) SubscribePredefinedTopic(topicID uint16, qos uint8, callback Me
 	return c.subscribe("", msgs.TIT_PREDEFINED, topicID, qos, callback)
 }
 
+func (c *Client) unsubscribe(topicName string, topicIDType uint8, topicID uint16) error {
+	msgID, _ := c.msgID.Next()
+	transaction := newUnsubscribeTransaction(c, msgID)
+	unsubscribe := msgs.NewUnsubscribeMessage(topicID, topicIDType, []byte(topicName))
+	unsubscribe.SetMessageID(msgID)
+	c.transactions.Store(msgID, transaction)
+	transaction.Proceed(nil, unsubscribe)
+	if err := c.send(unsubscribe); err != nil {
+		transaction.Fail(err)
+	}
+	select {
+	case <-transaction.Done():
+		return transaction.Err()
+	case <-c.groupCtx.Done():
+		return context.Canceled
+	}
+}
+
+// Unsubscribe unsubscribes from a topic. If the topic is 2 characters long,
+// it's treated as a short topic.
+func (c *Client) Unsubscribe(topic string) error {
+	if msgs.IsShortTopic(topic) {
+		return c.unsubscribe("", msgs.TIT_SHORT, msgs.EncodeShortTopic(topic))
+	} else {
+		return c.unsubscribe(topic, msgs.TIT_STRING, 0)
+	}
+}
+
+func (c *Client) UnsubscribePredefinedTopic(topicID uint16) error {
+	return c.unsubscribe("", msgs.TIT_PREDEFINED, topicID)
+}
+
 func (c *Client) publish(topicIDType uint8, topicID uint16, qos uint8, retain bool, payload []byte) error {
 	publish := msgs.NewPublishMessage(topicID, topicIDType, payload, qos, retain, false)
 	msgID, _ := c.msgID.Next()

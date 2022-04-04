@@ -169,6 +169,16 @@ func (c *Client) handlePacket(msgx msgs.Message) error {
 		transaction.Suback(msg)
 		return nil
 
+	case *msgs.UnsubackMessage:
+		transactionx, _ := c.transactions.Get(msg.MessageID())
+		transaction, ok := transactionx.(*unsubscribeTransaction)
+		if !ok {
+			c.log.Error("Unexpected transaction type %T for message: %v", transactionx, msg)
+			return nil
+		}
+		transaction.Unsuback(msg)
+		return nil
+
 	// Broker PUBLISH QoS 0,1,2 transaction.
 	case *msgs.PublishMessage:
 		switch msg.QOS {
