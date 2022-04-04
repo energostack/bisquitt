@@ -17,8 +17,7 @@ type messageHandler struct {
 }
 
 type messageHandlers struct {
-	handlers       sync.Map
-	defaultHandler MessageHandlerFunc
+	handlers sync.Map
 }
 
 func (mhs *messageHandlers) store(route []string, callback MessageHandlerFunc) {
@@ -52,11 +51,6 @@ func (mhs *messageHandlers) handle(client *Client, topic string, msg *msgs.Publi
 	if callback != nil {
 		go callback(client, topic, msg)
 		return
-	} else {
-		if mhs.defaultHandler != nil {
-			go mhs.defaultHandler(client, topic, msg)
-			return
-		}
 	}
 }
 
