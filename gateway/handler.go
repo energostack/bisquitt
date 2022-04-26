@@ -406,6 +406,12 @@ func (h *handler) handleMqtt(ctx context.Context, msg mqttPackets.ControlPacket)
 		}
 		return transaction.Suback(mqMsg)
 
+	// Client UNSUBSCRIBE transaction.
+	case *mqttPackets.UnsubackPacket:
+		snUnsuback := snMsgs.NewUnsubackMessage()
+		snUnsuback.SetMessageID(mqMsg.MessageID)
+		return h.snSend(snUnsuback)
+
 	// Client PING transaction (keepalive).
 	case *mqttPackets.PingrespPacket:
 		// Response to sleepPinger pings => do not pass to the sleeping client.
@@ -623,6 +629,27 @@ func (h *handler) handleSubscribe(ctx context.Context, snSubscribe *snMsgs.Subsc
 	return h.mqttSend(mqSubscribe)
 }
 
+func (h *handler) handleUnsubscribe(_ context.Context, snUnsubscribe *snMsgs.UnsubscribeMessage) error {
+	var topic string
+	switch snUnsubscribe.TopicIDType {
+	case snMsgs.TIT_STRING:
+		topic = string(snUnsubscribe.TopicName)
+	case snMsgs.TIT_PREDEFINED:
+		var ok bool
+		topic, ok = h.predefinedTopics.GetTopicName(h.clientID, snUnsubscribe.TopicID)
+		if !ok {
+			return fmt.Errorf("Unknown topic id %d", snUnsubscribe.TopicID)
+		}
+	case snMsgs.TIT_SHORT:
+		topic = snMsgs.DecodeShortTopic(snUnsubscribe.TopicID)
+	}
+
+	mqUnsubscribe := mqttPackets.NewControlPacket(mqttPackets.Unsubscribe).(*mqttPackets.UnsubscribePacket)
+	mqUnsubscribe.MessageID = snUnsubscribe.MessageID()
+	mqUnsubscribe.Topics = []string{topic}
+	return h.mqttSend(mqUnsubscribe)
+}
+
 // Check whether the given message is legal in the current Handler's state.
 //
 // We check only messages received in the "disconnected" state because:
@@ -740,6 +767,10 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snMsgs.Message) error {
 	// Client SUBSCRIBE transaction.
 	case *snMsgs.SubscribeMessage:
 		return h.handleSubscribe(ctx, snMsg)
+
+	// Client UNSUBSCRIBE transaction.
+	case *snMsgs.UnsubscribeMessage:
+		return h.handleUnsubscribe(ctx, snMsg)
 
 	// Client PING transaction (going AWAKE or just a keepalive).
 	case *snMsgs.PingreqMessage:

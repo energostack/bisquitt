@@ -883,6 +883,137 @@ func TestSubscribeQOS2Wildcard(t *testing.T) {
 	stp.disconnect()
 }
 
+func TestUnsubscribeString(t *testing.T) {
+	assert := assert.New(t)
+
+	topic := "test/topic"
+
+	stp := newTestSetup(t, false, topics.PredefinedTopics{})
+	defer stp.cancel()
+
+	// CONNECT, SUBSCRIBE
+	stp.connect()
+	stp.subscribe(topic, 0)
+
+	// client --UNSUBSCRIBE--> GW
+	snUnsubscribe := snMsgs.NewUnsubscribeMessage(0, snMsgs.TIT_STRING, []byte(topic))
+	stp.snSend(snUnsubscribe, true)
+
+	// GW --UNSUBSCRIBE--> MQTT broker
+	mqttUnsubscribe := stp.mqttRecv().(*mqttPackets.UnsubscribePacket)
+	assert.Len(mqttUnsubscribe.Topics, 1)
+	assert.Equal(topic, mqttUnsubscribe.Topics[0])
+
+	// GW <--UNSUBACK-- MQTT broker
+	mqttUnsuback := mqttPackets.NewControlPacket(mqttPackets.Unsuback).(*mqttPackets.UnsubackPacket)
+	mqttUnsuback.MessageID = mqttUnsubscribe.MessageID
+	stp.mqttSend(mqttUnsuback, false)
+
+	// client <--UNSUBACK-- GW
+	snUnsuback := stp.snRecv().(*snMsgs.UnsubackMessage)
+	assert.Equal(snUnsubscribe.MessageID(), snUnsuback.MessageID())
+
+	// DISCONNECT
+	stp.disconnect()
+}
+
+func TestUnsubscribeShort(t *testing.T) {
+	assert := assert.New(t)
+
+	topic := "ab"
+
+	stp := newTestSetup(t, false, topics.PredefinedTopics{})
+	defer stp.cancel()
+
+	// CONNECT, SUBSCRIBE
+	stp.connect()
+	stp.subscribeShort(topic, 0)
+
+	// client --UNSUBSCRIBE--> GW
+	snUnsubscribe := snMsgs.NewUnsubscribeMessage(snMsgs.EncodeShortTopic(topic), snMsgs.TIT_SHORT, []byte(""))
+	stp.snSend(snUnsubscribe, true)
+
+	// GW --UNSUBSCRIBE--> MQTT broker
+	mqttUnsubscribe := stp.mqttRecv().(*mqttPackets.UnsubscribePacket)
+	assert.Len(mqttUnsubscribe.Topics, 1)
+	assert.Equal(topic, mqttUnsubscribe.Topics[0])
+
+	// GW <--UNSUBACK-- MQTT broker
+	mqttUnsuback := mqttPackets.NewControlPacket(mqttPackets.Unsuback).(*mqttPackets.UnsubackPacket)
+	mqttUnsuback.MessageID = mqttUnsubscribe.MessageID
+	stp.mqttSend(mqttUnsuback, false)
+
+	// client <--UNSUBACK-- GW
+	snUnsuback := stp.snRecv().(*snMsgs.UnsubackMessage)
+	assert.Equal(snUnsubscribe.MessageID(), snUnsuback.MessageID())
+
+	// DISCONNECT
+	stp.disconnect()
+}
+
+func TestUnsubscribePredefined(t *testing.T) {
+	assert := assert.New(t)
+
+	clientID := []byte("test-client")
+	topicID := uint16(123)
+	topic := "test/topic"
+
+	stp := newTestSetup(t, false, topics.PredefinedTopics{
+		string(clientID): map[uint16]string{
+			topicID: topic,
+		},
+	})
+	defer stp.cancel()
+
+	// CONNECT, SUBSCRIBE
+	stp.connect()
+
+	// SUBSCRIBE, PREDEFINED TOPIC
+
+	// client --SUBSCRIBE--> GW
+	snSubscribe := snMsgs.NewSubscribeMessage(topicID, snMsgs.TIT_PREDEFINED, nil, 0, false)
+	stp.snSend(snSubscribe, true)
+
+	// GW --SUBSCRIBE--> MQTT broker
+	mqttSubscribe := stp.mqttRecv().(*mqttPackets.SubscribePacket)
+	assert.Len(mqttSubscribe.Qoss, 1)
+	assert.Equal(snSubscribe.QOS, mqttSubscribe.Qoss[0])
+	assert.Len(mqttSubscribe.Topics, 1)
+	assert.Equal(topic, mqttSubscribe.Topics[0])
+
+	// GW <--SUBACK-- MQTT broker
+	mqttSuback := mqttPackets.NewControlPacket(mqttPackets.Suback).(*mqttPackets.SubackPacket)
+	mqttSuback.MessageID = mqttSubscribe.MessageID
+	mqttSuback.ReturnCodes = []byte{snSubscribe.QOS}
+	stp.mqttSend(mqttSuback, false)
+
+	// client <--SUBACK-- GW
+	snSuback := stp.snRecv().(*snMsgs.SubackMessage)
+	assert.Equal(snSubscribe.MessageID(), snSuback.MessageID())
+	assert.Equal(snMsgs.RC_ACCEPTED, snSuback.ReturnCode)
+
+	// client --UNSUBSCRIBE--> GW
+	snUnsubscribe := snMsgs.NewUnsubscribeMessage(topicID, snMsgs.TIT_PREDEFINED, []byte(""))
+	stp.snSend(snUnsubscribe, true)
+
+	// GW --UNSUBSCRIBE--> MQTT broker
+	mqttUnsubscribe := stp.mqttRecv().(*mqttPackets.UnsubscribePacket)
+	assert.Len(mqttUnsubscribe.Topics, 1)
+	assert.Equal(topic, mqttUnsubscribe.Topics[0])
+
+	// GW <--UNSUBACK-- MQTT broker
+	mqttUnsuback := mqttPackets.NewControlPacket(mqttPackets.Unsuback).(*mqttPackets.UnsubackPacket)
+	mqttUnsuback.MessageID = mqttUnsubscribe.MessageID
+	stp.mqttSend(mqttUnsuback, false)
+
+	// client <--UNSUBACK-- GW
+	snUnsuback := stp.snRecv().(*snMsgs.UnsubackMessage)
+	assert.Equal(snUnsubscribe.MessageID(), snUnsuback.MessageID())
+
+	// DISCONNECT
+	stp.disconnect()
+}
+
 func TestLastWill(t *testing.T) {
 	assert := assert.New(t)
 
@@ -1397,6 +1528,36 @@ func (stp *testSetup) subscribe(topic string, qos uint8) uint16 {
 	}
 
 	return snSuback.TopicID
+}
+
+func (stp *testSetup) subscribeShort(topic string, qos uint8) {
+	assert := assert.New(stp.t)
+
+	assert.True(snMsgs.IsShortTopic(topic))
+
+	// client --SUBSCRIBE--> GW
+	topicID := snMsgs.EncodeShortTopic(topic)
+	snSubscribe := snMsgs.NewSubscribeMessage(topicID, snMsgs.TIT_SHORT, nil, qos, false)
+	stp.snSend(snSubscribe, true)
+
+	// GW --SUBSCRIBE--> MQTT broker
+	mqttSubscribe := stp.mqttRecv().(*mqttPackets.SubscribePacket)
+	assert.Len(mqttSubscribe.Qoss, 1)
+	assert.Equal(snSubscribe.QOS, mqttSubscribe.Qoss[0])
+	assert.Len(mqttSubscribe.Topics, 1)
+	assert.Equal(topic, mqttSubscribe.Topics[0])
+
+	// GW <--SUBACK-- MQTT broker
+	mqttSuback := mqttPackets.NewControlPacket(mqttPackets.Suback).(*mqttPackets.SubackPacket)
+	mqttSuback.MessageID = mqttSubscribe.MessageID
+	mqttSuback.ReturnCodes = []byte{snSubscribe.QOS}
+	stp.mqttSend(mqttSuback, false)
+
+	// client <--SUBACK-- GW
+	snSuback := stp.snRecv().(*snMsgs.SubackMessage)
+	assert.Equal(snSubscribe.MessageID(), snSuback.MessageID())
+	assert.Equal(snMsgs.RC_ACCEPTED, snSuback.ReturnCode)
+	assert.Equal(snSuback.TopicID, uint16(0))
 }
 
 // Client DISCONNECT transaction.
