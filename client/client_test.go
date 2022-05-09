@@ -359,7 +359,7 @@ func TestPublishQOS0Predefined(t *testing.T) {
 	}
 	assert.Equal(util.StateActive, stp.client.state.Get())
 
-	if err := stp.client.PublishPredefinedTopic(topicID, qos, retain, payload); err != nil {
+	if err := stp.client.PublishPredefined(topicID, qos, retain, payload); err != nil {
 		stp.t.Fatal(err)
 	}
 
@@ -555,7 +555,7 @@ func TestPublishQOS1Predefined(t *testing.T) {
 	}
 	assert.Equal(util.StateActive, stp.client.state.Get())
 
-	if err := stp.client.PublishPredefinedTopic(topicID, qos, retain, payload); err != nil {
+	if err := stp.client.PublishPredefined(topicID, qos, retain, payload); err != nil {
 		stp.t.Fatal(err)
 	}
 
@@ -787,7 +787,7 @@ func TestPublishQOS2Predefined(t *testing.T) {
 	}
 	assert.Equal(util.StateActive, stp.client.state.Get())
 
-	if err := stp.client.PublishPredefinedTopic(topicID, qos, retain, payload); err != nil {
+	if err := stp.client.PublishPredefined(topicID, qos, retain, payload); err != nil {
 		stp.t.Fatal(err)
 	}
 
@@ -902,7 +902,7 @@ func TestPublishQOS3(t *testing.T) {
 		assert.Equal(qos, publish.QOS)
 	}()
 
-	if err := stp.client.PublishPredefinedTopic(topicID, qos, retain, payload); err != nil {
+	if err := stp.client.PublishPredefined(topicID, qos, retain, payload); err != nil {
 		stp.t.Fatal(err)
 	}
 
@@ -1334,7 +1334,7 @@ func TestSubscribePredefined(t *testing.T) {
 	callback := func(client *Client, topic string, msg *msgs.PublishMessage) {
 		close(callbackFired)
 	}
-	if err := stp.client.SubscribePredefinedTopic(topicID, qos, callback); err != nil {
+	if err := stp.client.SubscribePredefined(topicID, qos, callback); err != nil {
 		stp.t.Fatal(err)
 	}
 
@@ -1528,11 +1528,11 @@ func TestUnsubscribePredefined(t *testing.T) {
 	}
 	assert.Equal(util.StateActive, stp.client.state.Get())
 
-	if err := stp.client.SubscribePredefinedTopic(topicID, qos, nil); err != nil {
+	if err := stp.client.SubscribePredefined(topicID, qos, nil); err != nil {
 		stp.t.Fatal(err)
 	}
 
-	if err := stp.client.UnsubscribePredefinedTopic(topicID); err != nil {
+	if err := stp.client.UnsubscribePredefined(topicID); err != nil {
 		stp.t.Fatal(err)
 	}
 

@@ -219,7 +219,7 @@ func handleAction() cli.ActionFunc {
 		for _, topic := range topicList {
 			topicID, isPredefinedTopic := predefinedTopics.GetTopicID(clientID, topic)
 			if isPredefinedTopic {
-				if err := client.SubscribePredefinedTopic(topicID, qos, handler); err != nil {
+				if err := client.SubscribePredefined(topicID, qos, handler); err != nil {
 					return err
 				}
 			} else {

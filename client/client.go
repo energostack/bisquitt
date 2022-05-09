@@ -393,9 +393,9 @@ func (c *Client) Subscribe(topic string, qos uint8, callback MessageHandlerFunc)
 	}
 }
 
-// SubscribePredefinedTopic subscribes to a predefined topic with the provided QoS.
+// SubscribePredefined subscribes to a predefined topic with the provided QoS.
 // The received messages are passed to the provided callback.
-func (c *Client) SubscribePredefinedTopic(topicID uint16, qos uint8, callback MessageHandlerFunc) error {
+func (c *Client) SubscribePredefined(topicID uint16, qos uint8, callback MessageHandlerFunc) error {
 	return c.subscribe("", msgs.TIT_PREDEFINED, topicID, qos, callback)
 }
 
@@ -427,7 +427,8 @@ func (c *Client) Unsubscribe(topic string) error {
 	}
 }
 
-func (c *Client) UnsubscribePredefinedTopic(topicID uint16) error {
+// UnsubscribePredefined unsubscribes from a predefined topic.
+func (c *Client) UnsubscribePredefined(topicID uint16) error {
 	return c.unsubscribe("", msgs.TIT_PREDEFINED, topicID)
 }
 
@@ -485,8 +486,8 @@ func (c *Client) Publish(topic string, qos uint8, retain bool, payload []byte) e
 	return c.publish(topicIDType, topicID, qos, retain, payload)
 }
 
-// PublishPredefinedTopic publishes a message to the provided topic.
-func (c *Client) PublishPredefinedTopic(topicID uint16, qos uint8, retain bool, payload []byte) error {
+// PublishPredefined publishes a message to the provided topic.
+func (c *Client) PublishPredefined(topicID uint16, qos uint8, retain bool, payload []byte) error {
 	return c.publish(msgs.TIT_PREDEFINED, topicID, qos, retain, payload)
 }
 
