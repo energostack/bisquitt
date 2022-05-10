@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        go_version: ["1.16.15", "1.17.8"]
+        go_version: ["1.16.15", "1.17.8", "1.18.1"]
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -41,7 +41,7 @@ jobs:
     name: Code format - go ${{ matrix.go_version }}
     strategy:
       matrix:
-        go_version: ["1.17.8"]
+        go_version: ["1.18.1"]
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -65,7 +65,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        builder_version: ["1.16.15-bullseye", "1.17.8-bullseye"]
+        builder_version: ["1.16.15-bullseye", "1.17.8-bullseye", "1.18.1-bullseye"]
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
