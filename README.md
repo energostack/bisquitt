@@ -170,7 +170,6 @@ in some places, which required
 
 ### Planned MQTT-SN features
 
-  * Unsubscribing (`UNSUBSCRIBE`, `UNSUBACK`)
   * Support for MQTT-SN 2.0
 
 ### Unsupported MQTT-SN features
