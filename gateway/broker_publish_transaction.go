@@ -87,7 +87,7 @@ func (t *brokerPublishTransactionBase) resend(msgx interface{}) error {
 	switch msg := msgx.(type) {
 	case snPkts.Packet:
 		// Set DUP if applicable.
-		if dupMsg, ok := msg.(snPkts.MessageWithDUP); ok {
+		if dupMsg, ok := msg.(snPkts.PacketWithDUP); ok {
 			dupMsg.SetDUP(true)
 		}
 		return t.handler.snSend(msg)
