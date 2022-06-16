@@ -202,7 +202,7 @@ func ReadPacket(r io.Reader) (pkt Packet, err error) {
 	}
 	packetBuf := bytes.NewBuffer(packet[:n])
 	h.Unpack(packetBuf)
-	pkt = NewMessageWithHeader(h)
+	pkt = NewPacketWithHeader(h)
 	if pkt == nil {
 		return nil, errors.New("invalid MQTT-SN packet")
 	}
@@ -210,66 +210,66 @@ func ReadPacket(r io.Reader) (pkt Packet, err error) {
 	return pkt, nil
 }
 
-// NewMessageWithHeader returns a particular packet struct with a given header.
+// NewPacketWithHeader returns a particular packet struct with a given header.
 // The struct type is determined by h.msgType.
-func NewMessageWithHeader(h Header) (m Packet) {
+func NewPacketWithHeader(h Header) (pkt Packet) {
 	switch h.msgType {
 	case ADVERTISE:
-		m = &Advertise{Header: h}
+		pkt = &Advertise{Header: h}
 	case SEARCHGW:
-		m = &SearchGw{Header: h}
+		pkt = &SearchGw{Header: h}
 	case GWINFO:
-		m = &GwInfo{Header: h}
+		pkt = &GwInfo{Header: h}
 	case AUTH:
-		m = &Auth{Header: h}
+		pkt = &Auth{Header: h}
 	case CONNECT:
-		m = &Connect{Header: h}
+		pkt = &Connect{Header: h}
 	case CONNACK:
-		m = &Connack{Header: h}
+		pkt = &Connack{Header: h}
 	case WILLTOPICREQ:
-		m = &WillTopicReq{Header: h}
+		pkt = &WillTopicReq{Header: h}
 	case WILLTOPIC:
-		m = &WillTopic{Header: h}
+		pkt = &WillTopic{Header: h}
 	case WILLMSGREQ:
-		m = &WillMsgReq{Header: h}
+		pkt = &WillMsgReq{Header: h}
 	case WILLMSG:
-		m = &WillMsg{Header: h}
+		pkt = &WillMsg{Header: h}
 	case REGISTER:
-		m = &Register{Header: h}
+		pkt = &Register{Header: h}
 	case REGACK:
-		m = &Regack{Header: h}
+		pkt = &Regack{Header: h}
 	case PUBLISH:
-		m = &Publish{Header: h}
+		pkt = &Publish{Header: h}
 	case PUBACK:
-		m = &Puback{Header: h}
+		pkt = &Puback{Header: h}
 	case PUBCOMP:
-		m = &Pubcomp{Header: h}
+		pkt = &Pubcomp{Header: h}
 	case PUBREC:
-		m = &Pubrec{Header: h}
+		pkt = &Pubrec{Header: h}
 	case PUBREL:
-		m = &Pubrel{Header: h}
+		pkt = &Pubrel{Header: h}
 	case SUBSCRIBE:
-		m = &Subscribe{Header: h}
+		pkt = &Subscribe{Header: h}
 	case SUBACK:
-		m = &Suback{Header: h}
+		pkt = &Suback{Header: h}
 	case UNSUBSCRIBE:
-		m = &Unsubscribe{Header: h}
+		pkt = &Unsubscribe{Header: h}
 	case UNSUBACK:
-		m = &Unsuback{Header: h}
+		pkt = &Unsuback{Header: h}
 	case PINGREQ:
-		m = &Pingreq{Header: h}
+		pkt = &Pingreq{Header: h}
 	case PINGRESP:
-		m = &Pingresp{Header: h}
+		pkt = &Pingresp{Header: h}
 	case DISCONNECT:
-		m = &Disconnect{Header: h}
+		pkt = &Disconnect{Header: h}
 	case WILLTOPICUPD:
-		m = &WillTopicUpdate{Header: h}
+		pkt = &WillTopicUpdate{Header: h}
 	case WILLTOPICRESP:
-		m = &WillTopicResp{Header: h}
+		pkt = &WillTopicResp{Header: h}
 	case WILLMSGUPD:
-		m = &WillMsgUpdate{Header: h}
+		pkt = &WillMsgUpdate{Header: h}
 	case WILLMSGRESP:
-		m = &WillMsgResp{Header: h}
+		pkt = &WillMsgResp{Header: h}
 	}
 	return
 }

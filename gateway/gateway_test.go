@@ -1338,7 +1338,7 @@ func (stp *testSetup) snRecv() snPkts.Packet {
 	pktReader := bytes.NewReader(buff[:n])
 	header := &snPkts.Header{}
 	header.Unpack(pktReader)
-	msg := snPkts.NewMessageWithHeader(*header)
+	msg := snPkts.NewPacketWithHeader(*header)
 	msg.Unpack(pktReader)
 
 	return msg
