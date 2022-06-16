@@ -1886,7 +1886,7 @@ func (stp *testSetup) recv() pkts.Packet {
 	pktReader := bytes.NewReader(buff[:n])
 	header := &pkts.Header{}
 	header.Unpack(pktReader)
-	msg := pkts.NewMessageWithHeader(*header)
+	msg := pkts.NewPacketWithHeader(*header)
 	msg.Unpack(pktReader)
 
 	return msg

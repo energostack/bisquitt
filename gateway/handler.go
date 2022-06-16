@@ -918,7 +918,7 @@ func (h *handler) snReceive() (snPkts.Packet, error) {
 	pktReader := bytes.NewReader(pkt)
 	header := &snPkts.Header{}
 	header.Unpack(pktReader)
-	msg := snPkts.NewMessageWithHeader(*header)
+	msg := snPkts.NewPacketWithHeader(*header)
 	msg.Unpack(pktReader)
 
 	h.log.Debug("-> %v", msg)
