@@ -7,22 +7,22 @@ import (
 
 const regackVarPartLength uint16 = 5
 
-type RegackMessage struct {
+type Regack struct {
 	Header
 	MessageIDProperty
 	TopicID    uint16
 	ReturnCode ReturnCode
 }
 
-func NewRegackMessage(topicID uint16, returnCode ReturnCode) *RegackMessage {
-	return &RegackMessage{
+func NewRegack(topicID uint16, returnCode ReturnCode) *Regack {
+	return &Regack{
 		Header:     *NewHeader(REGACK, regackVarPartLength),
 		TopicID:    topicID,
 		ReturnCode: returnCode,
 	}
 }
 
-func (m *RegackMessage) Write(w io.Writer) error {
+func (m *Regack) Write(w io.Writer) error {
 	buf := m.Header.pack()
 	buf.Write(encodeUint16(m.TopicID))
 	buf.Write(encodeUint16(m.messageID))
@@ -32,7 +32,7 @@ func (m *RegackMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *RegackMessage) Unpack(r io.Reader) (err error) {
+func (m *Regack) Unpack(r io.Reader) (err error) {
 	if m.TopicID, err = readUint16(r); err != nil {
 		return
 	}
@@ -45,7 +45,7 @@ func (m *RegackMessage) Unpack(r io.Reader) (err error) {
 	return
 }
 
-func (m RegackMessage) String() string {
+func (m Regack) String() string {
 	return fmt.Sprintf("REGACK(TopicID=%d, ReturnCode=%d, MessageID=%d)", m.TopicID,
 		m.ReturnCode, m.messageID)
 }

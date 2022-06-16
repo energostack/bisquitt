@@ -6,27 +6,27 @@ import (
 
 const willMsgReqVarPartLength uint16 = 0
 
-type WillMsgReqMessage struct {
+type WillMsgReq struct {
 	Header
 }
 
-func NewWillMsgReqMessage() *WillMsgReqMessage {
-	return &WillMsgReqMessage{
+func NewWillMsgReq() *WillMsgReq {
+	return &WillMsgReq{
 		Header: *NewHeader(WILLMSGREQ, willMsgReqVarPartLength),
 	}
 }
 
-func (m *WillMsgReqMessage) Write(w io.Writer) error {
+func (m *WillMsgReq) Write(w io.Writer) error {
 	buf := m.Header.pack()
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *WillMsgReqMessage) Unpack(r io.Reader) error {
+func (m *WillMsgReq) Unpack(r io.Reader) error {
 	return nil
 }
 
-func (m WillMsgReqMessage) String() string {
+func (m WillMsgReq) String() string {
 	return "WILLMSGREQ"
 }

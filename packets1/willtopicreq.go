@@ -6,27 +6,27 @@ import (
 
 const willTopicReqVarPartLength uint16 = 0
 
-type WillTopicReqMessage struct {
+type WillTopicReq struct {
 	Header
 }
 
-func NewWillTopicReqMessage() *WillTopicReqMessage {
-	return &WillTopicReqMessage{
+func NewWillTopicReq() *WillTopicReq {
+	return &WillTopicReq{
 		Header: *NewHeader(WILLTOPICREQ, willTopicReqVarPartLength),
 	}
 }
 
-func (m *WillTopicReqMessage) Write(w io.Writer) error {
+func (m *WillTopicReq) Write(w io.Writer) error {
 	buf := m.Header.pack()
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *WillTopicReqMessage) Unpack(r io.Reader) error {
+func (m *WillTopicReq) Unpack(r io.Reader) error {
 	return nil
 }
 
-func (m WillTopicReqMessage) String() string {
+func (m WillTopicReq) String() string {
 	return "WILLTOPICREQ"
 }

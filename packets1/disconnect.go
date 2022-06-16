@@ -7,14 +7,14 @@ import (
 
 const disconnectDurationLength uint16 = 2
 
-type DisconnectMessage struct {
+type Disconnect struct {
 	Header
 	Duration uint16
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewDisconnectMessage(duration uint16) *DisconnectMessage {
-	m := &DisconnectMessage{
+func NewDisconnect(duration uint16) *Disconnect {
+	m := &Disconnect{
 		Header:   *NewHeader(DISCONNECT, 0),
 		Duration: duration,
 	}
@@ -22,7 +22,7 @@ func NewDisconnectMessage(duration uint16) *DisconnectMessage {
 	return m
 }
 
-func (m *DisconnectMessage) computeLength() {
+func (m *Disconnect) computeLength() {
 	// Duration: contains the value of the sleep timer; this field is
 	// optional and is included by a “sleeping” client that wants to go the
 	// “asleep” state
@@ -34,7 +34,7 @@ func (m *DisconnectMessage) computeLength() {
 	}
 }
 
-func (m *DisconnectMessage) Write(w io.Writer) error {
+func (m *Disconnect) Write(w io.Writer) error {
 	m.computeLength()
 
 	buf := m.Header.pack()
@@ -46,7 +46,7 @@ func (m *DisconnectMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *DisconnectMessage) Unpack(r io.Reader) (err error) {
+func (m *Disconnect) Unpack(r io.Reader) (err error) {
 	if m.VarPartLength() == disconnectDurationLength {
 		m.Duration, err = readUint16(r)
 	} else {
@@ -55,7 +55,7 @@ func (m *DisconnectMessage) Unpack(r io.Reader) (err error) {
 	return
 }
 
-func (m DisconnectMessage) String() string {
+func (m Disconnect) String() string {
 	return fmt.Sprintf(
 		"DISCONNECT(Duration=%v)", m.Duration)
 }

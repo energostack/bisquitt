@@ -7,22 +7,22 @@ import (
 
 const pubackVarPartLength uint16 = 5
 
-type PubackMessage struct {
+type Puback struct {
 	Header
 	MessageIDProperty
 	TopicID    uint16
 	ReturnCode ReturnCode
 }
 
-func NewPubackMessage(topicID uint16, returnCode ReturnCode) *PubackMessage {
-	return &PubackMessage{
+func NewPuback(topicID uint16, returnCode ReturnCode) *Puback {
+	return &Puback{
 		Header:     *NewHeader(PUBACK, pubackVarPartLength),
 		TopicID:    topicID,
 		ReturnCode: returnCode,
 	}
 }
 
-func (m *PubackMessage) Write(w io.Writer) error {
+func (m *Puback) Write(w io.Writer) error {
 	buf := m.Header.pack()
 	buf.Write(encodeUint16(m.TopicID))
 	buf.Write(encodeUint16(m.messageID))
@@ -32,7 +32,7 @@ func (m *PubackMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *PubackMessage) Unpack(r io.Reader) (err error) {
+func (m *Puback) Unpack(r io.Reader) (err error) {
 	if m.TopicID, err = readUint16(r); err != nil {
 		return
 	}
@@ -47,7 +47,7 @@ func (m *PubackMessage) Unpack(r io.Reader) (err error) {
 	return
 }
 
-func (m PubackMessage) String() string {
+func (m Puback) String() string {
 	return fmt.Sprintf("PUBACK(TopicID=%d, ReturnCode=%d, MessageID=%d)", m.TopicID,
 		m.ReturnCode, m.messageID)
 }

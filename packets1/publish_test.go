@@ -15,10 +15,10 @@ func TestPublishStruct(t *testing.T) {
 	topicIDType := TIT_SHORT
 	topicID := uint16(123)
 	payload := []byte("test-payload")
-	msg := NewPublishMessage(topicID, topicIDType, payload, qos, retain, dup)
+	msg := NewPublish(topicID, topicIDType, payload, qos, retain, dup)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*packets1.PublishMessage", reflect.TypeOf(msg).String(), "Type should be PublishMessage")
+		assert.Equal(t, "*packets1.Publish", reflect.TypeOf(msg).String(), "Type should be Publish")
 		assert.Equal(t, dup, msg.DUP(), "Bad Dup flag value")
 		assert.Equal(t, retain, msg.Retain, "Bad Retain flag value")
 		assert.Equal(t, qos, msg.QOS, "Bad QOS value")
@@ -33,7 +33,7 @@ func TestPublishMarshal(t *testing.T) {
 	assert := assert.New(t)
 	buf := bytes.NewBuffer(nil)
 
-	msg1 := NewPublishMessage(123, TIT_PREDEFINED,
+	msg1 := NewPublish(123, TIT_PREDEFINED,
 		[]byte("test-payload"), 1, true, true)
 	msg1.SetMessageID(12)
 	if err := msg1.Write(buf); err != nil {
@@ -46,5 +46,5 @@ func TestPublishMarshal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.Equal(msg1, msg2.(*PublishMessage))
+	assert.Equal(msg1, msg2.(*Publish))
 }

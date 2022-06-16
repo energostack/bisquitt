@@ -7,21 +7,21 @@ import (
 
 const advertiseVarPartLength uint16 = 3
 
-type AdvertiseMessage struct {
+type Advertise struct {
 	Header
 	GatewayID uint8
 	Duration  uint16
 }
 
-func NewAdvertiseMessage(gatewayID uint8, duration uint16) *AdvertiseMessage {
-	return &AdvertiseMessage{
+func NewAdvertise(gatewayID uint8, duration uint16) *Advertise {
+	return &Advertise{
 		Header:    *NewHeader(ADVERTISE, advertiseVarPartLength),
 		GatewayID: gatewayID,
 		Duration:  duration,
 	}
 }
 
-func (m *AdvertiseMessage) Write(w io.Writer) error {
+func (m *Advertise) Write(w io.Writer) error {
 	buf := m.Header.pack()
 	buf.WriteByte(m.GatewayID)
 	buf.Write(encodeUint16(m.Duration))
@@ -30,7 +30,7 @@ func (m *AdvertiseMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *AdvertiseMessage) Unpack(r io.Reader) (err error) {
+func (m *Advertise) Unpack(r io.Reader) (err error) {
 	if m.GatewayID, err = readByte(r); err != nil {
 		return
 	}
@@ -39,7 +39,7 @@ func (m *AdvertiseMessage) Unpack(r io.Reader) (err error) {
 	return
 }
 
-func (m AdvertiseMessage) String() string {
+func (m Advertise) String() string {
 	return fmt.Sprintf("ADVERTISE(GatewayID=%d,Duration=%d)",
 		m.GatewayID, m.Duration)
 }

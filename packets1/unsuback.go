@@ -7,18 +7,18 @@ import (
 
 const unsubackVarPartLength uint16 = 2
 
-type UnsubackMessage struct {
+type Unsuback struct {
 	Header
 	MessageIDProperty
 }
 
-func NewUnsubackMessage() *UnsubackMessage {
-	return &UnsubackMessage{
+func NewUnsuback() *Unsuback {
+	return &Unsuback{
 		Header: *NewHeader(UNSUBACK, unsubackVarPartLength),
 	}
 }
 
-func (m *UnsubackMessage) Write(w io.Writer) error {
+func (m *Unsuback) Write(w io.Writer) error {
 	buf := m.Header.pack()
 	buf.Write(encodeUint16(m.messageID))
 
@@ -26,11 +26,11 @@ func (m *UnsubackMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *UnsubackMessage) Unpack(r io.Reader) (err error) {
+func (m *Unsuback) Unpack(r io.Reader) (err error) {
 	m.messageID, err = readUint16(r)
 	return
 }
 
-func (m UnsubackMessage) String() string {
+func (m Unsuback) String() string {
 	return fmt.Sprintf("UNSUBACK(MessageID=%d)", m.messageID)
 }

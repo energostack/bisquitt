@@ -7,7 +7,7 @@ import (
 
 const subackVarPartLength uint16 = 6
 
-type SubackMessage struct {
+type Suback struct {
 	Header
 	MessageIDProperty
 	QOS        uint8
@@ -15,8 +15,8 @@ type SubackMessage struct {
 	TopicID    uint16
 }
 
-func NewSubackMessage(topicID uint16, qos uint8, returnCode ReturnCode) *SubackMessage {
-	return &SubackMessage{
+func NewSuback(topicID uint16, qos uint8, returnCode ReturnCode) *Suback {
+	return &Suback{
 		Header:     *NewHeader(SUBACK, subackVarPartLength),
 		QOS:        qos,
 		ReturnCode: returnCode,
@@ -24,17 +24,17 @@ func NewSubackMessage(topicID uint16, qos uint8, returnCode ReturnCode) *SubackM
 	}
 }
 
-func (m *SubackMessage) encodeFlags() byte {
+func (m *Suback) encodeFlags() byte {
 	var b byte
 	b |= (m.QOS << 5) & flagsQOSBits
 	return b
 }
 
-func (m *SubackMessage) decodeFlags(b byte) {
+func (m *Suback) decodeFlags(b byte) {
 	m.QOS = (b & flagsQOSBits) >> 5
 }
 
-func (m *SubackMessage) Write(w io.Writer) error {
+func (m *Suback) Write(w io.Writer) error {
 	buf := m.Header.pack()
 	buf.WriteByte(m.encodeFlags())
 	buf.Write(encodeUint16(m.TopicID))
@@ -45,7 +45,7 @@ func (m *SubackMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *SubackMessage) Unpack(r io.Reader) (err error) {
+func (m *Suback) Unpack(r io.Reader) (err error) {
 	var flagsByte uint8
 	if flagsByte, err = readByte(r); err != nil {
 		return
@@ -66,7 +66,7 @@ func (m *SubackMessage) Unpack(r io.Reader) (err error) {
 	return
 }
 
-func (m SubackMessage) String() string {
+func (m Suback) String() string {
 	return fmt.Sprintf("SUBACK(TopicID=%d, MessageID=%d, ReturnCode=%d, QOS=%d)", m.TopicID,
 		m.messageID, m.ReturnCode, m.QOS)
 }

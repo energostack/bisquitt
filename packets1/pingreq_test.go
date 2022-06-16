@@ -10,10 +10,10 @@ import (
 
 func TestPingreqStruct(t *testing.T) {
 	clientID := []byte("test-client")
-	msg := NewPingreqMessage(clientID)
+	msg := NewPingreq(clientID)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*packets1.PingreqMessage", reflect.TypeOf(msg).String(), "Type should be PingreqMessage")
+		assert.Equal(t, "*packets1.Pingreq", reflect.TypeOf(msg).String(), "Type should be Pingreq")
 		assert.Equal(t, clientID, msg.ClientID, "Bad ClientID value")
 	}
 }
@@ -22,7 +22,7 @@ func TestPingreqMarshal(t *testing.T) {
 	assert := assert.New(t)
 	buf := bytes.NewBuffer(nil)
 
-	msg1 := NewPingreqMessage([]byte("test-client"))
+	msg1 := NewPingreq([]byte("test-client"))
 	if err := msg1.Write(buf); err != nil {
 		t.Fatal(err)
 	}
@@ -33,5 +33,5 @@ func TestPingreqMarshal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.Equal(msg1, msg2.(*PingreqMessage))
+	assert.Equal(msg1, msg2.(*Pingreq))
 }

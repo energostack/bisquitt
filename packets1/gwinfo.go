@@ -7,15 +7,15 @@ import (
 
 const gwInfoHeaderLength uint16 = 1
 
-type GwInfoMessage struct {
+type GwInfo struct {
 	Header
 	GatewayID      uint8
 	GatewayAddress []byte
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewGwInfoMessage(gatewayID uint8, gatewayAddress []byte) *GwInfoMessage {
-	m := &GwInfoMessage{
+func NewGwInfo(gatewayID uint8, gatewayAddress []byte) *GwInfo {
+	m := &GwInfo{
 		Header:         *NewHeader(GWINFO, 0),
 		GatewayID:      gatewayID,
 		GatewayAddress: gatewayAddress,
@@ -24,12 +24,12 @@ func NewGwInfoMessage(gatewayID uint8, gatewayAddress []byte) *GwInfoMessage {
 	return m
 }
 
-func (m *GwInfoMessage) computeLength() {
+func (m *GwInfo) computeLength() {
 	addrLength := uint16(len(m.GatewayAddress))
 	m.Header.SetVarPartLength(gwInfoHeaderLength + addrLength)
 }
 
-func (m *GwInfoMessage) Write(w io.Writer) error {
+func (m *GwInfo) Write(w io.Writer) error {
 	m.computeLength()
 
 	buf := m.Header.pack()
@@ -40,7 +40,7 @@ func (m *GwInfoMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *GwInfoMessage) Unpack(r io.Reader) (err error) {
+func (m *GwInfo) Unpack(r io.Reader) (err error) {
 	if m.GatewayID, err = readByte(r); err != nil {
 		return
 	}
@@ -54,7 +54,7 @@ func (m *GwInfoMessage) Unpack(r io.Reader) (err error) {
 	return
 }
 
-func (m GwInfoMessage) String() string {
+func (m GwInfo) String() string {
 	return fmt.Sprintf("GWINFO(GatewayID=%d,GatewayAddress=%#v)",
 		m.GatewayID, string(m.GatewayAddress))
 }

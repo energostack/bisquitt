@@ -7,7 +7,7 @@ import (
 
 const willTopicFlagsLength uint16 = 1
 
-type WillTopicMessage struct {
+type WillTopic struct {
 	Header
 	QOS       uint8
 	Retain    bool
@@ -15,8 +15,8 @@ type WillTopicMessage struct {
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewWillTopicMessage(willTopic string, qos uint8, retain bool) *WillTopicMessage {
-	m := &WillTopicMessage{
+func NewWillTopic(willTopic string, qos uint8, retain bool) *WillTopic {
+	m := &WillTopic{
 		Header:    *NewHeader(WILLTOPIC, 0),
 		QOS:       qos,
 		Retain:    retain,
@@ -26,7 +26,7 @@ func NewWillTopicMessage(willTopic string, qos uint8, retain bool) *WillTopicMes
 	return m
 }
 
-func (m *WillTopicMessage) computeLength() {
+func (m *WillTopic) computeLength() {
 	// An empty WILLTOPIC message is a WILLTOPIC message without Flags and
 	// WillTopic field (i.e. it is exactly 2 octets long).
 	// [MQTT-SN specification v. 1.2, chapter 5.4.7 WILLTOPIC]
@@ -38,7 +38,7 @@ func (m *WillTopicMessage) computeLength() {
 	}
 }
 
-func (m *WillTopicMessage) encodeFlags() byte {
+func (m *WillTopic) encodeFlags() byte {
 	var b byte
 
 	b |= (m.QOS << 5) & flagsQOSBits
@@ -48,12 +48,12 @@ func (m *WillTopicMessage) encodeFlags() byte {
 	return b
 }
 
-func (m *WillTopicMessage) decodeFlags(b byte) {
+func (m *WillTopic) decodeFlags(b byte) {
 	m.QOS = (b & flagsQOSBits) >> 5
 	m.Retain = (b & flagsRetainBit) == flagsRetainBit
 }
 
-func (m *WillTopicMessage) Write(w io.Writer) error {
+func (m *WillTopic) Write(w io.Writer) error {
 	m.computeLength()
 
 	buf := m.Header.pack()
@@ -66,7 +66,7 @@ func (m *WillTopicMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *WillTopicMessage) Unpack(r io.Reader) (err error) {
+func (m *WillTopic) Unpack(r io.Reader) (err error) {
 	if m.VarPartLength() > 0 {
 		var flagsByte uint8
 		if flagsByte, err = readByte(r); err != nil {
@@ -85,6 +85,6 @@ func (m *WillTopicMessage) Unpack(r io.Reader) (err error) {
 	return
 }
 
-func (m WillTopicMessage) String() string {
+func (m WillTopic) String() string {
 	return fmt.Sprintf("WILLTOPIC(WillTopic=%#v, QOS=%d, Retain=%t)", m.WillTopic, m.QOS, m.Retain)
 }

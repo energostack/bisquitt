@@ -5,14 +5,14 @@ import (
 	"io"
 )
 
-type WillMsgUpdateMessage struct {
+type WillMsgUpdate struct {
 	Header
 	WillMsg []byte
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewWillMsgUpdateMessage(willMsg []byte) *WillMsgUpdateMessage {
-	m := &WillMsgUpdateMessage{
+func NewWillMsgUpdate(willMsg []byte) *WillMsgUpdate {
+	m := &WillMsgUpdate{
 		Header:  *NewHeader(WILLMSGUPD, 0),
 		WillMsg: willMsg,
 	}
@@ -20,12 +20,12 @@ func NewWillMsgUpdateMessage(willMsg []byte) *WillMsgUpdateMessage {
 	return m
 }
 
-func (m *WillMsgUpdateMessage) computeLength() {
+func (m *WillMsgUpdate) computeLength() {
 	length := len(m.WillMsg)
 	m.Header.SetVarPartLength(uint16(length))
 }
 
-func (m *WillMsgUpdateMessage) Write(w io.Writer) error {
+func (m *WillMsgUpdate) Write(w io.Writer) error {
 	m.computeLength()
 
 	buf := m.Header.pack()
@@ -35,12 +35,12 @@ func (m *WillMsgUpdateMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *WillMsgUpdateMessage) Unpack(r io.Reader) (err error) {
+func (m *WillMsgUpdate) Unpack(r io.Reader) (err error) {
 	m.WillMsg = make([]byte, m.VarPartLength())
 	_, err = io.ReadFull(r, m.WillMsg)
 	return
 }
 
-func (m WillMsgUpdateMessage) String() string {
+func (m WillMsgUpdate) String() string {
 	return fmt.Sprintf("WILLMSGUPDATE(WillMsg=%#v)", string(m.WillMsg))
 }

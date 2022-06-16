@@ -7,7 +7,7 @@ import (
 
 const publishHeaderLength uint16 = 5
 
-type PublishMessage struct {
+type Publish struct {
 	Header
 	MessageIDProperty
 	DUPProperty
@@ -19,9 +19,9 @@ type PublishMessage struct {
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewPublishMessage(topicID uint16, topicIDType uint8, payload []byte, qos uint8,
-	retain bool, dup bool) *PublishMessage {
-	m := &PublishMessage{
+func NewPublish(topicID uint16, topicIDType uint8, payload []byte, qos uint8,
+	retain bool, dup bool) *Publish {
+	m := &Publish{
 		Header:      *NewHeader(PUBLISH, 0),
 		DUPProperty: DUPProperty{dup},
 		TopicID:     topicID,
@@ -34,12 +34,12 @@ func NewPublishMessage(topicID uint16, topicIDType uint8, payload []byte, qos ui
 	return m
 }
 
-func (m *PublishMessage) computeLength() {
+func (m *Publish) computeLength() {
 	payloadLen := uint16(len(m.Data))
 	m.Header.SetVarPartLength(publishHeaderLength + payloadLen)
 }
 
-func (m *PublishMessage) encodeFlags() byte {
+func (m *Publish) encodeFlags() byte {
 	var b byte
 	if m.dup {
 		b |= flagsDUPBit
@@ -52,14 +52,14 @@ func (m *PublishMessage) encodeFlags() byte {
 	return b
 }
 
-func (m *PublishMessage) decodeFlags(b byte) {
+func (m *Publish) decodeFlags(b byte) {
 	m.dup = (b & flagsDUPBit) == flagsDUPBit
 	m.QOS = (b & flagsQOSBits) >> 5
 	m.Retain = (b & flagsRetainBit) == flagsRetainBit
 	m.TopicIDType = b & flagsTopicIDTypeBits
 }
 
-func (m *PublishMessage) Write(w io.Writer) error {
+func (m *Publish) Write(w io.Writer) error {
 	m.computeLength()
 
 	buf := m.Header.pack()
@@ -72,7 +72,7 @@ func (m *PublishMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *PublishMessage) Unpack(r io.Reader) (err error) {
+func (m *Publish) Unpack(r io.Reader) (err error) {
 	var flagsByte uint8
 	if flagsByte, err = readByte(r); err != nil {
 		return
@@ -92,7 +92,7 @@ func (m *PublishMessage) Unpack(r io.Reader) (err error) {
 	return
 }
 
-func (m PublishMessage) String() string {
+func (m Publish) String() string {
 	var topicIDType string
 	switch m.TopicIDType {
 	case TIT_REGISTERED:

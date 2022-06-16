@@ -9,10 +9,10 @@ import (
 )
 
 func TestPubrecStruct(t *testing.T) {
-	msg := NewPubrecMessage()
+	msg := NewPubrec()
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*packets1.PubrecMessage", reflect.TypeOf(msg).String(), "Type should be PubrecMessage")
+		assert.Equal(t, "*packets1.Pubrec", reflect.TypeOf(msg).String(), "Type should be Pubrec")
 		assert.Equal(t, uint16(4), msg.MessageLength(), "Default Length should be 4")
 		assert.Equal(t, uint16(0), msg.MessageID(), "Default MessageID should be 0")
 	}
@@ -22,7 +22,7 @@ func TestPubrecMarshal(t *testing.T) {
 	assert := assert.New(t)
 	buf := bytes.NewBuffer(nil)
 
-	msg1 := NewPubrecMessage()
+	msg1 := NewPubrec()
 	msg1.SetMessageID(12)
 	if err := msg1.Write(buf); err != nil {
 		t.Fatal(err)
@@ -34,5 +34,5 @@ func TestPubrecMarshal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.Equal(msg1, msg2.(*PubrecMessage))
+	assert.Equal(msg1, msg2.(*Pubrec))
 }

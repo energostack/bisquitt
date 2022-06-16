@@ -10,10 +10,10 @@ import (
 
 func TestWillMsgUpdateStruct(t *testing.T) {
 	willMsg := []byte("test-msg")
-	msg := NewWillMsgUpdateMessage(willMsg)
+	msg := NewWillMsgUpdate(willMsg)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*packets1.WillMsgUpdateMessage", reflect.TypeOf(msg).String(), "Type should be WillMsgUpdateMessage")
+		assert.Equal(t, "*packets1.WillMsgUpdate", reflect.TypeOf(msg).String(), "Type should be WillMsgUpdate")
 		assert.Equal(t, willMsg, msg.WillMsg, "Bad WillMsg value")
 	}
 }
@@ -22,7 +22,7 @@ func TestWillMsgUpdateMarshal(t *testing.T) {
 	assert := assert.New(t)
 	buf := bytes.NewBuffer(nil)
 
-	msg1 := NewWillMsgUpdateMessage([]byte("test-message"))
+	msg1 := NewWillMsgUpdate([]byte("test-message"))
 	if err := msg1.Write(buf); err != nil {
 		t.Fatal(err)
 	}
@@ -33,5 +33,5 @@ func TestWillMsgUpdateMarshal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.Equal(msg1, msg2.(*WillMsgUpdateMessage))
+	assert.Equal(msg1, msg2.(*WillMsgUpdate))
 }
