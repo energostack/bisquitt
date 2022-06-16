@@ -12,7 +12,7 @@ import (
 	dtlsProtocol "github.com/pion/dtls/v2/pkg/protocol"
 )
 
-func (c *Client) send(msg pkts.Message) error {
+func (c *Client) send(msg pkts.Packet) error {
 	c.log.Debug("<- %v", msg)
 	return msg.Write(c.conn)
 }
@@ -118,7 +118,7 @@ func (c *Client) topicForPublish(msg *pkts.Publish) (string, error) {
 	return topic, nil
 }
 
-func (c *Client) handlePacket(msgx pkts.Message) error {
+func (c *Client) handlePacket(msgx pkts.Packet) error {
 	switch msg := msgx.(type) {
 	case *pkts.Connack:
 		transactionx, _ := c.transactions.GetByType(pkts.CONNECT)

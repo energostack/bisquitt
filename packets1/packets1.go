@@ -44,7 +44,7 @@ const longPacketFlag = byte(1)
 const shortHeaderLength = 2
 const longHeaderLength = 4
 
-type Message interface {
+type Packet interface {
 	SetVarPartLength(uint16)
 	Write(io.Writer) error
 	Unpack(io.Reader) error
@@ -193,7 +193,7 @@ func (h *Header) pack() bytes.Buffer {
 }
 
 // ReadPacket reads an MQTT-SN packet from the given io.Reader.
-func ReadPacket(r io.Reader) (m Message, err error) {
+func ReadPacket(r io.Reader) (pkt Packet, err error) {
 	var h Header
 	packet := make([]byte, MaxPacketLen)
 	n, err := r.Read(packet)
@@ -202,17 +202,17 @@ func ReadPacket(r io.Reader) (m Message, err error) {
 	}
 	packetBuf := bytes.NewBuffer(packet[:n])
 	h.Unpack(packetBuf)
-	m = NewMessageWithHeader(h)
-	if m == nil {
+	pkt = NewMessageWithHeader(h)
+	if pkt == nil {
 		return nil, errors.New("invalid MQTT-SN packet")
 	}
-	m.Unpack(packetBuf)
-	return m, nil
+	pkt.Unpack(packetBuf)
+	return pkt, nil
 }
 
 // NewMessageWithHeader returns a particular packet struct with a given header.
 // The struct type is determined by h.msgType.
-func NewMessageWithHeader(h Header) (m Message) {
+func NewMessageWithHeader(h Header) (m Packet) {
 	switch h.msgType {
 	case ADVERTISE:
 		m = &Advertise{Header: h}
