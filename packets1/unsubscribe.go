@@ -7,7 +7,7 @@ import (
 
 const unsubscribeHeaderLength uint16 = 3
 
-type UnsubscribeMessage struct {
+type Unsubscribe struct {
 	Header
 	MessageIDProperty
 	TopicIDType uint8
@@ -16,8 +16,8 @@ type UnsubscribeMessage struct {
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewUnsubscribeMessage(topicID uint16, topicIDType uint8, topicName []byte) *UnsubscribeMessage {
-	m := &UnsubscribeMessage{
+func NewUnsubscribe(topicID uint16, topicIDType uint8, topicName []byte) *Unsubscribe {
+	m := &Unsubscribe{
 		Header:      *NewHeader(UNSUBSCRIBE, 0),
 		TopicIDType: topicIDType,
 		TopicID:     topicID,
@@ -27,7 +27,7 @@ func NewUnsubscribeMessage(topicID uint16, topicIDType uint8, topicName []byte) 
 	return m
 }
 
-func (m *UnsubscribeMessage) computeLength() {
+func (m *Unsubscribe) computeLength() {
 	var topicLength uint16
 	switch m.TopicIDType {
 	case TIT_STRING:
@@ -38,17 +38,17 @@ func (m *UnsubscribeMessage) computeLength() {
 	m.Header.SetVarPartLength(unsubscribeHeaderLength + topicLength)
 }
 
-func (m *UnsubscribeMessage) encodeFlags() byte {
+func (m *Unsubscribe) encodeFlags() byte {
 	var b byte
 	b |= m.TopicIDType & flagsTopicIDTypeBits
 	return b
 }
 
-func (m *UnsubscribeMessage) decodeFlags(b byte) {
+func (m *Unsubscribe) decodeFlags(b byte) {
 	m.TopicIDType = b & flagsTopicIDTypeBits
 }
 
-func (m *UnsubscribeMessage) Write(w io.Writer) error {
+func (m *Unsubscribe) Write(w io.Writer) error {
 	m.computeLength()
 
 	buf := m.Header.pack()
@@ -65,7 +65,7 @@ func (m *UnsubscribeMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *UnsubscribeMessage) Unpack(r io.Reader) (err error) {
+func (m *Unsubscribe) Unpack(r io.Reader) (err error) {
 	var flagsByte uint8
 	if flagsByte, err = readByte(r); err != nil {
 		return
@@ -90,7 +90,7 @@ func (m *UnsubscribeMessage) Unpack(r io.Reader) (err error) {
 	return
 }
 
-func (m UnsubscribeMessage) String() string {
+func (m Unsubscribe) String() string {
 	return fmt.Sprintf("UNSUBSCRIBE(TopicName=%#v, TopicID=%d, TopicIDType=%d, MessageID=%d)",
 		string(m.TopicName), m.TopicID, m.TopicIDType, m.messageID)
 }

@@ -9,10 +9,10 @@ import (
 )
 
 func TestWillTopicReqStruct(t *testing.T) {
-	msg := NewWillTopicReqMessage()
+	msg := NewWillTopicReq()
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*packets1.WillTopicReqMessage", reflect.TypeOf(msg).String(), "Type should be WillTopicReqMessage")
+		assert.Equal(t, "*packets1.WillTopicReq", reflect.TypeOf(msg).String(), "Type should be WillTopicReq")
 	}
 }
 
@@ -20,7 +20,7 @@ func TestWillTopicReqMarshal(t *testing.T) {
 	assert := assert.New(t)
 	buf := bytes.NewBuffer(nil)
 
-	msg1 := NewWillTopicReqMessage()
+	msg1 := NewWillTopicReq()
 	if err := msg1.Write(buf); err != nil {
 		t.Fatal(err)
 	}
@@ -31,5 +31,5 @@ func TestWillTopicReqMarshal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.Equal(msg1, msg2.(*WillTopicReqMessage))
+	assert.Equal(msg1, msg2.(*WillTopicReq))
 }

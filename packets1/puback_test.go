@@ -11,10 +11,10 @@ import (
 
 func TestPubackStruct(t *testing.T) {
 	topicID := uint16(123)
-	msg := NewPubackMessage(topicID, RC_ACCEPTED)
+	msg := NewPuback(topicID, RC_ACCEPTED)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*packets1.PubackMessage", reflect.TypeOf(msg).String(), "Type should be PubackMessage")
+		assert.Equal(t, "*packets1.Puback", reflect.TypeOf(msg).String(), "Type should be Puback")
 		assert.Equal(t, topicID, msg.TopicID, fmt.Sprintf("TopicID should be %d", topicID))
 		assert.Equal(t, uint16(0), msg.MessageID(), "Default MessageID should be 0")
 		assert.Equal(t, RC_ACCEPTED, msg.ReturnCode, "ReturnCode should be RC_ACCEPTED")
@@ -26,7 +26,7 @@ func TestPubackMarshal(t *testing.T) {
 	assert := assert.New(t)
 	buf := bytes.NewBuffer(nil)
 
-	msg1 := NewPubackMessage(123, RC_CONGESTION)
+	msg1 := NewPuback(123, RC_CONGESTION)
 	msg1.SetMessageID(12)
 	if err := msg1.Write(buf); err != nil {
 		t.Fatal(err)
@@ -38,5 +38,5 @@ func TestPubackMarshal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.Equal(msg1, msg2.(*PubackMessage))
+	assert.Equal(msg1, msg2.(*Puback))
 }

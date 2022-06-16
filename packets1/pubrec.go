@@ -7,18 +7,18 @@ import (
 
 const pubrecVarPartLength uint16 = 2
 
-type PubrecMessage struct {
+type Pubrec struct {
 	Header
 	MessageIDProperty
 }
 
-func NewPubrecMessage() *PubrecMessage {
-	return &PubrecMessage{
+func NewPubrec() *Pubrec {
+	return &Pubrec{
 		Header: *NewHeader(PUBREC, pubrecVarPartLength),
 	}
 }
 
-func (m *PubrecMessage) Write(w io.Writer) error {
+func (m *Pubrec) Write(w io.Writer) error {
 	buf := m.Header.pack()
 	buf.Write(encodeUint16(m.messageID))
 
@@ -26,11 +26,11 @@ func (m *PubrecMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *PubrecMessage) Unpack(r io.Reader) (err error) {
+func (m *Pubrec) Unpack(r io.Reader) (err error) {
 	m.messageID, err = readUint16(r)
 	return
 }
 
-func (m PubrecMessage) String() string {
+func (m Pubrec) String() string {
 	return fmt.Sprintf("PUBREC(MessageID=%d)", m.messageID)
 }

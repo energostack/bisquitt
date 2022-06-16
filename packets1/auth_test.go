@@ -22,5 +22,5 @@ func TestAuthMarshal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.Equal(msg1, msg2.(*AuthMessage))
+	assert.Equal(msg1, msg2.(*Auth))
 }

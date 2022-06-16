@@ -7,19 +7,19 @@ import (
 
 const searchGwVarPartLength uint16 = 1
 
-type SearchGwMessage struct {
+type SearchGw struct {
 	Header
 	Radius uint8
 }
 
-func NewSearchGwMessage(radius uint8) *SearchGwMessage {
-	return &SearchGwMessage{
+func NewSearchGw(radius uint8) *SearchGw {
+	return &SearchGw{
 		Header: *NewHeader(SEARCHGW, searchGwVarPartLength),
 		Radius: radius,
 	}
 }
 
-func (m *SearchGwMessage) Write(w io.Writer) error {
+func (m *SearchGw) Write(w io.Writer) error {
 	buf := m.Header.pack()
 	buf.WriteByte(m.Radius)
 
@@ -27,11 +27,11 @@ func (m *SearchGwMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *SearchGwMessage) Unpack(r io.Reader) (err error) {
+func (m *SearchGw) Unpack(r io.Reader) (err error) {
 	m.Radius, err = readByte(r)
 	return
 }
 
-func (m SearchGwMessage) String() string {
+func (m SearchGw) String() string {
 	return fmt.Sprintf("SEARCHGW(Radius=%d)", m.Radius)
 }

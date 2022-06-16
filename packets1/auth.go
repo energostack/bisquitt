@@ -24,17 +24,17 @@ const (
 // https://www.oasis-open.org/committees/download.php/68568/mqtt-sn-v2.0-wd09.docx
 //
 // SASL PLAIN method specification: https://datatracker.ietf.org/doc/html/rfc4616
-type AuthMessage struct {
+type Auth struct {
 	Header
 	Reason uint8
 	Method string
 	Data   []byte
 }
 
-// NewAuthPlain creates a new AuthMessage with "PLAIN" method encoded
+// NewAuthPlain creates a new Auth with "PLAIN" method encoded
 // authentication data.
-func NewAuthPlain(user string, password []byte) *AuthMessage {
-	auth := &AuthMessage{Header: *NewHeader(AUTH, 0)}
+func NewAuthPlain(user string, password []byte) *Auth {
+	auth := &Auth{Header: *NewHeader(AUTH, 0)}
 	auth.Method = "PLAIN"
 	var b bytes.Buffer
 	b.Write([]byte{0})
@@ -49,7 +49,7 @@ func NewAuthPlain(user string, password []byte) *AuthMessage {
 
 // DecodePlain decodes username and password from AUTH message data encoded
 // using "PLAIN" method.
-func DecodePlain(auth *AuthMessage) (string, []byte, error) {
+func DecodePlain(auth *Auth) (string, []byte, error) {
 	dataParts := bytes.Split(auth.Data, []byte{0})
 	if len(dataParts) != 3 {
 		return "", nil, fmt.Errorf("Invalid PLAIN auth data format: %v.", auth.Data)
@@ -58,7 +58,7 @@ func DecodePlain(auth *AuthMessage) (string, []byte, error) {
 	return string(dataParts[1]), dataParts[2], nil
 }
 
-func (m *AuthMessage) Write(w io.Writer) error {
+func (m *Auth) Write(w io.Writer) error {
 	buf := m.Header.pack()
 	buf.WriteByte(m.Reason)
 	buf.WriteByte(byte(len(m.Method)))
@@ -69,7 +69,7 @@ func (m *AuthMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *AuthMessage) Unpack(r io.Reader) (err error) {
+func (m *Auth) Unpack(r io.Reader) (err error) {
 	if m.Reason, err = readByte(r); err != nil {
 		return
 	}
@@ -89,7 +89,7 @@ func (m *AuthMessage) Unpack(r io.Reader) (err error) {
 	return
 }
 
-func (m AuthMessage) String() string {
+func (m Auth) String() string {
 	// We intentionally do not print Data because it contains sensitive data.
 	return fmt.Sprintf("AUTH(Reason=%d, Method=%#v)", m.Reason, m.Method)
 }

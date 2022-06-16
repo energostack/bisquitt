@@ -7,7 +7,7 @@ import (
 
 const subscribeHeaderLength uint16 = 3
 
-type SubscribeMessage struct {
+type Subscribe struct {
 	Header
 	DUPProperty
 	MessageIDProperty
@@ -18,8 +18,8 @@ type SubscribeMessage struct {
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewSubscribeMessage(topicID uint16, topicIDType uint8, topicName []byte, qos uint8, dup bool) *SubscribeMessage {
-	m := &SubscribeMessage{
+func NewSubscribe(topicID uint16, topicIDType uint8, topicName []byte, qos uint8, dup bool) *Subscribe {
+	m := &Subscribe{
 		Header:      *NewHeader(SUBSCRIBE, 0),
 		DUPProperty: DUPProperty{dup},
 		QOS:         qos,
@@ -31,7 +31,7 @@ func NewSubscribeMessage(topicID uint16, topicIDType uint8, topicName []byte, qo
 	return m
 }
 
-func (m *SubscribeMessage) computeLength() {
+func (m *Subscribe) computeLength() {
 	var topicLength uint16
 	switch m.TopicIDType {
 	case TIT_STRING:
@@ -42,7 +42,7 @@ func (m *SubscribeMessage) computeLength() {
 	m.Header.SetVarPartLength(subscribeHeaderLength + topicLength)
 }
 
-func (m *SubscribeMessage) encodeFlags() byte {
+func (m *Subscribe) encodeFlags() byte {
 	var b byte
 	if m.dup {
 		b |= flagsDUPBit
@@ -52,13 +52,13 @@ func (m *SubscribeMessage) encodeFlags() byte {
 	return b
 }
 
-func (m *SubscribeMessage) decodeFlags(b byte) {
+func (m *Subscribe) decodeFlags(b byte) {
 	m.dup = (b & flagsDUPBit) == flagsDUPBit
 	m.QOS = (b & flagsQOSBits) >> 5
 	m.TopicIDType = b & flagsTopicIDTypeBits
 }
 
-func (m *SubscribeMessage) Write(w io.Writer) error {
+func (m *Subscribe) Write(w io.Writer) error {
 	m.computeLength()
 
 	buf := m.Header.pack()
@@ -75,7 +75,7 @@ func (m *SubscribeMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *SubscribeMessage) Unpack(r io.Reader) (err error) {
+func (m *Subscribe) Unpack(r io.Reader) (err error) {
 	var flagsByte uint8
 	if flagsByte, err = readByte(r); err != nil {
 		return
@@ -100,7 +100,7 @@ func (m *SubscribeMessage) Unpack(r io.Reader) (err error) {
 	return
 }
 
-func (m SubscribeMessage) String() string {
+func (m Subscribe) String() string {
 	return fmt.Sprintf("SUBSCRIBE(TopicName=%#v, QOS=%d, TopicID=%d, TopicIDType=%d, MessageID=%d, Dup=%t)",
 		string(m.TopicName), m.QOS, m.TopicID, m.TopicIDType, m.messageID, m.dup)
 }

@@ -7,19 +7,19 @@ import (
 
 const willTopicRespVarPartLength uint16 = 1
 
-type WillTopicRespMessage struct {
+type WillTopicResp struct {
 	Header
 	ReturnCode ReturnCode
 }
 
-func NewWillTopicRespMessage(returnCode ReturnCode) *WillTopicRespMessage {
-	return &WillTopicRespMessage{
+func NewWillTopicResp(returnCode ReturnCode) *WillTopicResp {
+	return &WillTopicResp{
 		Header:     *NewHeader(WILLTOPICRESP, willTopicRespVarPartLength),
 		ReturnCode: returnCode,
 	}
 }
 
-func (m *WillTopicRespMessage) Write(w io.Writer) error {
+func (m *WillTopicResp) Write(w io.Writer) error {
 	buf := m.Header.pack()
 	buf.WriteByte(byte(m.ReturnCode))
 
@@ -27,13 +27,13 @@ func (m *WillTopicRespMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *WillTopicRespMessage) Unpack(r io.Reader) (err error) {
+func (m *WillTopicResp) Unpack(r io.Reader) (err error) {
 	var returnCodeByte uint8
 	returnCodeByte, err = readByte(r)
 	m.ReturnCode = ReturnCode(returnCodeByte)
 	return
 }
 
-func (m WillTopicRespMessage) String() string {
+func (m WillTopicResp) String() string {
 	return fmt.Sprintf("WILLTOPICRESP(ReturnCode=%d)", m.ReturnCode)
 }

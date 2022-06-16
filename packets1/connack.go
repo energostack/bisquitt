@@ -7,19 +7,19 @@ import (
 
 const connackVarPartLength uint16 = 1
 
-type ConnackMessage struct {
+type Connack struct {
 	Header
 	ReturnCode ReturnCode
 }
 
-func NewConnackMessage(returnCode ReturnCode) *ConnackMessage {
-	return &ConnackMessage{
+func NewConnack(returnCode ReturnCode) *Connack {
+	return &Connack{
 		Header:     *NewHeader(CONNACK, connackVarPartLength),
 		ReturnCode: returnCode,
 	}
 }
 
-func (m *ConnackMessage) Write(w io.Writer) error {
+func (m *Connack) Write(w io.Writer) error {
 	buf := m.Header.pack()
 	buf.WriteByte(byte(m.ReturnCode))
 
@@ -27,13 +27,13 @@ func (m *ConnackMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *ConnackMessage) Unpack(r io.Reader) (err error) {
+func (m *Connack) Unpack(r io.Reader) (err error) {
 	var returnCodeByte uint8
 	returnCodeByte, err = readByte(r)
 	m.ReturnCode = ReturnCode(returnCodeByte)
 	return
 }
 
-func (m ConnackMessage) String() string {
+func (m Connack) String() string {
 	return fmt.Sprintf("CONNACK(ReturnCode=%d)", m.ReturnCode)
 }

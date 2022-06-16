@@ -7,18 +7,18 @@ import (
 
 const pubcompVarPartLength uint16 = 2
 
-type PubcompMessage struct {
+type Pubcomp struct {
 	Header
 	MessageIDProperty
 }
 
-func NewPubcompMessage() *PubcompMessage {
-	return &PubcompMessage{
+func NewPubcomp() *Pubcomp {
+	return &Pubcomp{
 		Header: *NewHeader(PUBCOMP, pubcompVarPartLength),
 	}
 }
 
-func (m *PubcompMessage) Write(w io.Writer) error {
+func (m *Pubcomp) Write(w io.Writer) error {
 	buf := m.Header.pack()
 	buf.Write(encodeUint16(m.messageID))
 
@@ -26,11 +26,11 @@ func (m *PubcompMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *PubcompMessage) Unpack(r io.Reader) (err error) {
+func (m *Pubcomp) Unpack(r io.Reader) (err error) {
 	m.messageID, err = readUint16(r)
 	return
 }
 
-func (m PubcompMessage) String() string {
+func (m Pubcomp) String() string {
 	return fmt.Sprintf("PUBCOMP(MessageID=%d)", m.messageID)
 }

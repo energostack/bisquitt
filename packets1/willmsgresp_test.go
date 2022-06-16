@@ -9,10 +9,10 @@ import (
 )
 
 func TestWillMsgRespStruct(t *testing.T) {
-	msg := NewWillMsgRespMessage(RC_ACCEPTED)
+	msg := NewWillMsgResp(RC_ACCEPTED)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*packets1.WillMsgRespMessage", reflect.TypeOf(msg).String(), "Type should be WillMsgRespMessage")
+		assert.Equal(t, "*packets1.WillMsgResp", reflect.TypeOf(msg).String(), "Type should be WillMsgResp")
 		assert.Equal(t, RC_ACCEPTED, msg.ReturnCode, "Default ReturnCode should be RC_ACCEPTED")
 	}
 }
@@ -21,7 +21,7 @@ func TestWillMsgRespMarshal(t *testing.T) {
 	assert := assert.New(t)
 	buf := bytes.NewBuffer(nil)
 
-	msg1 := NewWillMsgRespMessage(RC_CONGESTION)
+	msg1 := NewWillMsgResp(RC_CONGESTION)
 	if err := msg1.Write(buf); err != nil {
 		t.Fatal(err)
 	}
@@ -32,5 +32,5 @@ func TestWillMsgRespMarshal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.Equal(msg1, msg2.(*WillMsgRespMessage))
+	assert.Equal(msg1, msg2.(*WillMsgResp))
 }

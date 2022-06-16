@@ -7,7 +7,7 @@ import (
 
 const connectHeaderLength uint16 = 4
 
-type ConnectMessage struct {
+type Connect struct {
 	Header
 	CleanSession bool
 	ClientID     []byte
@@ -17,8 +17,8 @@ type ConnectMessage struct {
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewConnectMessage(clientID []byte, cleanSession bool, will bool, duration uint16) *ConnectMessage {
-	m := &ConnectMessage{
+func NewConnect(clientID []byte, cleanSession bool, will bool, duration uint16) *Connect {
+	m := &Connect{
 		Header:       *NewHeader(CONNECT, 0),
 		Will:         will,
 		CleanSession: cleanSession,
@@ -30,17 +30,17 @@ func NewConnectMessage(clientID []byte, cleanSession bool, will bool, duration u
 	return m
 }
 
-func (m *ConnectMessage) computeLength() {
+func (m *Connect) computeLength() {
 	clientIDLength := uint16(len(m.ClientID))
 	m.Header.SetVarPartLength(connectHeaderLength + clientIDLength)
 }
 
-func (m *ConnectMessage) decodeFlags(b byte) {
+func (m *Connect) decodeFlags(b byte) {
 	m.Will = (b & flagsWillBit) == flagsWillBit
 	m.CleanSession = (b & flagsCleanSessionBit) == flagsCleanSessionBit
 }
 
-func (m *ConnectMessage) encodeFlags() byte {
+func (m *Connect) encodeFlags() byte {
 	var b byte
 	if m.Will {
 		b |= flagsWillBit
@@ -51,7 +51,7 @@ func (m *ConnectMessage) encodeFlags() byte {
 	return b
 }
 
-func (m *ConnectMessage) Write(w io.Writer) error {
+func (m *Connect) Write(w io.Writer) error {
 	m.computeLength()
 
 	buf := m.Header.pack()
@@ -64,7 +64,7 @@ func (m *ConnectMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *ConnectMessage) Unpack(r io.Reader) (err error) {
+func (m *Connect) Unpack(r io.Reader) (err error) {
 	var flagsByte uint8
 	if flagsByte, err = readByte(r); err != nil {
 		return
@@ -84,7 +84,7 @@ func (m *ConnectMessage) Unpack(r io.Reader) (err error) {
 	return
 }
 
-func (m ConnectMessage) String() string {
+func (m Connect) String() string {
 	return fmt.Sprintf(
 		"CONNECT(ClientID=%#v, CleanSession=%t, Will=%t, Duration=%d)",
 

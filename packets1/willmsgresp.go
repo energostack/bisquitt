@@ -7,19 +7,19 @@ import (
 
 const willMsgRespVarPartLength uint16 = 1
 
-type WillMsgRespMessage struct {
+type WillMsgResp struct {
 	Header
 	ReturnCode ReturnCode
 }
 
-func NewWillMsgRespMessage(returnCode ReturnCode) *WillMsgRespMessage {
-	return &WillMsgRespMessage{
+func NewWillMsgResp(returnCode ReturnCode) *WillMsgResp {
+	return &WillMsgResp{
 		Header:     *NewHeader(WILLMSGRESP, willMsgRespVarPartLength),
 		ReturnCode: returnCode,
 	}
 }
 
-func (m *WillMsgRespMessage) Write(w io.Writer) error {
+func (m *WillMsgResp) Write(w io.Writer) error {
 	buf := m.Header.pack()
 	buf.WriteByte(byte(m.ReturnCode))
 
@@ -27,13 +27,13 @@ func (m *WillMsgRespMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *WillMsgRespMessage) Unpack(r io.Reader) (err error) {
+func (m *WillMsgResp) Unpack(r io.Reader) (err error) {
 	var returnCodeByte uint8
 	returnCodeByte, err = readByte(r)
 	m.ReturnCode = ReturnCode(returnCodeByte)
 	return
 }
 
-func (m WillMsgRespMessage) String() string {
+func (m WillMsgResp) String() string {
 	return fmt.Sprintf("WILLMSGRESP(ReturnCode=%d)", m.ReturnCode)
 }

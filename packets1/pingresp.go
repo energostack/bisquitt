@@ -6,27 +6,27 @@ import (
 
 const pingrespVarPartLength uint16 = 0
 
-type PingrespMessage struct {
+type Pingresp struct {
 	Header
 }
 
-func NewPingrespMessage() *PingrespMessage {
-	return &PingrespMessage{
+func NewPingresp() *Pingresp {
+	return &Pingresp{
 		Header: *NewHeader(PINGRESP, pingrespVarPartLength),
 	}
 }
 
-func (m *PingrespMessage) Write(w io.Writer) error {
+func (m *Pingresp) Write(w io.Writer) error {
 	buf := m.Header.pack()
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *PingrespMessage) Unpack(r io.Reader) error {
+func (m *Pingresp) Unpack(r io.Reader) error {
 	return nil
 }
 
-func (m PingrespMessage) String() string {
+func (m Pingresp) String() string {
 	return "PINGRESP"
 }

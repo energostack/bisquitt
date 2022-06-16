@@ -7,7 +7,7 @@ import (
 
 const registerHeaderLength uint16 = 4
 
-type RegisterMessage struct {
+type Register struct {
 	Header
 	MessageIDProperty
 	TopicID   uint16
@@ -15,8 +15,8 @@ type RegisterMessage struct {
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewRegisterMessage(topicID uint16, topicName string) *RegisterMessage {
-	m := &RegisterMessage{
+func NewRegister(topicID uint16, topicName string) *Register {
+	m := &Register{
 		Header:    *NewHeader(REGISTER, 0),
 		TopicID:   topicID,
 		TopicName: topicName,
@@ -25,12 +25,12 @@ func NewRegisterMessage(topicID uint16, topicName string) *RegisterMessage {
 	return m
 }
 
-func (m *RegisterMessage) computeLength() {
+func (m *Register) computeLength() {
 	topicLength := uint16(len(m.TopicName))
 	m.Header.SetVarPartLength(registerHeaderLength + topicLength)
 }
 
-func (m *RegisterMessage) Write(w io.Writer) error {
+func (m *Register) Write(w io.Writer) error {
 	m.computeLength()
 
 	buf := m.Header.pack()
@@ -42,7 +42,7 @@ func (m *RegisterMessage) Write(w io.Writer) error {
 	return err
 }
 
-func (m *RegisterMessage) Unpack(r io.Reader) (err error) {
+func (m *Register) Unpack(r io.Reader) (err error) {
 	if m.TopicID, err = readUint16(r); err != nil {
 		return
 	}
@@ -59,7 +59,7 @@ func (m *RegisterMessage) Unpack(r io.Reader) (err error) {
 	return
 }
 
-func (m RegisterMessage) String() string {
+func (m Register) String() string {
 	return fmt.Sprintf("REGISTER(TopicName=%#v, TopicID=%d, MessageID=%d)", string(m.TopicName),
 		m.TopicID, m.messageID)
 }

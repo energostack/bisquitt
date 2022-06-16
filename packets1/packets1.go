@@ -215,61 +215,61 @@ func ReadPacket(r io.Reader) (m Message, err error) {
 func NewMessageWithHeader(h Header) (m Message) {
 	switch h.msgType {
 	case ADVERTISE:
-		m = &AdvertiseMessage{Header: h}
+		m = &Advertise{Header: h}
 	case SEARCHGW:
-		m = &SearchGwMessage{Header: h}
+		m = &SearchGw{Header: h}
 	case GWINFO:
-		m = &GwInfoMessage{Header: h}
+		m = &GwInfo{Header: h}
 	case AUTH:
-		m = &AuthMessage{Header: h}
+		m = &Auth{Header: h}
 	case CONNECT:
-		m = &ConnectMessage{Header: h}
+		m = &Connect{Header: h}
 	case CONNACK:
-		m = &ConnackMessage{Header: h}
+		m = &Connack{Header: h}
 	case WILLTOPICREQ:
-		m = &WillTopicReqMessage{Header: h}
+		m = &WillTopicReq{Header: h}
 	case WILLTOPIC:
-		m = &WillTopicMessage{Header: h}
+		m = &WillTopic{Header: h}
 	case WILLMSGREQ:
-		m = &WillMsgReqMessage{Header: h}
+		m = &WillMsgReq{Header: h}
 	case WILLMSG:
-		m = &WillMsgMessage{Header: h}
+		m = &WillMsg{Header: h}
 	case REGISTER:
-		m = &RegisterMessage{Header: h}
+		m = &Register{Header: h}
 	case REGACK:
-		m = &RegackMessage{Header: h}
+		m = &Regack{Header: h}
 	case PUBLISH:
-		m = &PublishMessage{Header: h}
+		m = &Publish{Header: h}
 	case PUBACK:
-		m = &PubackMessage{Header: h}
+		m = &Puback{Header: h}
 	case PUBCOMP:
-		m = &PubcompMessage{Header: h}
+		m = &Pubcomp{Header: h}
 	case PUBREC:
-		m = &PubrecMessage{Header: h}
+		m = &Pubrec{Header: h}
 	case PUBREL:
-		m = &PubrelMessage{Header: h}
+		m = &Pubrel{Header: h}
 	case SUBSCRIBE:
-		m = &SubscribeMessage{Header: h}
+		m = &Subscribe{Header: h}
 	case SUBACK:
-		m = &SubackMessage{Header: h}
+		m = &Suback{Header: h}
 	case UNSUBSCRIBE:
-		m = &UnsubscribeMessage{Header: h}
+		m = &Unsubscribe{Header: h}
 	case UNSUBACK:
-		m = &UnsubackMessage{Header: h}
+		m = &Unsuback{Header: h}
 	case PINGREQ:
-		m = &PingreqMessage{Header: h}
+		m = &Pingreq{Header: h}
 	case PINGRESP:
-		m = &PingrespMessage{Header: h}
+		m = &Pingresp{Header: h}
 	case DISCONNECT:
-		m = &DisconnectMessage{Header: h}
+		m = &Disconnect{Header: h}
 	case WILLTOPICUPD:
-		m = &WillTopicUpdateMessage{Header: h}
+		m = &WillTopicUpdate{Header: h}
 	case WILLTOPICRESP:
-		m = &WillTopicRespMessage{Header: h}
+		m = &WillTopicResp{Header: h}
 	case WILLMSGUPD:
-		m = &WillMsgUpdateMessage{Header: h}
+		m = &WillMsgUpdate{Header: h}
 	case WILLMSGRESP:
-		m = &WillMsgRespMessage{Header: h}
+		m = &WillMsgResp{Header: h}
 	}
 	return
 }
