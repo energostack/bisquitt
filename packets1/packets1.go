@@ -1,5 +1,5 @@
-// Package messages implements MQTT-SN version 1.2 messages structs.
-package messages
+// Package packets1 implements MQTT-SN version 1.2 messages structs.
+package packets1
 
 import (
 	"bytes"

@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ func TestUnsubscribeStruct(t *testing.T) {
 	msg := NewUnsubscribeMessage(topicID, topicIDType, topicName)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*messages.UnsubscribeMessage", reflect.TypeOf(msg).String(), "Type should be UnsubscribeMessage")
+		assert.Equal(t, "*packets1.UnsubscribeMessage", reflect.TypeOf(msg).String(), "Type should be UnsubscribeMessage")
 		assert.Equal(t, topicIDType, msg.TopicIDType, "Bad TopicIDType value")
 		assert.Equal(t, topicID, msg.TopicID, "Bad TopicID value")
 		assert.Equal(t, uint16(0), msg.MessageID(), "Default MessageID should be 0")

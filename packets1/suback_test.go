@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ func TestSubackStruct(t *testing.T) {
 	msg := NewSubackMessage(topicID, qos, returnCode)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*messages.SubackMessage", reflect.TypeOf(msg).String(), "Type should be SubackMessage")
+		assert.Equal(t, "*packets1.SubackMessage", reflect.TypeOf(msg).String(), "Type should be SubackMessage")
 		assert.Equal(t, uint16(8), msg.MessageLength(), "Default Length should be 8")
 		assert.Equal(t, qos, msg.QOS, "Bad QOS value")
 		assert.Equal(t, RC_ACCEPTED, msg.ReturnCode, "ReturnCode should be RC_ACCEPTED")

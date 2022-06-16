@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 type MessageIDProperty struct {
 	messageID uint16

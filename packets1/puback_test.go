@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ func TestPubackStruct(t *testing.T) {
 	msg := NewPubackMessage(topicID, RC_ACCEPTED)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*messages.PubackMessage", reflect.TypeOf(msg).String(), "Type should be PubackMessage")
+		assert.Equal(t, "*packets1.PubackMessage", reflect.TypeOf(msg).String(), "Type should be PubackMessage")
 		assert.Equal(t, topicID, msg.TopicID, fmt.Sprintf("TopicID should be %d", topicID))
 		assert.Equal(t, uint16(0), msg.MessageID(), "Default MessageID should be 0")
 		assert.Equal(t, RC_ACCEPTED, msg.ReturnCode, "ReturnCode should be RC_ACCEPTED")

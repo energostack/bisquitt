@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ func TestDisconnectStruct(t *testing.T) {
 	msg := NewDisconnectMessage(duration)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*messages.DisconnectMessage", reflect.TypeOf(msg).String(), "Type should be DisconnectMessage")
+		assert.Equal(t, "*packets1.DisconnectMessage", reflect.TypeOf(msg).String(), "Type should be DisconnectMessage")
 		assert.Equal(t, duration, msg.Duration, "Bad Duration value")
 	}
 }

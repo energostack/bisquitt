@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ func TestGwInfoStruct(t *testing.T) {
 	msg := NewGwInfoMessage(gatewayID, gatewayAddress)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*messages.GwInfoMessage", reflect.TypeOf(msg).String(), "Type should be GwInfoMessage")
+		assert.Equal(t, "*packets1.GwInfoMessage", reflect.TypeOf(msg).String(), "Type should be GwInfoMessage")
 		assert.Equal(t, gatewayID, msg.GatewayID, "Bad GatewayID value")
 		assert.Equal(t, gatewayAddress, msg.GatewayAddress, "Bad GatewayAddress value")
 	}

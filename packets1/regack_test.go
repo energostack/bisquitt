@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ func TestRegackStruct(t *testing.T) {
 	msg := NewRegackMessage(topicID, returnCode)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*messages.RegackMessage", reflect.TypeOf(msg).String(), "Type should be RegackMessage")
+		assert.Equal(t, "*packets1.RegackMessage", reflect.TypeOf(msg).String(), "Type should be RegackMessage")
 		assert.Equal(t, uint16(7), msg.MessageLength(), "Default Length should be 7")
 		assert.Equal(t, topicID, msg.TopicID, "Bad TopicID value")
 		assert.Equal(t, uint16(0), msg.MessageID(), "Default MessageID should be 0")

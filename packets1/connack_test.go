@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ func TestConnackStruct(t *testing.T) {
 	msg := NewConnackMessage(RC_ACCEPTED)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*messages.ConnackMessage", reflect.TypeOf(msg).String(), "Type should be ConnackMessage")
+		assert.Equal(t, "*packets1.ConnackMessage", reflect.TypeOf(msg).String(), "Type should be ConnackMessage")
 		assert.Equal(t, RC_ACCEPTED, msg.ReturnCode, "ReturnCode should be RC_ACCEPTED")
 		assert.Equal(t, uint16(3), msg.MessageLength(), "Length should be 3")
 	}

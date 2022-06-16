@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ func TestWillMsgRespStruct(t *testing.T) {
 	msg := NewWillMsgRespMessage(RC_ACCEPTED)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*messages.WillMsgRespMessage", reflect.TypeOf(msg).String(), "Type should be WillMsgRespMessage")
+		assert.Equal(t, "*packets1.WillMsgRespMessage", reflect.TypeOf(msg).String(), "Type should be WillMsgRespMessage")
 		assert.Equal(t, RC_ACCEPTED, msg.ReturnCode, "Default ReturnCode should be RC_ACCEPTED")
 	}
 }
