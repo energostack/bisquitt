@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ func TestPingreqStruct(t *testing.T) {
 	msg := NewPingreqMessage(clientID)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*messages.PingreqMessage", reflect.TypeOf(msg).String(), "Type should be PingreqMessage")
+		assert.Equal(t, "*packets1.PingreqMessage", reflect.TypeOf(msg).String(), "Type should be PingreqMessage")
 		assert.Equal(t, clientID, msg.ClientID, "Bad ClientID value")
 	}
 }

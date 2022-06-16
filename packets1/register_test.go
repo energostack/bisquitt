@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ func TestRegisterStruct(t *testing.T) {
 	msg := NewRegisterMessage(topicID, topic)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*messages.RegisterMessage", reflect.TypeOf(msg).String(), "Type should be RegisterMessage")
+		assert.Equal(t, "*packets1.RegisterMessage", reflect.TypeOf(msg).String(), "Type should be RegisterMessage")
 		assert.Equal(t, topicID, msg.TopicID, "Bad TopicID value")
 		assert.Equal(t, uint16(0), msg.MessageID(), "Default MessageID should be 0")
 		assert.Equal(t, topic, msg.TopicName, "Bad TopicName value")

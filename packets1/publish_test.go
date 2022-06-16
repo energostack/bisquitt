@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ func TestPublishStruct(t *testing.T) {
 	msg := NewPublishMessage(topicID, topicIDType, payload, qos, retain, dup)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*messages.PublishMessage", reflect.TypeOf(msg).String(), "Type should be PublishMessage")
+		assert.Equal(t, "*packets1.PublishMessage", reflect.TypeOf(msg).String(), "Type should be PublishMessage")
 		assert.Equal(t, dup, msg.DUP(), "Bad Dup flag value")
 		assert.Equal(t, retain, msg.Retain, "Bad Retain flag value")
 		assert.Equal(t, qos, msg.QOS, "Bad QOS value")

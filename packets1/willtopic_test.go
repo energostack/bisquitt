@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ func TestWillTopicStruct(t *testing.T) {
 	msg := NewWillTopicMessage(willTopic, qos, retain)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*messages.WillTopicMessage", reflect.TypeOf(msg).String(), "Type should be WillTopicMessage")
+		assert.Equal(t, "*packets1.WillTopicMessage", reflect.TypeOf(msg).String(), "Type should be WillTopicMessage")
 		assert.Equal(t, qos, msg.QOS, "Bad QOS value")
 		assert.Equal(t, retain, msg.Retain, "Bad Retain flag value")
 		assert.Equal(t, willTopic, msg.WillTopic, "Bad WillTopic value")

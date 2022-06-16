@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ func TestWillTopicRespStruct(t *testing.T) {
 	msg := NewWillTopicRespMessage(RC_ACCEPTED)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*messages.WillTopicRespMessage", reflect.TypeOf(msg).String(), "Type should be WillTopicRespMessage")
+		assert.Equal(t, "*packets1.WillTopicRespMessage", reflect.TypeOf(msg).String(), "Type should be WillTopicRespMessage")
 		assert.Equal(t, RC_ACCEPTED, msg.ReturnCode, "ReturnCode should be RC_ACCEPTED")
 	}
 }

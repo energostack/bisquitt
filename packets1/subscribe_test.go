@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 import (
 	"bytes"
@@ -17,7 +17,7 @@ func TestSubscribeStruct(t *testing.T) {
 	msg := NewSubscribeMessage(topicID, topicIDType, topicName, qos, dup)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*messages.SubscribeMessage", reflect.TypeOf(msg).String(), "Type should be SubscribeMessage")
+		assert.Equal(t, "*packets1.SubscribeMessage", reflect.TypeOf(msg).String(), "Type should be SubscribeMessage")
 		assert.Equal(t, dup, msg.DUP(), "Bad Dup flag value")
 		assert.Equal(t, qos, msg.QOS, "Bad QOS value")
 		assert.Equal(t, topicIDType, msg.TopicIDType, "Bad TopicIDType value")

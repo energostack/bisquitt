@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ func TestAdvertiseStruct(t *testing.T) {
 	msg := NewAdvertiseMessage(gatewayID, duration)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*messages.AdvertiseMessage", reflect.TypeOf(msg).String(), "Type should be AdvertiseMessage")
+		assert.Equal(t, "*packets1.AdvertiseMessage", reflect.TypeOf(msg).String(), "Type should be AdvertiseMessage")
 		assert.Equal(t, gatewayID, msg.GatewayID, "Bad GatewayID")
 		assert.Equal(t, duration, msg.Duration, "Bad Duration value")
 		assert.Equal(t, uint16(5), msg.MessageLength(), "Length should be 5")

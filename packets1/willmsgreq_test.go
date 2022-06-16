@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ func TestWillMsgReqStruct(t *testing.T) {
 	msg := NewWillMsgReqMessage()
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*messages.WillMsgReqMessage", reflect.TypeOf(msg).String(), "Type should be WillMsgReqMessage")
+		assert.Equal(t, "*packets1.WillMsgReqMessage", reflect.TypeOf(msg).String(), "Type should be WillMsgReqMessage")
 	}
 }
 

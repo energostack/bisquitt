@@ -1,4 +1,4 @@
-package messages
+package packets1
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ func TestSearchGwStruct(t *testing.T) {
 	msg := NewSearchGwMessage(radius)
 
 	if assert.NotNil(t, msg, "New message should not be nil") {
-		assert.Equal(t, "*messages.SearchGwMessage", reflect.TypeOf(msg).String(), "Type should be SearchGwMessage")
+		assert.Equal(t, "*packets1.SearchGwMessage", reflect.TypeOf(msg).String(), "Type should be SearchGwMessage")
 		assert.Equal(t, uint16(3), msg.MessageLength(), "Default Length should be 3")
 		assert.Equal(t, radius, msg.Radius, "Bad Radius value")
 	}
