@@ -107,7 +107,7 @@ const (
 
 type Header struct {
 	// Whole packet length (fixed header + variable part).
-	msgLength uint16
+	pktLength uint16
 	msgType   MessageType
 }
 
@@ -124,9 +124,9 @@ func NewHeader(msgType MessageType, varPartLength uint16) *Header {
 // See MQTT-SN specification v. 1.2, chapter 5.2 General Message Format.
 func (h *Header) SetVarPartLength(length uint16) {
 	if length+shortHeaderLength <= 255 {
-		h.msgLength = length + shortHeaderLength
+		h.pktLength = length + shortHeaderLength
 	} else {
-		h.msgLength = length + longHeaderLength
+		h.pktLength = length + longHeaderLength
 	}
 }
 
@@ -134,21 +134,21 @@ func (h *Header) SetVarPartLength(length uint16) {
 //
 // See MQTT-SN specification v. 1.2, chapter 5.2 General Message Format.
 func (h *Header) VarPartLength() uint16 {
-	return h.msgLength - h.HeaderLength()
+	return h.pktLength - h.HeaderLength()
 }
 
-// MessageLength returns the whole packet length (including header).
+// PacketLength returns the whole packet length (including header).
 //
 // See MQTT-SN specification v. 1.2, chapter 5.2 General Message Format.
-func (h *Header) MessageLength() uint16 {
-	return h.msgLength
+func (h *Header) PacketLength() uint16 {
+	return h.pktLength
 }
 
 // HeaderLength returns packet header length.
 //
 // See MQTT-SN specification v. 1.2, chapter 5.2 General Message Format.
 func (h *Header) HeaderLength() uint16 {
-	if h.msgLength <= 255 {
+	if h.pktLength <= 255 {
 		return shortHeaderLength
 	} else {
 		return longHeaderLength
@@ -164,12 +164,12 @@ func (h *Header) Unpack(b io.Reader) error {
 
 	if lengthByte == longPacketFlag {
 		// Long packet (>255B)
-		if h.msgLength, err = readUint16(b); err != nil {
+		if h.pktLength, err = readUint16(b); err != nil {
 			return err
 		}
 	} else {
 		// Short packet (<=255B)
-		h.msgLength = uint16(lengthByte)
+		h.pktLength = uint16(lengthByte)
 	}
 
 	var msgTypeByte uint8
@@ -181,11 +181,11 @@ func (h *Header) Unpack(b io.Reader) error {
 func (h *Header) pack() bytes.Buffer {
 	var buff bytes.Buffer
 
-	if h.msgLength > 255 {
+	if h.pktLength > 255 {
 		buff.WriteByte(longPacketFlag)
-		buff.Write(encodeUint16(h.msgLength))
+		buff.Write(encodeUint16(h.pktLength))
 	} else {
-		buff.WriteByte(byte(h.msgLength))
+		buff.WriteByte(byte(h.pktLength))
 	}
 	buff.WriteByte(byte(h.msgType))
 

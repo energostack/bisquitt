@@ -17,7 +17,7 @@ func TestAdvertiseStruct(t *testing.T) {
 		assert.Equal(t, "*packets1.Advertise", reflect.TypeOf(msg).String(), "Type should be Advertise")
 		assert.Equal(t, gatewayID, msg.GatewayID, "Bad GatewayID")
 		assert.Equal(t, duration, msg.Duration, "Bad Duration value")
-		assert.Equal(t, uint16(5), msg.MessageLength(), "Length should be 5")
+		assert.Equal(t, uint16(5), msg.PacketLength(), "Length should be 5")
 	}
 }
 
