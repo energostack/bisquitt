@@ -19,7 +19,7 @@ import (
 type brokerPublishQOS2Transaction struct {
 	*transactions.TransactionBase
 	client  *Client
-	publish *pkts.PublishMessage
+	publish *pkts.Publish
 }
 
 func newBrokerPublishQOS2Transaction(client *Client, msgID uint16) *brokerPublishQOS2Transaction {
@@ -36,15 +36,15 @@ func newBrokerPublishQOS2Transaction(client *Client, msgID uint16) *brokerPublis
 	}
 }
 
-func (t *brokerPublishQOS2Transaction) Publish(publish *pkts.PublishMessage) error {
+func (t *brokerPublishQOS2Transaction) Publish(publish *pkts.Publish) error {
 	t.publish = publish
-	pubrec := pkts.NewPubrecMessage()
+	pubrec := pkts.NewPubrec()
 	pubrec.CopyMessageID(publish)
 	return t.client.send(pubrec)
 }
 
-func (t *brokerPublishQOS2Transaction) Pubrel(pubrel *pkts.PubrelMessage) error {
-	pubcomp := pkts.NewPubcompMessage()
+func (t *brokerPublishQOS2Transaction) Pubrel(pubrel *pkts.Pubrel) error {
+	pubcomp := pkts.NewPubcomp()
 	pubcomp.CopyMessageID(pubrel)
 	topic, err := t.client.topicForPublish(t.publish)
 	if err != nil {

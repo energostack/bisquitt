@@ -29,7 +29,7 @@ func newConnectTransaction(ctx context.Context, client *Client) *connectTransact
 	}
 }
 
-func (t *connectTransaction) Connack(connack *pkts.ConnackMessage) {
+func (t *connectTransaction) Connack(connack *pkts.Connack) {
 	if connack.ReturnCode != pkts.RC_ACCEPTED {
 		t.Fail(fmt.Errorf("connection rejected: %s", connack.ReturnCode))
 		return

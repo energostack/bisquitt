@@ -91,7 +91,7 @@ func (c *Client) receiveLoop(ctx context.Context) error {
 	}
 }
 
-func (c *Client) topicForPublish(msg *pkts.PublishMessage) (string, error) {
+func (c *Client) topicForPublish(msg *pkts.Publish) (string, error) {
 	var topic string
 	switch msg.TopicIDType {
 	case pkts.TIT_REGISTERED:
@@ -120,7 +120,7 @@ func (c *Client) topicForPublish(msg *pkts.PublishMessage) (string, error) {
 
 func (c *Client) handlePacket(msgx pkts.Message) error {
 	switch msg := msgx.(type) {
-	case *pkts.ConnackMessage:
+	case *pkts.Connack:
 		transactionx, _ := c.transactions.GetByType(pkts.CONNECT)
 		transaction, ok := transactionx.(*connectTransaction)
 		if !ok {
@@ -130,7 +130,7 @@ func (c *Client) handlePacket(msgx pkts.Message) error {
 		transaction.Connack(msg)
 		return nil
 
-	case *pkts.RegisterMessage:
+	case *pkts.Register:
 		c.registeredTopicsLock.Lock()
 		// MQTT-SN specification v. 1.2 does not specify what to do if
 		// the REGISTER message contains an already registered TopicID.
@@ -145,11 +145,11 @@ func (c *Client) handlePacket(msgx pkts.Message) error {
 		}
 		c.registeredTopicsLock.Unlock()
 
-		reply := pkts.NewRegackMessage(msg.TopicID, returnCode)
+		reply := pkts.NewRegack(msg.TopicID, returnCode)
 		reply.CopyMessageID(msg)
 		return c.send(reply)
 
-	case *pkts.RegackMessage:
+	case *pkts.Regack:
 		transactionx, _ := c.transactions.Get(msg.MessageID())
 		transaction, ok := transactionx.(*registerTransaction)
 		if !ok {
@@ -159,7 +159,7 @@ func (c *Client) handlePacket(msgx pkts.Message) error {
 		transaction.Regack(msg)
 		return nil
 
-	case *pkts.SubackMessage:
+	case *pkts.Suback:
 		transactionx, _ := c.transactions.Get(msg.MessageID())
 		transaction, ok := transactionx.(*subscribeTransaction)
 		if !ok {
@@ -169,7 +169,7 @@ func (c *Client) handlePacket(msgx pkts.Message) error {
 		transaction.Suback(msg)
 		return nil
 
-	case *pkts.UnsubackMessage:
+	case *pkts.Unsuback:
 		transactionx, _ := c.transactions.Get(msg.MessageID())
 		transaction, ok := transactionx.(*unsubscribeTransaction)
 		if !ok {
@@ -180,12 +180,12 @@ func (c *Client) handlePacket(msgx pkts.Message) error {
 		return nil
 
 	// Broker PUBLISH QoS 0,1,2 transaction.
-	case *pkts.PublishMessage:
+	case *pkts.Publish:
 		switch msg.QOS {
 		case 0:
 			// continue
 		case 1:
-			puback := pkts.NewPubackMessage(msg.TopicID, pkts.RC_ACCEPTED)
+			puback := pkts.NewPuback(msg.TopicID, pkts.RC_ACCEPTED)
 			puback.CopyMessageID(msg)
 			if err := c.send(puback); err != nil {
 				return err
@@ -217,7 +217,7 @@ func (c *Client) handlePacket(msgx pkts.Message) error {
 		return nil
 
 	// Broker PUBLISH QoS 2 transaction.
-	case *pkts.PubrelMessage:
+	case *pkts.Pubrel:
 		transactionx, _ := c.transactions.Get(msg.MessageID())
 		transaction, ok := transactionx.(*brokerPublishQOS2Transaction)
 		if !ok {
@@ -228,7 +228,7 @@ func (c *Client) handlePacket(msgx pkts.Message) error {
 		return nil
 
 	// Client PUBLISH QoS 1 transaction.
-	case *pkts.PubackMessage:
+	case *pkts.Puback:
 		transactionx, _ := c.transactions.Get(msg.MessageID())
 		transaction, ok := transactionx.(*publishQOS1Transaction)
 		if !ok {
@@ -239,7 +239,7 @@ func (c *Client) handlePacket(msgx pkts.Message) error {
 		return nil
 
 	// Client PUBLISH QoS 2 transaction.
-	case *pkts.PubrecMessage:
+	case *pkts.Pubrec:
 		transactionx, _ := c.transactions.Get(msg.MessageID())
 		transaction, ok := transactionx.(*publishQOS2Transaction)
 		if !ok {
@@ -249,7 +249,7 @@ func (c *Client) handlePacket(msgx pkts.Message) error {
 		return transaction.Pubrec(msg)
 
 	// Client PUBLISH QoS 2 transaction.
-	case *pkts.PubcompMessage:
+	case *pkts.Pubcomp:
 		transactionx, _ := c.transactions.Get(msg.MessageID())
 		transaction, ok := transactionx.(*publishQOS2Transaction)
 		if !ok {
@@ -259,7 +259,7 @@ func (c *Client) handlePacket(msgx pkts.Message) error {
 		transaction.Pubcomp(msg)
 		return nil
 
-	case *pkts.DisconnectMessage:
+	case *pkts.Disconnect:
 		transactionx, ok := c.transactions.GetByType(pkts.DISCONNECT)
 		if !ok {
 			// Unsolicited DISCONNECT from broker.
@@ -278,15 +278,15 @@ func (c *Client) handlePacket(msgx pkts.Message) error {
 		transaction.Disconnect(msg)
 		return nil
 
-	case *pkts.WillTopicReqMessage:
-		willTopic := pkts.NewWillTopicMessage(c.cfg.WillTopic, c.cfg.WillQOS, c.cfg.WillRetained)
+	case *pkts.WillTopicReq:
+		willTopic := pkts.NewWillTopic(c.cfg.WillTopic, c.cfg.WillQOS, c.cfg.WillRetained)
 		return c.send(willTopic)
 
-	case *pkts.WillMsgReqMessage:
-		willMsg := pkts.NewWillMsgMessage(c.cfg.WillPayload)
+	case *pkts.WillMsgReq:
+		willMsg := pkts.NewWillMsg(c.cfg.WillPayload)
 		return c.send(willMsg)
 
-	case *pkts.PingrespMessage:
+	case *pkts.Pingresp:
 		transactionx, ok := c.transactions.GetByType(pkts.PINGREQ)
 		if !ok {
 			// Sleep transaction.

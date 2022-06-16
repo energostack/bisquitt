@@ -28,10 +28,10 @@ type transaction struct {
 
 // Transactions involving DISCONNECT message.
 type transactionWithDisconnect interface {
-	Disconnect(*pkts.DisconnectMessage)
+	Disconnect(*pkts.Disconnect)
 }
 
 // Transactions involving PINGRESP message.
 type transactionWithPingresp interface {
-	Pingresp(pingresp *pkts.PingrespMessage)
+	Pingresp(pingresp *pkts.Pingresp)
 }

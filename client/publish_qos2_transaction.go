@@ -33,12 +33,12 @@ func newPublishQOS2Transaction(client *Client, msgID uint16) *publishQOS2Transac
 	}
 }
 
-func (t *publishQOS2Transaction) Pubrec(pubrec *pkts.PubrecMessage) error {
+func (t *publishQOS2Transaction) Pubrec(pubrec *pkts.Pubrec) error {
 	if t.State != awaitingPubrec {
 		t.log.Debug("Unexpected message in %d: %v", t.State, pubrec)
 		return nil
 	}
-	pubrel := pkts.NewPubrelMessage()
+	pubrel := pkts.NewPubrel()
 	pubrel.CopyMessageID(pubrec)
 	t.Proceed(awaitingPubcomp, pubrel)
 	if err := t.client.send(pubrel); err != nil {
@@ -47,7 +47,7 @@ func (t *publishQOS2Transaction) Pubrec(pubrec *pkts.PubrecMessage) error {
 	return nil
 }
 
-func (t *publishQOS2Transaction) Pubcomp(pubcomp *pkts.PubcompMessage) {
+func (t *publishQOS2Transaction) Pubcomp(pubcomp *pkts.Pubcomp) {
 	if t.State != awaitingPubcomp {
 		t.log.Debug("Unexpected message in %d: %v", t.State, pubcomp)
 		return

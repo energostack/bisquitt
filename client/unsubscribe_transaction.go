@@ -34,9 +34,9 @@ func newUnsubscribeTransaction(client *Client, msgID uint16) *unsubscribeTransac
 	}
 }
 
-func (t *unsubscribeTransaction) Unsuback(_ *pkts.UnsubackMessage) {
+func (t *unsubscribeTransaction) Unsuback(_ *pkts.Unsuback) {
 	var topicName string
-	unsubscribe := t.Data.(*pkts.UnsubscribeMessage)
+	unsubscribe := t.Data.(*pkts.Unsubscribe)
 
 	switch unsubscribe.TopicIDType {
 	case pkts.TIT_STRING:

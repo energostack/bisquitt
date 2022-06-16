@@ -33,7 +33,7 @@ func newPublishQOS1Transaction(client *Client, msgID uint16) *publishQOS1Transac
 	}
 }
 
-func (t *publishQOS1Transaction) Puback(puback *pkts.PubackMessage) {
+func (t *publishQOS1Transaction) Puback(puback *pkts.Puback) {
 	if t.State != awaitingPuback {
 		t.log.Debug("Unexpected message in %d: %v", t.State, puback)
 		return

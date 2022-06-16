@@ -302,13 +302,13 @@ func (c *Client) notifyStateChange(s util.ClientState) {
 // MQTT-SN specification, this must be the first message the client sends
 // unless it's a PUBLISH message with QoS = -1.
 func (c *Client) Connect() error {
-	connect := pkts.NewConnectMessage(
+	connect := pkts.NewConnect(
 		[]byte(c.cfg.ClientID),
 		c.cfg.CleanSession,
 		c.cfg.WillTopic != "",
 		uint16(c.cfg.KeepAlive.Seconds()))
 
-	var auth *pkts.AuthMessage
+	var auth *pkts.Auth
 	if c.cfg.User != "" {
 		auth = pkts.NewAuthPlain(c.cfg.User, c.cfg.Password)
 	}
@@ -349,7 +349,7 @@ func (c *Client) Connect() error {
 func (c *Client) Register(topic string) error {
 	msgID, _ := c.msgID.Next()
 	transaction := newRegisterTransaction(c, msgID, topic)
-	register := pkts.NewRegisterMessage(0, topic)
+	register := pkts.NewRegister(0, topic)
 	register.SetMessageID(msgID)
 	c.transactions.Store(msgID, transaction)
 	transaction.Proceed(nil, register)
@@ -367,7 +367,7 @@ func (c *Client) Register(topic string) error {
 func (c *Client) subscribe(topicName string, topicIDType uint8, topicID uint16, qos uint8, callback MessageHandlerFunc) error {
 	msgID, _ := c.msgID.Next()
 	transaction := newSubscribeTransaction(c, msgID, callback)
-	subscribe := pkts.NewSubscribeMessage(topicID, topicIDType, []byte(topicName), qos, false)
+	subscribe := pkts.NewSubscribe(topicID, topicIDType, []byte(topicName), qos, false)
 	subscribe.SetMessageID(msgID)
 	c.transactions.Store(msgID, transaction)
 	transaction.Proceed(nil, subscribe)
@@ -402,7 +402,7 @@ func (c *Client) SubscribePredefined(topicID uint16, qos uint8, callback Message
 func (c *Client) unsubscribe(topicName string, topicIDType uint8, topicID uint16) error {
 	msgID, _ := c.msgID.Next()
 	transaction := newUnsubscribeTransaction(c, msgID)
-	unsubscribe := pkts.NewUnsubscribeMessage(topicID, topicIDType, []byte(topicName))
+	unsubscribe := pkts.NewUnsubscribe(topicID, topicIDType, []byte(topicName))
 	unsubscribe.SetMessageID(msgID)
 	c.transactions.Store(msgID, transaction)
 	transaction.Proceed(nil, unsubscribe)
@@ -433,7 +433,7 @@ func (c *Client) UnsubscribePredefined(topicID uint16) error {
 }
 
 func (c *Client) publish(topicIDType uint8, topicID uint16, qos uint8, retain bool, payload []byte) error {
-	publish := pkts.NewPublishMessage(topicID, topicIDType, payload, qos, retain, false)
+	publish := pkts.NewPublish(topicID, topicIDType, payload, qos, retain, false)
 	msgID, _ := c.msgID.Next()
 	publish.SetMessageID(msgID)
 
@@ -494,7 +494,7 @@ func (c *Client) PublishPredefined(topicID uint16, qos uint8, retain bool, paylo
 // Ping sends a PING message to the MQTT-SN gateway.
 func (c *Client) Ping() error {
 	transaction := newPingTransaction(c)
-	ping := pkts.NewPingreqMessage(nil)
+	ping := pkts.NewPingreq(nil)
 	c.transactions.StoreByType(pkts.PINGREQ, transaction)
 	transaction.Proceed(nil, ping)
 	if err := c.send(ping); err != nil {
@@ -535,7 +535,7 @@ func (c *Client) Disconnect() error {
 		return nil
 	}
 	transaction := newDisconnectTransaction(c)
-	disconnect := pkts.NewDisconnectMessage(0)
+	disconnect := pkts.NewDisconnect(0)
 	c.transactions.StoreByType(pkts.DISCONNECT, transaction)
 	transaction.Proceed(awaitingDisconnect, disconnect)
 	if err := c.send(disconnect); err != nil {
