@@ -1,4 +1,4 @@
-// Package packets1 implements MQTT-SN version 1.2 messages structs.
+// Package packets1 implements MQTT-SN version 1.2 packets structs.
 package packets1
 
 import (
@@ -58,7 +58,7 @@ const (
 	TIT_SHORT
 )
 
-// Whole topic string included in the message (SUBSCRIBE message only).
+// Whole topic string included in the packet (SUBSCRIBE packet only).
 const TIT_STRING = uint8(0)
 
 // Return code constants.
@@ -106,7 +106,7 @@ const (
 )
 
 type Header struct {
-	// Whole message length (fixed header + variable part).
+	// Whole packet length (fixed header + variable part).
 	msgLength uint16
 	msgType   MessageType
 }
@@ -119,7 +119,7 @@ func NewHeader(msgType MessageType, varPartLength uint16) *Header {
 	return h
 }
 
-// SetVarPartLength sets the length of the message variable part.
+// SetVarPartLength sets the length of the packet variable part.
 //
 // See MQTT-SN specification v. 1.2, chapter 5.2 General Message Format.
 func (h *Header) SetVarPartLength(length uint16) {
@@ -130,21 +130,21 @@ func (h *Header) SetVarPartLength(length uint16) {
 	}
 }
 
-// VarPartLength returns the length of the message variable part.
+// VarPartLength returns the length of the packet variable part.
 //
 // See MQTT-SN specification v. 1.2, chapter 5.2 General Message Format.
 func (h *Header) VarPartLength() uint16 {
 	return h.msgLength - h.HeaderLength()
 }
 
-// MessageLength returns the whole message length (including header).
+// MessageLength returns the whole packet length (including header).
 //
 // See MQTT-SN specification v. 1.2, chapter 5.2 General Message Format.
 func (h *Header) MessageLength() uint16 {
 	return h.msgLength
 }
 
-// HeaderLength returns message header length.
+// HeaderLength returns packet header length.
 //
 // See MQTT-SN specification v. 1.2, chapter 5.2 General Message Format.
 func (h *Header) HeaderLength() uint16 {
@@ -155,7 +155,7 @@ func (h *Header) HeaderLength() uint16 {
 	}
 }
 
-// Unpack reads a message header from the given io.Reader.
+// Unpack reads a packet header from the given io.Reader.
 func (h *Header) Unpack(b io.Reader) error {
 	lengthByte, err := readByte(b)
 	if err != nil {
@@ -192,7 +192,7 @@ func (h *Header) pack() bytes.Buffer {
 	return buff
 }
 
-// ReadPacket reads an MQTT-SN message from the given io.Reader.
+// ReadPacket reads an MQTT-SN packet from the given io.Reader.
 func ReadPacket(r io.Reader) (m Message, err error) {
 	var h Header
 	packet := make([]byte, MaxPacketLen)
@@ -210,7 +210,7 @@ func ReadPacket(r io.Reader) (m Message, err error) {
 	return m, nil
 }
 
-// NewMessageWithHeader returns a particular message struct with a given header.
+// NewMessageWithHeader returns a particular packet struct with a given header.
 // The struct type is determined by h.msgType.
 func NewMessageWithHeader(h Header) (m Message) {
 	switch h.msgType {
@@ -337,7 +337,7 @@ const (
 	flagsDUPBit          = 0x80
 )
 
-// Message type constants.
+// MessageType constants.
 type MessageType uint8
 
 const (

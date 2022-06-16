@@ -15,7 +15,7 @@ func TestConnect(t *testing.T) {
 	duration := uint16(90)
 	msg := NewConnect(clientID, cleanSession, will, duration)
 
-	if assert.NotNil(t, msg, "New message should not be nil") {
+	if assert.NotNil(t, msg, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.Connect", reflect.TypeOf(msg).String(), "Type should be Connect")
 		assert.Equal(t, will, msg.Will, "Bad Will value")
 		assert.Equal(t, cleanSession, msg.CleanSession, "Bad CleanSession value")

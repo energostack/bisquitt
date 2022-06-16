@@ -13,7 +13,7 @@ func TestRegisterStruct(t *testing.T) {
 	topic := "test-topic"
 	msg := NewRegister(topicID, topic)
 
-	if assert.NotNil(t, msg, "New message should not be nil") {
+	if assert.NotNil(t, msg, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.Register", reflect.TypeOf(msg).String(), "Type should be Register")
 		assert.Equal(t, topicID, msg.TopicID, "Bad TopicID value")
 		assert.Equal(t, uint16(0), msg.MessageID(), "Default MessageID should be 0")

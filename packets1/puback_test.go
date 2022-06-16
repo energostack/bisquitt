@@ -13,7 +13,7 @@ func TestPubackStruct(t *testing.T) {
 	topicID := uint16(123)
 	msg := NewPuback(topicID, RC_ACCEPTED)
 
-	if assert.NotNil(t, msg, "New message should not be nil") {
+	if assert.NotNil(t, msg, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.Puback", reflect.TypeOf(msg).String(), "Type should be Puback")
 		assert.Equal(t, topicID, msg.TopicID, fmt.Sprintf("TopicID should be %d", topicID))
 		assert.Equal(t, uint16(0), msg.MessageID(), "Default MessageID should be 0")

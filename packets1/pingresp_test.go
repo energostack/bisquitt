@@ -11,7 +11,7 @@ import (
 func TestPingrespStruct(t *testing.T) {
 	msg := NewPingresp()
 
-	if assert.NotNil(t, msg, "New message should not be nil") {
+	if assert.NotNil(t, msg, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.Pingresp", reflect.TypeOf(msg).String(), "Type should be Pingresp")
 		assert.Equal(t, uint16(2), msg.MessageLength(), "Default Length should be 2")
 	}
