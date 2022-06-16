@@ -1,7 +1,7 @@
 package client
 
 import (
-	msgs "github.com/energomonitor/bisquitt/messages"
+	pkts "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
 
@@ -18,10 +18,10 @@ func newDisconnectTransaction(client *Client) *disconnectTransaction {
 				client.groupCtx, client.cfg.RetryDelay, client.cfg.RetryCount,
 				func(lastMsg interface{}) error {
 					tLog.Debug("Resend.")
-					return client.send(lastMsg.(msgs.Message))
+					return client.send(lastMsg.(pkts.Message))
 				},
 				func() {
-					client.transactions.DeleteByType(msgs.DISCONNECT)
+					client.transactions.DeleteByType(pkts.DISCONNECT)
 					tLog.Debug("Deleted.")
 				},
 			),
@@ -31,6 +31,6 @@ func newDisconnectTransaction(client *Client) *disconnectTransaction {
 	}
 }
 
-func (t *disconnectTransaction) Disconnect(disconnect *msgs.DisconnectMessage) {
+func (t *disconnectTransaction) Disconnect(disconnect *pkts.DisconnectMessage) {
 	t.Success()
 }

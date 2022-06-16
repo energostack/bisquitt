@@ -5,11 +5,11 @@ import (
 	"strings"
 	"sync"
 
-	msgs "github.com/energomonitor/bisquitt/messages"
+	pkts "github.com/energomonitor/bisquitt/packets1"
 )
 
 // Subscribed message handler callback type.
-type MessageHandlerFunc func(client *Client, topic string, msg *msgs.PublishMessage)
+type MessageHandlerFunc func(client *Client, topic string, msg *pkts.PublishMessage)
 
 type messageHandler struct {
 	route    []string
@@ -31,7 +31,7 @@ func (mhs *messageHandlers) delete(route []string) {
 	mhs.handlers.Delete(join(route))
 }
 
-func (mhs *messageHandlers) handle(client *Client, topic string, msg *msgs.PublishMessage) {
+func (mhs *messageHandlers) handle(client *Client, topic string, msg *pkts.PublishMessage) {
 	var callback MessageHandlerFunc
 	route := split(topic)
 	mhs.handlers.Range(func(key, value interface{}) bool {

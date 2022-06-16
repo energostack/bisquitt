@@ -13,7 +13,7 @@ import (
 	"fmt"
 
 	mqttPackets "github.com/eclipse/paho.mqtt.golang/packets"
-	snMsgs "github.com/energomonitor/bisquitt/messages"
+	snPkts "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
 )
@@ -36,7 +36,7 @@ func newConnectTransaction(ctx context.Context, h *handler, authEnabled bool, mq
 		TimedTransaction: transactions.NewTimedTransaction(
 			ctx, connectTransactionTimeout,
 			func() {
-				h.transactions.DeleteByType(snMsgs.CONNECT)
+				h.transactions.DeleteByType(snPkts.CONNECT)
 				tLog.Debug("Deleted.")
 			},
 		),
@@ -72,16 +72,16 @@ func (t *connectTransaction) Start(ctx context.Context) error {
 
 	if t.mqConnect.WillFlag {
 		// Continue with WILLTOPICREQ.
-		return t.handler.snSend(snMsgs.NewWillTopicReqMessage())
+		return t.handler.snSend(snPkts.NewWillTopicReqMessage())
 	}
 
 	return t.handler.mqttSend(t.mqConnect)
 }
 
-func (t *connectTransaction) Auth(snMsg *snMsgs.AuthMessage) error {
+func (t *connectTransaction) Auth(snMsg *snPkts.AuthMessage) error {
 	// Extract username and password from PLAIN data.
-	if snMsg.Method == snMsgs.AUTH_PLAIN {
-		user, password, err := snMsgs.DecodePlain(snMsg)
+	if snMsg.Method == snPkts.AUTH_PLAIN {
+		user, password, err := snPkts.DecodePlain(snMsg)
 		if err != nil {
 			t.Fail(err)
 			return err
@@ -91,7 +91,7 @@ func (t *connectTransaction) Auth(snMsg *snMsgs.AuthMessage) error {
 		t.mqConnect.PasswordFlag = true
 		t.mqConnect.Password = password
 	} else {
-		if err := t.SendConnack(snMsgs.RC_NOT_SUPPORTED); err != nil {
+		if err := t.SendConnack(snPkts.RC_NOT_SUPPORTED); err != nil {
 			return err
 		}
 		err := fmt.Errorf("Unknown auth method: %#v.", snMsg.Method)
@@ -101,23 +101,23 @@ func (t *connectTransaction) Auth(snMsg *snMsgs.AuthMessage) error {
 
 	if t.mqConnect.WillFlag {
 		// Continue with WILLTOPICREQ.
-		return t.handler.snSend(snMsgs.NewWillTopicReqMessage())
+		return t.handler.snSend(snPkts.NewWillTopicReqMessage())
 	}
 
 	// All information successfully gathered - send MQTT connect.
 	return t.handler.mqttSend(t.mqConnect)
 }
 
-func (t *connectTransaction) WillTopic(snWillTopic *snMsgs.WillTopicMessage) error {
+func (t *connectTransaction) WillTopic(snWillTopic *snPkts.WillTopicMessage) error {
 	t.mqConnect.WillQos = snWillTopic.QOS
 	t.mqConnect.WillRetain = snWillTopic.Retain
 	t.mqConnect.WillTopic = snWillTopic.WillTopic
 
 	// Continue with WILLMSGREQ.
-	return t.handler.snSend(snMsgs.NewWillMsgReqMessage())
+	return t.handler.snSend(snPkts.NewWillMsgReqMessage())
 }
 
-func (t *connectTransaction) WillMsg(snWillMsg *snMsgs.WillMsgMessage) error {
+func (t *connectTransaction) WillMsg(snWillMsg *snPkts.WillMsgMessage) error {
 	t.mqConnect.WillMessage = snWillMsg.WillMsg
 
 	// All information successfully gathered - send MQTT connect.
@@ -128,7 +128,7 @@ func (t *connectTransaction) Connack(mqConnack *mqttPackets.ConnackPacket) error
 	if mqConnack.ReturnCode != mqttPackets.Accepted {
 		// We misuse RC_CONGESTION here because MQTT-SN spec v. 1.2 does not define
 		// any suitable return code.
-		if err := t.SendConnack(snMsgs.RC_CONGESTION); err != nil {
+		if err := t.SendConnack(snPkts.RC_CONGESTION); err != nil {
 			return err
 		}
 		returnCodeStr, ok := mqttPackets.ConnackReturnCodes[mqConnack.ReturnCode]
@@ -144,7 +144,7 @@ func (t *connectTransaction) Connack(mqConnack *mqttPackets.ConnackPacket) error
 
 	// Must be set before snSend to avoid race condition in tests.
 	t.handler.setState(util.StateActive)
-	if err := t.SendConnack(snMsgs.RC_ACCEPTED); err != nil {
+	if err := t.SendConnack(snPkts.RC_ACCEPTED); err != nil {
 		t.Fail(err)
 		return err
 	}
@@ -153,8 +153,8 @@ func (t *connectTransaction) Connack(mqConnack *mqttPackets.ConnackPacket) error
 }
 
 // Inform client that the CONNECT request was refused.
-func (t *connectTransaction) SendConnack(code snMsgs.ReturnCode) error {
-	snConnack := snMsgs.NewConnackMessage(code)
+func (t *connectTransaction) SendConnack(code snPkts.ReturnCode) error {
+	snConnack := snPkts.NewConnackMessage(code)
 	if err := t.handler.snSend(snConnack); err != nil {
 		t.Fail(err)
 		return err

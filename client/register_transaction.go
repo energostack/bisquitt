@@ -3,7 +3,7 @@ package client
 import (
 	"fmt"
 
-	msgs "github.com/energomonitor/bisquitt/messages"
+	pkts "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
 
@@ -20,7 +20,7 @@ func newRegisterTransaction(client *Client, msgID uint16, topic string) *registe
 				client.groupCtx, client.cfg.RetryDelay, client.cfg.RetryCount,
 				func(lastMsg interface{}) error {
 					tLog.Debug("Resend.")
-					return client.send(lastMsg.(msgs.Message))
+					return client.send(lastMsg.(pkts.Message))
 				},
 				func() {
 					client.transactions.Delete(msgID)
@@ -33,13 +33,13 @@ func newRegisterTransaction(client *Client, msgID uint16, topic string) *registe
 	}
 }
 
-func (t *registerTransaction) Regack(regack *msgs.RegackMessage) {
-	if regack.ReturnCode != msgs.RC_ACCEPTED {
+func (t *registerTransaction) Regack(regack *pkts.RegackMessage) {
+	if regack.ReturnCode != pkts.RC_ACCEPTED {
 		t.Fail(fmt.Errorf("registration rejected with code %d", regack.ReturnCode))
 		return
 	}
 
-	register := t.Data.(*msgs.RegisterMessage)
+	register := t.Data.(*pkts.RegisterMessage)
 	t.client.registeredTopicsLock.Lock()
 	t.client.registeredTopics[register.TopicName] = regack.TopicID
 	t.client.registeredTopicsLock.Unlock()
