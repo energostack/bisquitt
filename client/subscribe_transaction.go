@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	msgs "github.com/energomonitor/bisquitt/messages"
+	pkts "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
 
@@ -22,9 +22,9 @@ func newSubscribeTransaction(client *Client, msgID uint16, callback MessageHandl
 				client.groupCtx, client.cfg.RetryDelay, client.cfg.RetryCount,
 				func(lastMsg interface{}) error {
 					tLog.Debug("Resend.")
-					dupMsg := lastMsg.(msgs.MessageWithDUP)
+					dupMsg := lastMsg.(pkts.MessageWithDUP)
 					dupMsg.SetDUP(true)
-					return client.send(lastMsg.(msgs.Message))
+					return client.send(lastMsg.(pkts.Message))
 				},
 				func() {
 					tLog.Debug("Deleted.")
@@ -38,17 +38,17 @@ func newSubscribeTransaction(client *Client, msgID uint16, callback MessageHandl
 	}
 }
 
-func (t *subscribeTransaction) Suback(suback *msgs.SubackMessage) {
-	if suback.ReturnCode != msgs.RC_ACCEPTED {
+func (t *subscribeTransaction) Suback(suback *pkts.SubackMessage) {
+	if suback.ReturnCode != pkts.RC_ACCEPTED {
 		t.Fail(fmt.Errorf("subscription rejected with code %d", suback.ReturnCode))
 		return
 	}
 
 	var topicName string
-	subscribe := t.Data.(*msgs.SubscribeMessage)
+	subscribe := t.Data.(*pkts.SubscribeMessage)
 
 	switch subscribe.TopicIDType {
-	case msgs.TIT_STRING:
+	case pkts.TIT_STRING:
 		topicName = string(subscribe.TopicName)
 
 		// When subscribing to a wildcard topic, gateway returns TopicID == 0x0000.
@@ -65,7 +65,7 @@ func (t *subscribeTransaction) Suback(suback *msgs.SubackMessage) {
 		t.client.registeredTopics[topicName] = suback.TopicID
 		t.client.registeredTopicsLock.Unlock()
 
-	case msgs.TIT_PREDEFINED:
+	case pkts.TIT_PREDEFINED:
 		var ok bool
 		topicName, ok = t.client.cfg.PredefinedTopics.GetTopicName(t.client.cfg.ClientID, subscribe.TopicID)
 		if !ok {
@@ -73,8 +73,8 @@ func (t *subscribeTransaction) Suback(suback *msgs.SubackMessage) {
 			return
 		}
 
-	case msgs.TIT_SHORT:
-		topicName = msgs.DecodeShortTopic(subscribe.TopicID)
+	case pkts.TIT_SHORT:
+		topicName = pkts.DecodeShortTopic(subscribe.TopicID)
 		break
 
 	default:

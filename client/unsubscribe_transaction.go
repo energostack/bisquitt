@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	msgs "github.com/energomonitor/bisquitt/messages"
+	pkts "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
 
@@ -21,7 +21,7 @@ func newUnsubscribeTransaction(client *Client, msgID uint16) *unsubscribeTransac
 				client.groupCtx, client.cfg.RetryDelay, client.cfg.RetryCount,
 				func(lastMsg interface{}) error {
 					tLog.Debug("Resend.")
-					return client.send(lastMsg.(msgs.Message))
+					return client.send(lastMsg.(pkts.Message))
 				},
 				func() {
 					tLog.Debug("Deleted.")
@@ -34,15 +34,15 @@ func newUnsubscribeTransaction(client *Client, msgID uint16) *unsubscribeTransac
 	}
 }
 
-func (t *unsubscribeTransaction) Unsuback(_ *msgs.UnsubackMessage) {
+func (t *unsubscribeTransaction) Unsuback(_ *pkts.UnsubackMessage) {
 	var topicName string
-	unsubscribe := t.Data.(*msgs.UnsubscribeMessage)
+	unsubscribe := t.Data.(*pkts.UnsubscribeMessage)
 
 	switch unsubscribe.TopicIDType {
-	case msgs.TIT_STRING:
+	case pkts.TIT_STRING:
 		topicName = string(unsubscribe.TopicName)
 
-	case msgs.TIT_PREDEFINED:
+	case pkts.TIT_PREDEFINED:
 		var ok bool
 		topicName, ok = t.client.cfg.PredefinedTopics.GetTopicName(t.client.cfg.ClientID, unsubscribe.TopicID)
 		if !ok {
@@ -50,8 +50,8 @@ func (t *unsubscribeTransaction) Unsuback(_ *msgs.UnsubackMessage) {
 			return
 		}
 
-	case msgs.TIT_SHORT:
-		topicName = msgs.DecodeShortTopic(unsubscribe.TopicID)
+	case pkts.TIT_SHORT:
+		topicName = pkts.DecodeShortTopic(unsubscribe.TopicID)
 
 	default:
 		t.Fail(fmt.Errorf("Invalid Topic ID Type: %d", unsubscribe.TopicIDType))

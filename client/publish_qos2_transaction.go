@@ -3,7 +3,7 @@ package client
 import (
 	"fmt"
 
-	msgs "github.com/energomonitor/bisquitt/messages"
+	pkts "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
 
@@ -20,7 +20,7 @@ func newPublishQOS2Transaction(client *Client, msgID uint16) *publishQOS2Transac
 				client.groupCtx, client.cfg.RetryDelay, client.cfg.RetryCount,
 				func(lastMsg interface{}) error {
 					tLog.Debug("Resend.")
-					return client.send(lastMsg.(msgs.Message))
+					return client.send(lastMsg.(pkts.Message))
 				},
 				func() {
 					client.transactions.Delete(msgID)
@@ -33,12 +33,12 @@ func newPublishQOS2Transaction(client *Client, msgID uint16) *publishQOS2Transac
 	}
 }
 
-func (t *publishQOS2Transaction) Pubrec(pubrec *msgs.PubrecMessage) error {
+func (t *publishQOS2Transaction) Pubrec(pubrec *pkts.PubrecMessage) error {
 	if t.State != awaitingPubrec {
 		t.log.Debug("Unexpected message in %d: %v", t.State, pubrec)
 		return nil
 	}
-	pubrel := msgs.NewPubrelMessage()
+	pubrel := pkts.NewPubrelMessage()
 	pubrel.CopyMessageID(pubrec)
 	t.Proceed(awaitingPubcomp, pubrel)
 	if err := t.client.send(pubrel); err != nil {
@@ -47,7 +47,7 @@ func (t *publishQOS2Transaction) Pubrec(pubrec *msgs.PubrecMessage) error {
 	return nil
 }
 
-func (t *publishQOS2Transaction) Pubcomp(pubcomp *msgs.PubcompMessage) {
+func (t *publishQOS2Transaction) Pubcomp(pubcomp *pkts.PubcompMessage) {
 	if t.State != awaitingPubcomp {
 		t.log.Debug("Unexpected message in %d: %v", t.State, pubcomp)
 		return

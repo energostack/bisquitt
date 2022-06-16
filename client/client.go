@@ -64,7 +64,7 @@ import (
 	"sync"
 	"time"
 
-	msgs "github.com/energomonitor/bisquitt/messages"
+	pkts "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/topics"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
@@ -137,7 +137,7 @@ func NewClient(log util.Logger, cfg *ClientConfig) *Client {
 		state:            &state,
 		stateChangeCh:    make(chan util.ClientState, 1),
 		log:              log,
-		msgID:            util.NewIDSequence(msgs.MinMessageID, msgs.MaxMessageID),
+		msgID:            util.NewIDSequence(pkts.MinMessageID, pkts.MaxMessageID),
 	}
 }
 
@@ -302,20 +302,20 @@ func (c *Client) notifyStateChange(s util.ClientState) {
 // MQTT-SN specification, this must be the first message the client sends
 // unless it's a PUBLISH message with QoS = -1.
 func (c *Client) Connect() error {
-	connect := msgs.NewConnectMessage(
+	connect := pkts.NewConnectMessage(
 		[]byte(c.cfg.ClientID),
 		c.cfg.CleanSession,
 		c.cfg.WillTopic != "",
 		uint16(c.cfg.KeepAlive.Seconds()))
 
-	var auth *msgs.AuthMessage
+	var auth *pkts.AuthMessage
 	if c.cfg.User != "" {
-		auth = msgs.NewAuthPlain(c.cfg.User, c.cfg.Password)
+		auth = pkts.NewAuthPlain(c.cfg.User, c.cfg.Password)
 	}
 
 	for i := uint(0); i < c.cfg.RetryCount+1; i++ {
 		transaction := newConnectTransaction(c.groupCtx, c)
-		c.transactions.StoreByType(msgs.CONNECT, transaction)
+		c.transactions.StoreByType(pkts.CONNECT, transaction)
 
 		if err := c.send(connect); err != nil {
 			return err
@@ -349,7 +349,7 @@ func (c *Client) Connect() error {
 func (c *Client) Register(topic string) error {
 	msgID, _ := c.msgID.Next()
 	transaction := newRegisterTransaction(c, msgID, topic)
-	register := msgs.NewRegisterMessage(0, topic)
+	register := pkts.NewRegisterMessage(0, topic)
 	register.SetMessageID(msgID)
 	c.transactions.Store(msgID, transaction)
 	transaction.Proceed(nil, register)
@@ -367,7 +367,7 @@ func (c *Client) Register(topic string) error {
 func (c *Client) subscribe(topicName string, topicIDType uint8, topicID uint16, qos uint8, callback MessageHandlerFunc) error {
 	msgID, _ := c.msgID.Next()
 	transaction := newSubscribeTransaction(c, msgID, callback)
-	subscribe := msgs.NewSubscribeMessage(topicID, topicIDType, []byte(topicName), qos, false)
+	subscribe := pkts.NewSubscribeMessage(topicID, topicIDType, []byte(topicName), qos, false)
 	subscribe.SetMessageID(msgID)
 	c.transactions.Store(msgID, transaction)
 	transaction.Proceed(nil, subscribe)
@@ -386,23 +386,23 @@ func (c *Client) subscribe(topicName string, topicIDType uint8, topicID uint16, 
 // long, it's treated as a short topic. The received messages are passed to the
 // provided callback.
 func (c *Client) Subscribe(topic string, qos uint8, callback MessageHandlerFunc) error {
-	if msgs.IsShortTopic(topic) {
-		return c.subscribe("", msgs.TIT_SHORT, msgs.EncodeShortTopic(topic), qos, callback)
+	if pkts.IsShortTopic(topic) {
+		return c.subscribe("", pkts.TIT_SHORT, pkts.EncodeShortTopic(topic), qos, callback)
 	} else {
-		return c.subscribe(topic, msgs.TIT_STRING, 0, qos, callback)
+		return c.subscribe(topic, pkts.TIT_STRING, 0, qos, callback)
 	}
 }
 
 // SubscribePredefined subscribes to a predefined topic with the provided QoS.
 // The received messages are passed to the provided callback.
 func (c *Client) SubscribePredefined(topicID uint16, qos uint8, callback MessageHandlerFunc) error {
-	return c.subscribe("", msgs.TIT_PREDEFINED, topicID, qos, callback)
+	return c.subscribe("", pkts.TIT_PREDEFINED, topicID, qos, callback)
 }
 
 func (c *Client) unsubscribe(topicName string, topicIDType uint8, topicID uint16) error {
 	msgID, _ := c.msgID.Next()
 	transaction := newUnsubscribeTransaction(c, msgID)
-	unsubscribe := msgs.NewUnsubscribeMessage(topicID, topicIDType, []byte(topicName))
+	unsubscribe := pkts.NewUnsubscribeMessage(topicID, topicIDType, []byte(topicName))
 	unsubscribe.SetMessageID(msgID)
 	c.transactions.Store(msgID, transaction)
 	transaction.Proceed(nil, unsubscribe)
@@ -420,20 +420,20 @@ func (c *Client) unsubscribe(topicName string, topicIDType uint8, topicID uint16
 // Unsubscribe unsubscribes from a topic. If the topic is 2 characters long,
 // it's treated as a short topic.
 func (c *Client) Unsubscribe(topic string) error {
-	if msgs.IsShortTopic(topic) {
-		return c.unsubscribe("", msgs.TIT_SHORT, msgs.EncodeShortTopic(topic))
+	if pkts.IsShortTopic(topic) {
+		return c.unsubscribe("", pkts.TIT_SHORT, pkts.EncodeShortTopic(topic))
 	} else {
-		return c.unsubscribe(topic, msgs.TIT_STRING, 0)
+		return c.unsubscribe(topic, pkts.TIT_STRING, 0)
 	}
 }
 
 // UnsubscribePredefined unsubscribes from a predefined topic.
 func (c *Client) UnsubscribePredefined(topicID uint16) error {
-	return c.unsubscribe("", msgs.TIT_PREDEFINED, topicID)
+	return c.unsubscribe("", pkts.TIT_PREDEFINED, topicID)
 }
 
 func (c *Client) publish(topicIDType uint8, topicID uint16, qos uint8, retain bool, payload []byte) error {
-	publish := msgs.NewPublishMessage(topicID, topicIDType, payload, qos, retain, false)
+	publish := pkts.NewPublishMessage(topicID, topicIDType, payload, qos, retain, false)
 	msgID, _ := c.msgID.Next()
 	publish.SetMessageID(msgID)
 
@@ -470,11 +470,11 @@ func (c *Client) publish(topicIDType uint8, topicID uint16, qos uint8, retain bo
 func (c *Client) Publish(topic string, qos uint8, retain bool, payload []byte) error {
 	var topicIDType uint8
 	var topicID uint16
-	if msgs.IsShortTopic(topic) {
-		topicIDType = msgs.TIT_SHORT
-		topicID = msgs.EncodeShortTopic(topic)
+	if pkts.IsShortTopic(topic) {
+		topicIDType = pkts.TIT_SHORT
+		topicID = pkts.EncodeShortTopic(topic)
 	} else {
-		topicIDType = msgs.TIT_REGISTERED
+		topicIDType = pkts.TIT_REGISTERED
 		var ok bool
 		c.registeredTopicsLock.RLock()
 		topicID, ok = c.registeredTopics[topic]
@@ -488,14 +488,14 @@ func (c *Client) Publish(topic string, qos uint8, retain bool, payload []byte) e
 
 // PublishPredefined publishes a message to the provided topic.
 func (c *Client) PublishPredefined(topicID uint16, qos uint8, retain bool, payload []byte) error {
-	return c.publish(msgs.TIT_PREDEFINED, topicID, qos, retain, payload)
+	return c.publish(pkts.TIT_PREDEFINED, topicID, qos, retain, payload)
 }
 
 // Ping sends a PING message to the MQTT-SN gateway.
 func (c *Client) Ping() error {
 	transaction := newPingTransaction(c)
-	ping := msgs.NewPingreqMessage(nil)
-	c.transactions.StoreByType(msgs.PINGREQ, transaction)
+	ping := pkts.NewPingreqMessage(nil)
+	c.transactions.StoreByType(pkts.PINGREQ, transaction)
 	transaction.Proceed(nil, ping)
 	if err := c.send(ping); err != nil {
 		transaction.Fail(err)
@@ -511,7 +511,7 @@ func (c *Client) Ping() error {
 // Sleep informs the MQTT-SN gateway that the client is going to sleep.
 func (c *Client) Sleep(duration time.Duration) error {
 	transaction := newSleepTransaction(c, duration)
-	c.transactions.StoreByType(msgs.DISCONNECT, transaction)
+	c.transactions.StoreByType(pkts.DISCONNECT, transaction)
 	if err := transaction.Sleep(); err != nil {
 		return err
 	}
@@ -535,8 +535,8 @@ func (c *Client) Disconnect() error {
 		return nil
 	}
 	transaction := newDisconnectTransaction(c)
-	disconnect := msgs.NewDisconnectMessage(0)
-	c.transactions.StoreByType(msgs.DISCONNECT, transaction)
+	disconnect := pkts.NewDisconnectMessage(0)
+	c.transactions.StoreByType(pkts.DISCONNECT, transaction)
 	transaction.Proceed(awaitingDisconnect, disconnect)
 	if err := c.send(disconnect); err != nil {
 		transaction.Fail(err)

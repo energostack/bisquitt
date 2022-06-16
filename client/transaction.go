@@ -1,7 +1,7 @@
 package client
 
 import (
-	msgs "github.com/energomonitor/bisquitt/messages"
+	pkts "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
 )
@@ -28,10 +28,10 @@ type transaction struct {
 
 // Transactions involving DISCONNECT message.
 type transactionWithDisconnect interface {
-	Disconnect(*msgs.DisconnectMessage)
+	Disconnect(*pkts.DisconnectMessage)
 }
 
 // Transactions involving PINGRESP message.
 type transactionWithPingresp interface {
-	Pingresp(pingresp *msgs.PingrespMessage)
+	Pingresp(pingresp *pkts.PingrespMessage)
 }

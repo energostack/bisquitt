@@ -6,13 +6,13 @@ import (
 	"net"
 	"time"
 
-	msgs "github.com/energomonitor/bisquitt/messages"
+	pkts "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/util"
 
 	dtlsProtocol "github.com/pion/dtls/v2/pkg/protocol"
 )
 
-func (c *Client) send(msg msgs.Message) error {
+func (c *Client) send(msg pkts.Message) error {
 	c.log.Debug("<- %v", msg)
 	return msg.Write(c.conn)
 }
@@ -72,7 +72,7 @@ func (c *Client) receiveLoop(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		msg, err := msgs.ReadPacket(c.conn)
+		msg, err := pkts.ReadPacket(c.conn)
 		if err != nil {
 			switch e := err.(type) {
 			case net.Error:
@@ -91,10 +91,10 @@ func (c *Client) receiveLoop(ctx context.Context) error {
 	}
 }
 
-func (c *Client) topicForPublish(msg *msgs.PublishMessage) (string, error) {
+func (c *Client) topicForPublish(msg *pkts.PublishMessage) (string, error) {
 	var topic string
 	switch msg.TopicIDType {
-	case msgs.TIT_REGISTERED:
+	case pkts.TIT_REGISTERED:
 		var ok bool
 		c.registeredTopicsLock.RLock()
 		topic, ok = findTopic(msg.TopicID, c.registeredTopics)
@@ -102,14 +102,14 @@ func (c *Client) topicForPublish(msg *msgs.PublishMessage) (string, error) {
 		if !ok {
 			return "", fmt.Errorf("Invalid topic ID: %d", msg.TopicID)
 		}
-	case msgs.TIT_PREDEFINED:
+	case pkts.TIT_PREDEFINED:
 		var ok bool
 		topic, ok = c.cfg.PredefinedTopics.GetTopicName(c.cfg.ClientID, msg.TopicID)
 		if !ok {
 			return "", fmt.Errorf("Invalid predefined topic ID: %d", msg.TopicID)
 		}
-	case msgs.TIT_SHORT:
-		topic = msgs.DecodeShortTopic(msg.TopicID)
+	case pkts.TIT_SHORT:
+		topic = pkts.DecodeShortTopic(msg.TopicID)
 
 	default:
 		return "", fmt.Errorf("Invalid Topic ID Type: %d", msg.TopicIDType)
@@ -118,10 +118,10 @@ func (c *Client) topicForPublish(msg *msgs.PublishMessage) (string, error) {
 	return topic, nil
 }
 
-func (c *Client) handlePacket(msgx msgs.Message) error {
+func (c *Client) handlePacket(msgx pkts.Message) error {
 	switch msg := msgx.(type) {
-	case *msgs.ConnackMessage:
-		transactionx, _ := c.transactions.GetByType(msgs.CONNECT)
+	case *pkts.ConnackMessage:
+		transactionx, _ := c.transactions.GetByType(pkts.CONNECT)
 		transaction, ok := transactionx.(*connectTransaction)
 		if !ok {
 			c.log.Error("Unexpected transaction type %T for message: %v", transactionx, msg)
@@ -130,26 +130,26 @@ func (c *Client) handlePacket(msgx msgs.Message) error {
 		transaction.Connack(msg)
 		return nil
 
-	case *msgs.RegisterMessage:
+	case *pkts.RegisterMessage:
 		c.registeredTopicsLock.Lock()
 		// MQTT-SN specification v. 1.2 does not specify what to do if
 		// the REGISTER message contains an already registered TopicID.
 		// I suppose the right reaction is to reject the registratin with
 		// `Rejected: invalid topic ID`.
-		var returnCode msgs.ReturnCode
+		var returnCode pkts.ReturnCode
 		if _, ok := c.registeredTopics[string(msg.TopicName)]; ok {
-			returnCode = msgs.RC_INVALID_TOPIC_ID
+			returnCode = pkts.RC_INVALID_TOPIC_ID
 		} else {
-			returnCode = msgs.RC_ACCEPTED
+			returnCode = pkts.RC_ACCEPTED
 			c.registeredTopics[string(msg.TopicName)] = msg.TopicID
 		}
 		c.registeredTopicsLock.Unlock()
 
-		reply := msgs.NewRegackMessage(msg.TopicID, returnCode)
+		reply := pkts.NewRegackMessage(msg.TopicID, returnCode)
 		reply.CopyMessageID(msg)
 		return c.send(reply)
 
-	case *msgs.RegackMessage:
+	case *pkts.RegackMessage:
 		transactionx, _ := c.transactions.Get(msg.MessageID())
 		transaction, ok := transactionx.(*registerTransaction)
 		if !ok {
@@ -159,7 +159,7 @@ func (c *Client) handlePacket(msgx msgs.Message) error {
 		transaction.Regack(msg)
 		return nil
 
-	case *msgs.SubackMessage:
+	case *pkts.SubackMessage:
 		transactionx, _ := c.transactions.Get(msg.MessageID())
 		transaction, ok := transactionx.(*subscribeTransaction)
 		if !ok {
@@ -169,7 +169,7 @@ func (c *Client) handlePacket(msgx msgs.Message) error {
 		transaction.Suback(msg)
 		return nil
 
-	case *msgs.UnsubackMessage:
+	case *pkts.UnsubackMessage:
 		transactionx, _ := c.transactions.Get(msg.MessageID())
 		transaction, ok := transactionx.(*unsubscribeTransaction)
 		if !ok {
@@ -180,12 +180,12 @@ func (c *Client) handlePacket(msgx msgs.Message) error {
 		return nil
 
 	// Broker PUBLISH QoS 0,1,2 transaction.
-	case *msgs.PublishMessage:
+	case *pkts.PublishMessage:
 		switch msg.QOS {
 		case 0:
 			// continue
 		case 1:
-			puback := msgs.NewPubackMessage(msg.TopicID, msgs.RC_ACCEPTED)
+			puback := pkts.NewPubackMessage(msg.TopicID, pkts.RC_ACCEPTED)
 			puback.CopyMessageID(msg)
 			if err := c.send(puback); err != nil {
 				return err
@@ -217,7 +217,7 @@ func (c *Client) handlePacket(msgx msgs.Message) error {
 		return nil
 
 	// Broker PUBLISH QoS 2 transaction.
-	case *msgs.PubrelMessage:
+	case *pkts.PubrelMessage:
 		transactionx, _ := c.transactions.Get(msg.MessageID())
 		transaction, ok := transactionx.(*brokerPublishQOS2Transaction)
 		if !ok {
@@ -228,7 +228,7 @@ func (c *Client) handlePacket(msgx msgs.Message) error {
 		return nil
 
 	// Client PUBLISH QoS 1 transaction.
-	case *msgs.PubackMessage:
+	case *pkts.PubackMessage:
 		transactionx, _ := c.transactions.Get(msg.MessageID())
 		transaction, ok := transactionx.(*publishQOS1Transaction)
 		if !ok {
@@ -239,7 +239,7 @@ func (c *Client) handlePacket(msgx msgs.Message) error {
 		return nil
 
 	// Client PUBLISH QoS 2 transaction.
-	case *msgs.PubrecMessage:
+	case *pkts.PubrecMessage:
 		transactionx, _ := c.transactions.Get(msg.MessageID())
 		transaction, ok := transactionx.(*publishQOS2Transaction)
 		if !ok {
@@ -249,7 +249,7 @@ func (c *Client) handlePacket(msgx msgs.Message) error {
 		return transaction.Pubrec(msg)
 
 	// Client PUBLISH QoS 2 transaction.
-	case *msgs.PubcompMessage:
+	case *pkts.PubcompMessage:
 		transactionx, _ := c.transactions.Get(msg.MessageID())
 		transaction, ok := transactionx.(*publishQOS2Transaction)
 		if !ok {
@@ -259,8 +259,8 @@ func (c *Client) handlePacket(msgx msgs.Message) error {
 		transaction.Pubcomp(msg)
 		return nil
 
-	case *msgs.DisconnectMessage:
-		transactionx, ok := c.transactions.GetByType(msgs.DISCONNECT)
+	case *pkts.DisconnectMessage:
+		transactionx, ok := c.transactions.GetByType(pkts.DISCONNECT)
 		if !ok {
 			// Unsolicited DISCONNECT from broker.
 			c.setState(util.StateDisconnected)
@@ -278,19 +278,19 @@ func (c *Client) handlePacket(msgx msgs.Message) error {
 		transaction.Disconnect(msg)
 		return nil
 
-	case *msgs.WillTopicReqMessage:
-		willTopic := msgs.NewWillTopicMessage(c.cfg.WillTopic, c.cfg.WillQOS, c.cfg.WillRetained)
+	case *pkts.WillTopicReqMessage:
+		willTopic := pkts.NewWillTopicMessage(c.cfg.WillTopic, c.cfg.WillQOS, c.cfg.WillRetained)
 		return c.send(willTopic)
 
-	case *msgs.WillMsgReqMessage:
-		willMsg := msgs.NewWillMsgMessage(c.cfg.WillPayload)
+	case *pkts.WillMsgReqMessage:
+		willMsg := pkts.NewWillMsgMessage(c.cfg.WillPayload)
 		return c.send(willMsg)
 
-	case *msgs.PingrespMessage:
-		transactionx, ok := c.transactions.GetByType(msgs.PINGREQ)
+	case *pkts.PingrespMessage:
+		transactionx, ok := c.transactions.GetByType(pkts.PINGREQ)
 		if !ok {
 			// Sleep transaction.
-			transactionx, _ = c.transactions.GetByType(msgs.DISCONNECT)
+			transactionx, _ = c.transactions.GetByType(pkts.DISCONNECT)
 		}
 		transaction, ok := transactionx.(transactionWithPingresp)
 		if !ok {

@@ -3,7 +3,7 @@ package transactions
 import (
 	"sync"
 
-	msgs "github.com/energomonitor/bisquitt/messages"
+	pkts "github.com/energomonitor/bisquitt/packets1"
 )
 
 // TransactionStore stores transactions by message ID or by message type
@@ -14,14 +14,14 @@ import (
 type TransactionStore struct {
 	sync.RWMutex
 	byMsgID   map[uint16]Transaction
-	byMsgType map[msgs.MessageType]Transaction
+	byMsgType map[pkts.MessageType]Transaction
 }
 
 // NewTransactionStore creates a new transaction store.
 func NewTransactionStore() *TransactionStore {
 	return &TransactionStore{
 		byMsgID:   make(map[uint16]Transaction),
-		byMsgType: make(map[msgs.MessageType]Transaction),
+		byMsgType: make(map[pkts.MessageType]Transaction),
 	}
 }
 
@@ -33,7 +33,7 @@ func (ts *TransactionStore) Store(msgID uint16, transaction Transaction) {
 }
 
 // StoreByType inserts a new transaction to the store by the message type.
-func (ts *TransactionStore) StoreByType(msgType msgs.MessageType, transaction Transaction) {
+func (ts *TransactionStore) StoreByType(msgType pkts.MessageType, transaction Transaction) {
 	ts.Lock()
 	defer ts.Unlock()
 	ts.byMsgType[msgType] = transaction
@@ -48,7 +48,7 @@ func (ts *TransactionStore) Get(msgID uint16) (Transaction, bool) {
 }
 
 // GetByType retrieves a transaction from the store by the message type.
-func (ts *TransactionStore) GetByType(msgType msgs.MessageType) (Transaction, bool) {
+func (ts *TransactionStore) GetByType(msgType pkts.MessageType) (Transaction, bool) {
 	ts.Lock()
 	defer ts.Unlock()
 	transaction, ok := ts.byMsgType[msgType]
@@ -63,7 +63,7 @@ func (ts *TransactionStore) Delete(msgID uint16) {
 }
 
 // DeleteByType removes a transaction from the store by the message type.
-func (ts *TransactionStore) DeleteByType(msgType msgs.MessageType) {
+func (ts *TransactionStore) DeleteByType(msgType pkts.MessageType) {
 	ts.Lock()
 	defer ts.Unlock()
 	delete(ts.byMsgType, msgType)

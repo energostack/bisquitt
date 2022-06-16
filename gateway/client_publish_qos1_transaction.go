@@ -22,7 +22,7 @@ import (
 	"fmt"
 
 	mqttPackets "github.com/eclipse/paho.mqtt.golang/packets"
-	snMsgs "github.com/energomonitor/bisquitt/messages"
+	snPkts "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
 )
@@ -55,7 +55,7 @@ func (t *clientPublishQOS1Transaction) Puback(mqPuback *mqttPackets.PubackPacket
 	// MQTT-SN PUBACK message contains ReturnCode field. MQTT PUBACK message
 	// does not contain it - PUBACK's implicit meaning is "accepted".
 	// See MQTT-SN specification v. 1.2, chapter 5.4.13.
-	snPuback := snMsgs.NewPubackMessage(t.topicID, snMsgs.RC_ACCEPTED)
+	snPuback := snPkts.NewPubackMessage(t.topicID, snPkts.RC_ACCEPTED)
 	snPuback.SetMessageID(mqPuback.MessageID)
 	t.Success()
 	return t.handler.snSend(snPuback)

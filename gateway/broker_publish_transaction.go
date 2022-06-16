@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	mqttPackets "github.com/eclipse/paho.mqtt.golang/packets"
-	snMsgs "github.com/energomonitor/bisquitt/messages"
+	snPkts "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
 )
@@ -22,42 +22,42 @@ const (
 )
 
 type transactionWithRegack interface {
-	Regack(snRegack *snMsgs.RegackMessage) error
+	Regack(snRegack *snPkts.RegackMessage) error
 }
 
 type brokerPublishTransaction interface {
 	transactions.StatefulTransaction
-	SetSNPublish(*snMsgs.PublishMessage)
-	ProceedSN(newState transactionState, snMsg snMsgs.Message) error
+	SetSNPublish(*snPkts.PublishMessage)
+	ProceedSN(newState transactionState, snMsg snPkts.Message) error
 	ProceedMQTT(newState transactionState, mqMsg mqttPackets.ControlPacket) error
 }
 
 type brokerPublishTransactionBase struct {
 	*transactions.RetryTransaction
 	log       util.Logger
-	snPublish *snMsgs.PublishMessage
+	snPublish *snPkts.PublishMessage
 	handler   *handler
 }
 
-func (t *brokerPublishTransactionBase) SetSNPublish(snPublish *snMsgs.PublishMessage) {
+func (t *brokerPublishTransactionBase) SetSNPublish(snPublish *snPkts.PublishMessage) {
 	t.snPublish = snPublish
 }
 
-func (t *brokerPublishTransactionBase) regack(snRegack *snMsgs.RegackMessage, newState transactionState) error {
+func (t *brokerPublishTransactionBase) regack(snRegack *snPkts.RegackMessage, newState transactionState) error {
 	if t.State != awaitingRegack {
 		t.log.Debug("Unexpected message in %d: %v", t.State, snRegack)
 		return nil
 	}
-	if snRegack.ReturnCode != snMsgs.RC_ACCEPTED {
+	if snRegack.ReturnCode != snPkts.RC_ACCEPTED {
 		t.Fail(fmt.Errorf("REGACK return code: %d", snRegack.ReturnCode))
 		return nil
 	}
-	snRegister := t.Data.(*snMsgs.RegisterMessage)
+	snRegister := t.Data.(*snPkts.RegisterMessage)
 	t.handler.registeredTopics.Store(snRegister.TopicID, snRegister.TopicName)
 	return t.ProceedSN(newState, t.snPublish)
 }
 
-func (t *brokerPublishTransactionBase) ProceedSN(newState transactionState, snMsg snMsgs.Message) error {
+func (t *brokerPublishTransactionBase) ProceedSN(newState transactionState, snMsg snPkts.Message) error {
 	t.Proceed(newState, snMsg)
 	if err := t.handler.snSend(snMsg); err != nil {
 		t.Fail(err)
@@ -85,9 +85,9 @@ func (t *brokerPublishTransactionBase) ProceedMQTT(newState transactionState, mq
 func (t *brokerPublishTransactionBase) resend(msgx interface{}) error {
 	t.log.Debug("Resend.")
 	switch msg := msgx.(type) {
-	case snMsgs.Message:
+	case snPkts.Message:
 		// Set DUP if applicable.
-		if dupMsg, ok := msg.(snMsgs.MessageWithDUP); ok {
+		if dupMsg, ok := msg.(snPkts.MessageWithDUP); ok {
 			dupMsg.SetDUP(true)
 		}
 		return t.handler.snSend(msg)

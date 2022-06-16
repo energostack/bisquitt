@@ -8,7 +8,7 @@ import (
 	"fmt"
 
 	mqttPackets "github.com/eclipse/paho.mqtt.golang/packets"
-	snMsgs "github.com/energomonitor/bisquitt/messages"
+	snPkts "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
 )
@@ -45,15 +45,15 @@ func (t *subscribeTransaction) Suback(mqSuback *mqttPackets.SubackPacket) error 
 	}
 	// MQTT Return codes 0-2 means "Success, QoS 0-2" but in MQTT-SN only 0
 	// means success!
-	var returnCode snMsgs.ReturnCode
+	var returnCode snPkts.ReturnCode
 	if mqSuback.ReturnCodes[0] <= 2 {
-		returnCode = snMsgs.RC_ACCEPTED
+		returnCode = snPkts.RC_ACCEPTED
 		t.Success()
 	} else {
-		returnCode = snMsgs.RC_NOT_SUPPORTED
+		returnCode = snPkts.RC_NOT_SUPPORTED
 		t.Fail(fmt.Errorf("MQTT SUBACK return code: %d", mqSuback.ReturnCodes[0]))
 	}
-	snMsg := snMsgs.NewSubackMessage(t.topicID, mqSuback.Qos, returnCode)
+	snMsg := snPkts.NewSubackMessage(t.topicID, mqSuback.Qos, returnCode)
 	snMsg.SetMessageID(mqSuback.MessageID)
 	return t.handler.snSend(snMsg)
 }

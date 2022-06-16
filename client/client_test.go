@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	msgs "github.com/energomonitor/bisquitt/messages"
+	pkts "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/topics"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
@@ -72,7 +72,7 @@ func TestConnectRejected(t *testing.T) {
 		defer wg.Done()
 
 		// client --CONNECT--> GW
-		connect := stp.recv().(*msgs.ConnectMessage)
+		connect := stp.recv().(*pkts.ConnectMessage)
 		assert.Equal(true, connect.CleanSession)
 		assert.Equal([]byte(clientID), connect.ClientID)
 		assert.Equal(uint16(0), connect.Duration)
@@ -80,7 +80,7 @@ func TestConnectRejected(t *testing.T) {
 		assert.Equal(false, connect.Will)
 
 		// client <--CONNACK-- GW
-		stp.send(msgs.NewConnackMessage(msgs.RC_CONGESTION))
+		stp.send(pkts.NewConnackMessage(pkts.RC_CONGESTION))
 	}()
 
 	err := stp.client.Connect()
@@ -105,7 +105,7 @@ func TestConnectRetry(t *testing.T) {
 
 		for i := uint(0); i < stp.client.cfg.RetryCount+1; i++ {
 			// client --CONNECT--> GW
-			connect := stp.recv().(*msgs.ConnectMessage)
+			connect := stp.recv().(*pkts.ConnectMessage)
 			assert.Equal(true, connect.CleanSession)
 			assert.Equal([]byte(clientID), connect.ClientID)
 			assert.Equal(uint16(0), connect.Duration)
@@ -114,7 +114,7 @@ func TestConnectRetry(t *testing.T) {
 		}
 
 		// client <--CONNACK-- GW
-		stp.send(msgs.NewConnackMessage(msgs.RC_ACCEPTED))
+		stp.send(pkts.NewConnackMessage(pkts.RC_ACCEPTED))
 
 		stp.disconnect()
 	}()
@@ -153,7 +153,7 @@ func TestConnectAuthWill(t *testing.T) {
 		defer wg.Done()
 
 		// client --CONNECT--> GW
-		connect := stp.recv().(*msgs.ConnectMessage)
+		connect := stp.recv().(*pkts.ConnectMessage)
 		assert.Equal(true, connect.CleanSession)
 		assert.Equal([]byte(clientID), connect.ClientID)
 		assert.Equal(uint16(0), connect.Duration)
@@ -161,32 +161,32 @@ func TestConnectAuthWill(t *testing.T) {
 		assert.Equal(true, connect.Will)
 
 		// client --AUTH--> GW
-		auth := stp.recv().(*msgs.AuthMessage)
-		assert.Equal(msgs.AUTH_PLAIN, auth.Method)
-		authUser, authPassword, err := msgs.DecodePlain(auth)
+		auth := stp.recv().(*pkts.AuthMessage)
+		assert.Equal(pkts.AUTH_PLAIN, auth.Method)
+		authUser, authPassword, err := pkts.DecodePlain(auth)
 		assert.Equal(user, authUser)
 		assert.Equal(password, authPassword)
 		assert.Nil(err)
 
 		// client <--WILLTOPICREQ-- GW
-		stp.send(msgs.NewWillTopicReqMessage())
+		stp.send(pkts.NewWillTopicReqMessage())
 
 		// client --WILLTOPIC--> GW
-		willTopicMsg := stp.recv().(*msgs.WillTopicMessage)
+		willTopicMsg := stp.recv().(*pkts.WillTopicMessage)
 		assert.Equal(willTopic, willTopicMsg.WillTopic)
 		assert.Equal(willQOS, willTopicMsg.QOS)
 		assert.Equal(willRetained, willTopicMsg.Retain)
 
 		// client <--WILLMSGREQ-- GW
-		willMsgReq := msgs.NewWillMsgReqMessage()
+		willMsgReq := pkts.NewWillMsgReqMessage()
 		stp.send(willMsgReq)
 
 		// client --WILLMSG--> GW
-		willMsg := stp.recv().(*msgs.WillMsgMessage)
+		willMsg := stp.recv().(*pkts.WillMsgMessage)
 		assert.Equal(willPayload, willMsg.WillMsg)
 
 		// client <--CONNACK-- GW
-		stp.send(msgs.NewConnackMessage(msgs.RC_ACCEPTED))
+		stp.send(pkts.NewConnackMessage(pkts.RC_ACCEPTED))
 
 		stp.disconnect()
 	}()
@@ -230,12 +230,12 @@ func TestRegister(t *testing.T) {
 		stp.connect(clientID)
 
 		// client --REGISTER--> GW
-		register := stp.recv().(*msgs.RegisterMessage)
+		register := stp.recv().(*pkts.RegisterMessage)
 		assert.Equal(topic, register.TopicName)
 		assert.Equal(uint16(0), register.TopicID)
 
 		// client <--REGACK-- GW
-		regack := msgs.NewRegackMessage(topicID, msgs.RC_ACCEPTED)
+		regack := pkts.NewRegackMessage(topicID, pkts.RC_ACCEPTED)
 		regack.CopyMessageID(register)
 		stp.send(regack)
 
@@ -282,18 +282,18 @@ func TestPublishQOS0(t *testing.T) {
 		stp.connect(clientID)
 
 		// client --REGISTER--> GW
-		register := stp.recv().(*msgs.RegisterMessage)
+		register := stp.recv().(*pkts.RegisterMessage)
 		assert.Equal(topic, register.TopicName)
 		assert.Equal(uint16(0), register.TopicID)
 
 		// client <--REGACK-- GW
-		regack := msgs.NewRegackMessage(topicID, msgs.RC_ACCEPTED)
+		regack := pkts.NewRegackMessage(topicID, pkts.RC_ACCEPTED)
 		regack.CopyMessageID(register)
 		stp.send(regack)
 
 		// client --PUBLISH--> GW
-		publish := stp.recv().(*msgs.PublishMessage)
-		assert.Equal(msgs.TIT_REGISTERED, publish.TopicIDType)
+		publish := stp.recv().(*pkts.PublishMessage)
+		assert.Equal(pkts.TIT_REGISTERED, publish.TopicIDType)
 		assert.Equal(topicID, publish.TopicID)
 		assert.Equal(payload, publish.Data)
 		assert.Equal(retain, publish.Retain)
@@ -344,8 +344,8 @@ func TestPublishQOS0Predefined(t *testing.T) {
 		stp.connect(clientID)
 
 		// client --PUBLISH--> GW
-		publish := stp.recv().(*msgs.PublishMessage)
-		assert.Equal(msgs.TIT_PREDEFINED, publish.TopicIDType)
+		publish := stp.recv().(*pkts.PublishMessage)
+		assert.Equal(pkts.TIT_PREDEFINED, publish.TopicIDType)
 		assert.Equal(topicID, publish.TopicID)
 		assert.Equal(payload, publish.Data)
 		assert.Equal(retain, publish.Retain)
@@ -380,7 +380,7 @@ func TestPublishQOS0Short(t *testing.T) {
 	topic := "ab"
 	qos := uint8(0)
 	retain := true
-	topicID := msgs.EncodeShortTopic(topic)
+	topicID := pkts.EncodeShortTopic(topic)
 
 	stp := newTestSetup(t, clientID)
 	defer stp.cancel()
@@ -393,8 +393,8 @@ func TestPublishQOS0Short(t *testing.T) {
 		stp.connect(clientID)
 
 		// client --PUBLISH--> GW
-		publish := stp.recv().(*msgs.PublishMessage)
-		assert.Equal(msgs.TIT_SHORT, publish.TopicIDType)
+		publish := stp.recv().(*pkts.PublishMessage)
+		assert.Equal(pkts.TIT_SHORT, publish.TopicIDType)
 		assert.Equal(topicID, publish.TopicID)
 		assert.Equal(payload, publish.Data)
 		assert.Equal(retain, publish.Retain)
@@ -442,19 +442,19 @@ func TestPublishQOS1(t *testing.T) {
 		stp.connect(clientID)
 
 		// client --REGISTER--> GW
-		register := stp.recv().(*msgs.RegisterMessage)
+		register := stp.recv().(*pkts.RegisterMessage)
 		assert.Equal(topic, register.TopicName)
 		assert.Equal(uint16(0), register.TopicID)
 
 		// client <--REGACK-- GW
-		regack := msgs.NewRegackMessage(topicID, msgs.RC_ACCEPTED)
+		regack := pkts.NewRegackMessage(topicID, pkts.RC_ACCEPTED)
 		regack.CopyMessageID(register)
 		stp.send(regack)
 
-		var publish *msgs.PublishMessage
+		var publish *pkts.PublishMessage
 		// client --PUBLISH--> GW
-		publish = stp.recv().(*msgs.PublishMessage)
-		assert.Equal(msgs.TIT_REGISTERED, publish.TopicIDType)
+		publish = stp.recv().(*pkts.PublishMessage)
+		assert.Equal(pkts.TIT_REGISTERED, publish.TopicIDType)
 		assert.Equal(topicID, publish.TopicID)
 		assert.Equal(payload, publish.Data)
 		assert.Equal(retain, publish.Retain)
@@ -463,8 +463,8 @@ func TestPublishQOS1(t *testing.T) {
 
 		for i := uint(0); i < stp.client.cfg.RetryCount; i++ {
 			// client --PUBLISH--> GW
-			publish = stp.recv().(*msgs.PublishMessage)
-			assert.Equal(msgs.TIT_REGISTERED, publish.TopicIDType)
+			publish = stp.recv().(*pkts.PublishMessage)
+			assert.Equal(pkts.TIT_REGISTERED, publish.TopicIDType)
 			assert.Equal(topicID, publish.TopicID)
 			assert.Equal(payload, publish.Data)
 			assert.Equal(retain, publish.Retain)
@@ -473,7 +473,7 @@ func TestPublishQOS1(t *testing.T) {
 		}
 
 		// client <--PUBACK-- GW
-		puback := msgs.NewPubackMessage(publish.TopicID, msgs.RC_ACCEPTED)
+		puback := pkts.NewPubackMessage(publish.TopicID, pkts.RC_ACCEPTED)
 		puback.CopyMessageID(publish)
 		stp.send(puback)
 
@@ -521,10 +521,10 @@ func TestPublishQOS1Predefined(t *testing.T) {
 
 		stp.connect(clientID)
 
-		var publish *msgs.PublishMessage
+		var publish *pkts.PublishMessage
 		// client --PUBLISH--> GW
-		publish = stp.recv().(*msgs.PublishMessage)
-		assert.Equal(msgs.TIT_PREDEFINED, publish.TopicIDType)
+		publish = stp.recv().(*pkts.PublishMessage)
+		assert.Equal(pkts.TIT_PREDEFINED, publish.TopicIDType)
 		assert.Equal(topicID, publish.TopicID)
 		assert.Equal(payload, publish.Data)
 		assert.Equal(retain, publish.Retain)
@@ -533,8 +533,8 @@ func TestPublishQOS1Predefined(t *testing.T) {
 
 		for i := uint(0); i < stp.client.cfg.RetryCount; i++ {
 			// client --PUBLISH--> GW
-			publish = stp.recv().(*msgs.PublishMessage)
-			assert.Equal(msgs.TIT_PREDEFINED, publish.TopicIDType)
+			publish = stp.recv().(*pkts.PublishMessage)
+			assert.Equal(pkts.TIT_PREDEFINED, publish.TopicIDType)
 			assert.Equal(topicID, publish.TopicID)
 			assert.Equal(payload, publish.Data)
 			assert.Equal(retain, publish.Retain)
@@ -543,7 +543,7 @@ func TestPublishQOS1Predefined(t *testing.T) {
 		}
 
 		// client <--PUBACK-- GW
-		puback := msgs.NewPubackMessage(publish.TopicID, msgs.RC_ACCEPTED)
+		puback := pkts.NewPubackMessage(publish.TopicID, pkts.RC_ACCEPTED)
 		puback.CopyMessageID(publish)
 		stp.send(puback)
 
@@ -576,7 +576,7 @@ func TestPublishQOS1Short(t *testing.T) {
 	topic := "ab"
 	qos := uint8(1)
 	retain := true
-	topicID := msgs.EncodeShortTopic(topic)
+	topicID := pkts.EncodeShortTopic(topic)
 
 	stp := newTestSetup(t, clientID)
 	defer stp.cancel()
@@ -588,10 +588,10 @@ func TestPublishQOS1Short(t *testing.T) {
 
 		stp.connect(clientID)
 
-		var publish *msgs.PublishMessage
+		var publish *pkts.PublishMessage
 		// client --PUBLISH--> GW
-		publish = stp.recv().(*msgs.PublishMessage)
-		assert.Equal(msgs.TIT_SHORT, publish.TopicIDType)
+		publish = stp.recv().(*pkts.PublishMessage)
+		assert.Equal(pkts.TIT_SHORT, publish.TopicIDType)
 		assert.Equal(topicID, publish.TopicID)
 		assert.Equal(payload, publish.Data)
 		assert.Equal(retain, publish.Retain)
@@ -600,8 +600,8 @@ func TestPublishQOS1Short(t *testing.T) {
 
 		for i := uint(0); i < stp.client.cfg.RetryCount; i++ {
 			// client --PUBLISH--> GW
-			publish = stp.recv().(*msgs.PublishMessage)
-			assert.Equal(msgs.TIT_SHORT, publish.TopicIDType)
+			publish = stp.recv().(*pkts.PublishMessage)
+			assert.Equal(pkts.TIT_SHORT, publish.TopicIDType)
 			assert.Equal(topicID, publish.TopicID)
 			assert.Equal(payload, publish.Data)
 			assert.Equal(retain, publish.Retain)
@@ -610,7 +610,7 @@ func TestPublishQOS1Short(t *testing.T) {
 		}
 
 		// client <--PUBACK-- GW
-		puback := msgs.NewPubackMessage(publish.TopicID, msgs.RC_ACCEPTED)
+		puback := pkts.NewPubackMessage(publish.TopicID, pkts.RC_ACCEPTED)
 		puback.CopyMessageID(publish)
 		stp.send(puback)
 
@@ -656,19 +656,19 @@ func TestPublishQOS2(t *testing.T) {
 		stp.connect(clientID)
 
 		// client --REGISTER--> GW
-		register := stp.recv().(*msgs.RegisterMessage)
+		register := stp.recv().(*pkts.RegisterMessage)
 		assert.Equal(topic, register.TopicName)
 		assert.Equal(uint16(0), register.TopicID)
 
 		// client <--REGACK-- GW
-		regack := msgs.NewRegackMessage(topicID, msgs.RC_ACCEPTED)
+		regack := pkts.NewRegackMessage(topicID, pkts.RC_ACCEPTED)
 		regack.CopyMessageID(register)
 		stp.send(regack)
 
-		var publish *msgs.PublishMessage
+		var publish *pkts.PublishMessage
 		// client --PUBLISH--> GW
-		publish = stp.recv().(*msgs.PublishMessage)
-		assert.Equal(msgs.TIT_REGISTERED, publish.TopicIDType)
+		publish = stp.recv().(*pkts.PublishMessage)
+		assert.Equal(pkts.TIT_REGISTERED, publish.TopicIDType)
 		assert.Equal(topicID, publish.TopicID)
 		assert.Equal(payload, publish.Data)
 		assert.Equal(retain, publish.Retain)
@@ -677,8 +677,8 @@ func TestPublishQOS2(t *testing.T) {
 
 		for i := uint(0); i < stp.client.cfg.RetryCount; i++ {
 			// client --PUBLISH--> GW
-			publish = stp.recv().(*msgs.PublishMessage)
-			assert.Equal(msgs.TIT_REGISTERED, publish.TopicIDType)
+			publish = stp.recv().(*pkts.PublishMessage)
+			assert.Equal(pkts.TIT_REGISTERED, publish.TopicIDType)
 			assert.Equal(topicID, publish.TopicID)
 			assert.Equal(payload, publish.Data)
 			assert.Equal(retain, publish.Retain)
@@ -686,17 +686,17 @@ func TestPublishQOS2(t *testing.T) {
 			assert.Equal(msgID, publish.MessageID())
 		}
 
-		pubrec := msgs.NewPubrecMessage()
+		pubrec := pkts.NewPubrecMessage()
 		pubrec.SetMessageID(msgID)
 		stp.send(pubrec)
 
 		for i := uint(0); i < stp.client.cfg.RetryCount+1; i++ {
 			// client --PUBREL--> GW
-			pubrel := stp.recv().(*msgs.PubrelMessage)
+			pubrel := stp.recv().(*pkts.PubrelMessage)
 			assert.Equal(msgID, pubrel.MessageID())
 		}
 
-		pubcomp := msgs.NewPubcompMessage()
+		pubcomp := pkts.NewPubcompMessage()
 		pubcomp.SetMessageID(msgID)
 		stp.send(pubcomp)
 
@@ -744,10 +744,10 @@ func TestPublishQOS2Predefined(t *testing.T) {
 
 		stp.connect(clientID)
 
-		var publish *msgs.PublishMessage
+		var publish *pkts.PublishMessage
 		// client --PUBLISH--> GW
-		publish = stp.recv().(*msgs.PublishMessage)
-		assert.Equal(msgs.TIT_PREDEFINED, publish.TopicIDType)
+		publish = stp.recv().(*pkts.PublishMessage)
+		assert.Equal(pkts.TIT_PREDEFINED, publish.TopicIDType)
 		assert.Equal(topicID, publish.TopicID)
 		assert.Equal(payload, publish.Data)
 		assert.Equal(retain, publish.Retain)
@@ -756,8 +756,8 @@ func TestPublishQOS2Predefined(t *testing.T) {
 
 		for i := uint(0); i < stp.client.cfg.RetryCount; i++ {
 			// client --PUBLISH--> GW
-			publish = stp.recv().(*msgs.PublishMessage)
-			assert.Equal(msgs.TIT_PREDEFINED, publish.TopicIDType)
+			publish = stp.recv().(*pkts.PublishMessage)
+			assert.Equal(pkts.TIT_PREDEFINED, publish.TopicIDType)
 			assert.Equal(topicID, publish.TopicID)
 			assert.Equal(payload, publish.Data)
 			assert.Equal(retain, publish.Retain)
@@ -765,17 +765,17 @@ func TestPublishQOS2Predefined(t *testing.T) {
 			assert.Equal(msgID, publish.MessageID())
 		}
 
-		pubrec := msgs.NewPubrecMessage()
+		pubrec := pkts.NewPubrecMessage()
 		pubrec.SetMessageID(msgID)
 		stp.send(pubrec)
 
 		for i := uint(0); i < stp.client.cfg.RetryCount+1; i++ {
 			// client --PUBREL--> GW
-			pubrel := stp.recv().(*msgs.PubrelMessage)
+			pubrel := stp.recv().(*pkts.PubrelMessage)
 			assert.Equal(msgID, pubrel.MessageID())
 		}
 
-		pubcomp := msgs.NewPubcompMessage()
+		pubcomp := pkts.NewPubcompMessage()
 		pubcomp.SetMessageID(msgID)
 		stp.send(pubcomp)
 
@@ -808,7 +808,7 @@ func TestPublishQOS2Short(t *testing.T) {
 	topic := "ab"
 	qos := uint8(2)
 	retain := true
-	topicID := msgs.EncodeShortTopic(topic)
+	topicID := pkts.EncodeShortTopic(topic)
 
 	stp := newTestSetup(t, clientID)
 	defer stp.cancel()
@@ -820,10 +820,10 @@ func TestPublishQOS2Short(t *testing.T) {
 
 		stp.connect(clientID)
 
-		var publish *msgs.PublishMessage
+		var publish *pkts.PublishMessage
 		// client --PUBLISH--> GW
-		publish = stp.recv().(*msgs.PublishMessage)
-		assert.Equal(msgs.TIT_SHORT, publish.TopicIDType)
+		publish = stp.recv().(*pkts.PublishMessage)
+		assert.Equal(pkts.TIT_SHORT, publish.TopicIDType)
 		assert.Equal(topicID, publish.TopicID)
 		assert.Equal(payload, publish.Data)
 		assert.Equal(retain, publish.Retain)
@@ -832,8 +832,8 @@ func TestPublishQOS2Short(t *testing.T) {
 
 		for i := uint(0); i < stp.client.cfg.RetryCount; i++ {
 			// client --PUBLISH--> GW
-			publish = stp.recv().(*msgs.PublishMessage)
-			assert.Equal(msgs.TIT_SHORT, publish.TopicIDType)
+			publish = stp.recv().(*pkts.PublishMessage)
+			assert.Equal(pkts.TIT_SHORT, publish.TopicIDType)
 			assert.Equal(topicID, publish.TopicID)
 			assert.Equal(payload, publish.Data)
 			assert.Equal(retain, publish.Retain)
@@ -841,17 +841,17 @@ func TestPublishQOS2Short(t *testing.T) {
 			assert.Equal(msgID, publish.MessageID())
 		}
 
-		pubrec := msgs.NewPubrecMessage()
+		pubrec := pkts.NewPubrecMessage()
 		pubrec.SetMessageID(msgID)
 		stp.send(pubrec)
 
 		for i := uint(0); i < stp.client.cfg.RetryCount+1; i++ {
 			// client --PUBREL--> GW
-			pubrel := stp.recv().(*msgs.PubrelMessage)
+			pubrel := stp.recv().(*pkts.PubrelMessage)
 			assert.Equal(msgID, pubrel.MessageID())
 		}
 
-		pubcomp := msgs.NewPubcompMessage()
+		pubcomp := pkts.NewPubcompMessage()
 		pubcomp.SetMessageID(msgID)
 		stp.send(pubcomp)
 
@@ -894,8 +894,8 @@ func TestPublishQOS3(t *testing.T) {
 		defer wg.Done()
 
 		// client --PUBLISH--> GW
-		publish := stp.recv().(*msgs.PublishMessage)
-		assert.Equal(msgs.TIT_PREDEFINED, publish.TopicIDType)
+		publish := stp.recv().(*pkts.PublishMessage)
+		assert.Equal(pkts.TIT_PREDEFINED, publish.TopicIDType)
 		assert.Equal(topicID, publish.TopicID)
 		assert.Equal(payload, publish.Data)
 		assert.Equal(retain, publish.Retain)
@@ -927,20 +927,20 @@ func TestSubscribeQOS0(t *testing.T) {
 		stp.connect(clientID)
 
 		// client --SUBSCRIBE--> GW
-		subscribe := stp.recv().(*msgs.SubscribeMessage)
+		subscribe := stp.recv().(*pkts.SubscribeMessage)
 		subscribe.QOS = qos
 		assert.Equal([]byte(topic), subscribe.TopicName)
-		assert.Equal(msgs.TIT_STRING, subscribe.TopicIDType)
+		assert.Equal(pkts.TIT_STRING, subscribe.TopicIDType)
 
 		// client <--SUBACK-- GW
-		suback := msgs.NewSubackMessage(1, 0, msgs.RC_ACCEPTED)
+		suback := pkts.NewSubackMessage(1, 0, pkts.RC_ACCEPTED)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
 		// client <--PUBLISH-- GW
 		msgID := uint16(123)
-		publish := msgs.NewPublishMessage(suback.TopicID,
-			msgs.TIT_REGISTERED, []byte(""), qos, false, false)
+		publish := pkts.NewPublishMessage(suback.TopicID,
+			pkts.TIT_REGISTERED, []byte(""), qos, false, false)
 		publish.SetMessageID(msgID)
 		stp.send(publish)
 
@@ -954,7 +954,7 @@ func TestSubscribeQOS0(t *testing.T) {
 
 	callbackFired := make(chan struct{})
 
-	callback := func(client *Client, topic string, msg *msgs.PublishMessage) {
+	callback := func(client *Client, topic string, msg *pkts.PublishMessage) {
 		close(callbackFired)
 	}
 	if err := stp.client.Subscribe(topic, qos, callback); err != nil {
@@ -995,25 +995,25 @@ func TestSubscribeQOS1(t *testing.T) {
 		stp.connect(clientID)
 
 		// client --SUBSCRIBE--> GW
-		subscribe := stp.recv().(*msgs.SubscribeMessage)
+		subscribe := stp.recv().(*pkts.SubscribeMessage)
 		subscribe.QOS = qos
 		assert.Equal([]byte(topic), subscribe.TopicName)
-		assert.Equal(msgs.TIT_STRING, subscribe.TopicIDType)
+		assert.Equal(pkts.TIT_STRING, subscribe.TopicIDType)
 
 		// client <--SUBACK-- GW
-		suback := msgs.NewSubackMessage(1, 0, msgs.RC_ACCEPTED)
+		suback := pkts.NewSubackMessage(1, 0, pkts.RC_ACCEPTED)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
 		// client <--PUBLISH-- GW
 		msgID := uint16(123)
-		publish := msgs.NewPublishMessage(suback.TopicID,
-			msgs.TIT_REGISTERED, []byte(""), qos, false, false)
+		publish := pkts.NewPublishMessage(suback.TopicID,
+			pkts.TIT_REGISTERED, []byte(""), qos, false, false)
 		publish.SetMessageID(msgID)
 		stp.send(publish)
 
 		// client --PUBACK--> GW
-		puback := stp.recv().(*msgs.PubackMessage)
+		puback := stp.recv().(*pkts.PubackMessage)
 		assert.Equal(msgID, puback.MessageID())
 
 		stp.disconnect()
@@ -1026,7 +1026,7 @@ func TestSubscribeQOS1(t *testing.T) {
 
 	callbackFired := make(chan struct{})
 
-	callback := func(client *Client, topic string, msg *msgs.PublishMessage) {
+	callback := func(client *Client, topic string, msg *pkts.PublishMessage) {
 		close(callbackFired)
 	}
 	if err := stp.client.Subscribe(topic, qos, callback); err != nil {
@@ -1067,36 +1067,36 @@ func TestSubscribeQOS2(t *testing.T) {
 		stp.connect(clientID)
 
 		// client --SUBSCRIBE--> GW
-		subscribe := stp.recv().(*msgs.SubscribeMessage)
+		subscribe := stp.recv().(*pkts.SubscribeMessage)
 		subscribe.QOS = qos
 		assert.Equal([]byte(topic), subscribe.TopicName)
-		assert.Equal(msgs.TIT_STRING, subscribe.TopicIDType)
+		assert.Equal(pkts.TIT_STRING, subscribe.TopicIDType)
 
 		// client <--SUBACK-- GW
-		suback := msgs.NewSubackMessage(1, 0, msgs.RC_ACCEPTED)
+		suback := pkts.NewSubackMessage(1, 0, pkts.RC_ACCEPTED)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
 		msgID := uint16(123)
 		for i := uint(0); i < stp.client.cfg.RetryCount+1; i++ {
 			// client <--PUBLISH-- GW
-			publish := msgs.NewPublishMessage(suback.TopicID,
-				msgs.TIT_REGISTERED, []byte(""), qos, false, false)
+			publish := pkts.NewPublishMessage(suback.TopicID,
+				pkts.TIT_REGISTERED, []byte(""), qos, false, false)
 			publish.SetMessageID(msgID)
 			stp.send(publish)
 
 			// client --PUBREC--> GW
-			pubrec := stp.recv().(*msgs.PubrecMessage)
+			pubrec := stp.recv().(*pkts.PubrecMessage)
 			assert.Equal(msgID, pubrec.MessageID())
 		}
 
 		// client <--PUBREL-- GW
-		pubrel := msgs.NewPubrelMessage()
+		pubrel := pkts.NewPubrelMessage()
 		pubrel.SetMessageID(msgID)
 		stp.send(pubrel)
 
 		// client --PUBCOMP--> GW
-		pubcomp := stp.recv().(*msgs.PubcompMessage)
+		pubcomp := stp.recv().(*pkts.PubcompMessage)
 		assert.Equal(msgID, pubcomp.MessageID())
 
 		stp.disconnect()
@@ -1109,7 +1109,7 @@ func TestSubscribeQOS2(t *testing.T) {
 
 	callbackFired := make(chan struct{})
 
-	callback := func(client *Client, topic string, msg *msgs.PublishMessage) {
+	callback := func(client *Client, topic string, msg *pkts.PublishMessage) {
 		close(callbackFired)
 	}
 	if err := stp.client.Subscribe(topic, qos, callback); err != nil {
@@ -1153,29 +1153,29 @@ func TestSubscribeWildcard(t *testing.T) {
 		stp.connect(clientID)
 
 		// client --SUBSCRIBE--> GW
-		subscribe := stp.recv().(*msgs.SubscribeMessage)
-		assert.Equal(msgs.TIT_STRING, subscribe.TopicIDType)
+		subscribe := stp.recv().(*pkts.SubscribeMessage)
+		assert.Equal(pkts.TIT_STRING, subscribe.TopicIDType)
 		assert.Equal([]byte(wildcard), subscribe.TopicName)
 
 		// client <--SUBACK-- GW
-		suback := msgs.NewSubackMessage(0, 0, msgs.RC_ACCEPTED)
+		suback := pkts.NewSubackMessage(0, 0, pkts.RC_ACCEPTED)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
 		// client <--REGISTER-- GW
 		msgID := uint16(2)
-		register := msgs.NewRegisterMessage(1, topic)
+		register := pkts.NewRegisterMessage(1, topic)
 		register.SetMessageID(msgID)
 		stp.send(register)
 
 		// client --REGACK--> GW
-		regack := stp.recv().(*msgs.RegackMessage)
-		assert.Equal(msgs.RC_ACCEPTED, regack.ReturnCode)
+		regack := stp.recv().(*pkts.RegackMessage)
+		assert.Equal(pkts.RC_ACCEPTED, regack.ReturnCode)
 		assert.Equal(msgID, regack.MessageID())
 
 		// client <--PUBLISH-- GW
-		publish := msgs.NewPublishMessage(register.TopicID,
-			msgs.TIT_REGISTERED, []byte(""), 0, false, false)
+		publish := pkts.NewPublishMessage(register.TopicID,
+			pkts.TIT_REGISTERED, []byte(""), 0, false, false)
 		stp.send(publish)
 
 		close(published)
@@ -1190,7 +1190,7 @@ func TestSubscribeWildcard(t *testing.T) {
 
 	callbackFired := make(chan struct{})
 
-	callback := func(client *Client, topic string, msg *msgs.PublishMessage) {
+	callback := func(client *Client, topic string, msg *pkts.PublishMessage) {
 		close(callbackFired)
 	}
 	if err := stp.client.Subscribe(wildcard, qos, callback); err != nil {
@@ -1237,21 +1237,21 @@ func TestSubscribeShort(t *testing.T) {
 
 		stp.connect(clientID)
 
-		encodedTopic := msgs.EncodeShortTopic(topic)
+		encodedTopic := pkts.EncodeShortTopic(topic)
 
 		// client --SUBSCRIBE--> GW
-		subscribe := stp.recv().(*msgs.SubscribeMessage)
-		assert.Equal(msgs.TIT_SHORT, subscribe.TopicIDType)
+		subscribe := stp.recv().(*pkts.SubscribeMessage)
+		assert.Equal(pkts.TIT_SHORT, subscribe.TopicIDType)
 		assert.Equal(encodedTopic, subscribe.TopicID)
 
 		// client <--SUBACK-- GW
-		suback := msgs.NewSubackMessage(0, 0, msgs.RC_ACCEPTED)
+		suback := pkts.NewSubackMessage(0, 0, pkts.RC_ACCEPTED)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
 		// client <--PUBLISH-- GW
-		publish := msgs.NewPublishMessage(encodedTopic,
-			msgs.TIT_SHORT, []byte(""), 0, false, false)
+		publish := pkts.NewPublishMessage(encodedTopic,
+			pkts.TIT_SHORT, []byte(""), 0, false, false)
 		stp.send(publish)
 
 		stp.disconnect()
@@ -1264,7 +1264,7 @@ func TestSubscribeShort(t *testing.T) {
 
 	callbackFired := make(chan struct{})
 
-	callback := func(client *Client, topic string, msg *msgs.PublishMessage) {
+	callback := func(client *Client, topic string, msg *pkts.PublishMessage) {
 		close(callbackFired)
 	}
 	if err := stp.client.Subscribe(topic, qos, callback); err != nil {
@@ -1307,18 +1307,18 @@ func TestSubscribePredefined(t *testing.T) {
 		stp.connect(clientID)
 
 		// client --SUBSCRIBE--> GW
-		subscribe := stp.recv().(*msgs.SubscribeMessage)
-		assert.Equal(msgs.TIT_PREDEFINED, subscribe.TopicIDType)
+		subscribe := stp.recv().(*pkts.SubscribeMessage)
+		assert.Equal(pkts.TIT_PREDEFINED, subscribe.TopicIDType)
 		assert.Equal(topicID, subscribe.TopicID)
 
 		// client <--SUBACK-- GW
-		suback := msgs.NewSubackMessage(0, 0, msgs.RC_ACCEPTED)
+		suback := pkts.NewSubackMessage(0, 0, pkts.RC_ACCEPTED)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
 		// client <--PUBLISH-- GW
-		publish := msgs.NewPublishMessage(topicID,
-			msgs.TIT_PREDEFINED, []byte(""), 0, false, false)
+		publish := pkts.NewPublishMessage(topicID,
+			pkts.TIT_PREDEFINED, []byte(""), 0, false, false)
 		stp.send(publish)
 
 		stp.disconnect()
@@ -1331,7 +1331,7 @@ func TestSubscribePredefined(t *testing.T) {
 
 	callbackFired := make(chan struct{})
 
-	callback := func(client *Client, topic string, msg *msgs.PublishMessage) {
+	callback := func(client *Client, topic string, msg *pkts.PublishMessage) {
 		close(callbackFired)
 	}
 	if err := stp.client.SubscribePredefined(topicID, qos, callback); err != nil {
@@ -1372,23 +1372,23 @@ func TestUnsubscribeString(t *testing.T) {
 		stp.connect(clientID)
 
 		// client --SUBSCRIBE--> GW
-		subscribe := stp.recv().(*msgs.SubscribeMessage)
+		subscribe := stp.recv().(*pkts.SubscribeMessage)
 		subscribe.QOS = qos
 		assert.Equal([]byte(topic), subscribe.TopicName)
-		assert.Equal(msgs.TIT_STRING, subscribe.TopicIDType)
+		assert.Equal(pkts.TIT_STRING, subscribe.TopicIDType)
 
 		// client <--SUBACK-- GW
-		suback := msgs.NewSubackMessage(1, 0, msgs.RC_ACCEPTED)
+		suback := pkts.NewSubackMessage(1, 0, pkts.RC_ACCEPTED)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
 		// client --UNSUBSCRIBE--> GW
-		unsubscribe := stp.recv().(*msgs.UnsubscribeMessage)
+		unsubscribe := stp.recv().(*pkts.UnsubscribeMessage)
 		assert.Equal([]byte(topic), unsubscribe.TopicName)
-		assert.Equal(msgs.TIT_STRING, unsubscribe.TopicIDType)
+		assert.Equal(pkts.TIT_STRING, unsubscribe.TopicIDType)
 
 		// client <--UNSUBACK-- GW
-		unsuback := msgs.NewUnsubackMessage()
+		unsuback := pkts.NewUnsubackMessage()
 		unsuback.CopyMessageID(unsubscribe)
 		stp.send(unsuback)
 
@@ -1434,25 +1434,25 @@ func TestUnsubscribeShort(t *testing.T) {
 
 		stp.connect(clientID)
 
-		encodedTopic := msgs.EncodeShortTopic(topic)
+		encodedTopic := pkts.EncodeShortTopic(topic)
 
 		// client --SUBSCRIBE--> GW
-		subscribe := stp.recv().(*msgs.SubscribeMessage)
-		assert.Equal(msgs.TIT_SHORT, subscribe.TopicIDType)
+		subscribe := stp.recv().(*pkts.SubscribeMessage)
+		assert.Equal(pkts.TIT_SHORT, subscribe.TopicIDType)
 		assert.Equal(encodedTopic, subscribe.TopicID)
 
 		// client <--SUBACK-- GW
-		suback := msgs.NewSubackMessage(0, 0, msgs.RC_ACCEPTED)
+		suback := pkts.NewSubackMessage(0, 0, pkts.RC_ACCEPTED)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
 		// client --UNSUBSCRIBE--> GW
-		unsubscribe := stp.recv().(*msgs.UnsubscribeMessage)
-		assert.Equal(msgs.TIT_SHORT, unsubscribe.TopicIDType)
+		unsubscribe := stp.recv().(*pkts.UnsubscribeMessage)
+		assert.Equal(pkts.TIT_SHORT, unsubscribe.TopicIDType)
 		assert.Equal(encodedTopic, unsubscribe.TopicID)
 
 		// client <--UNSUBACK-- GW
-		unsuback := msgs.NewUnsubackMessage()
+		unsuback := pkts.NewUnsubackMessage()
 		unsuback.CopyMessageID(unsubscribe)
 		stp.send(unsuback)
 
@@ -1501,22 +1501,22 @@ func TestUnsubscribePredefined(t *testing.T) {
 		stp.connect(clientID)
 
 		// client --SUBSCRIBE--> GW
-		subscribe := stp.recv().(*msgs.SubscribeMessage)
-		assert.Equal(msgs.TIT_PREDEFINED, subscribe.TopicIDType)
+		subscribe := stp.recv().(*pkts.SubscribeMessage)
+		assert.Equal(pkts.TIT_PREDEFINED, subscribe.TopicIDType)
 		assert.Equal(topicID, subscribe.TopicID)
 
 		// client <--SUBACK-- GW
-		suback := msgs.NewSubackMessage(0, 0, msgs.RC_ACCEPTED)
+		suback := pkts.NewSubackMessage(0, 0, pkts.RC_ACCEPTED)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
 		// client --UNSUBSCRIBE--> GW
-		unsubscribe := stp.recv().(*msgs.UnsubscribeMessage)
-		assert.Equal(msgs.TIT_PREDEFINED, unsubscribe.TopicIDType)
+		unsubscribe := stp.recv().(*pkts.UnsubscribeMessage)
+		assert.Equal(pkts.TIT_PREDEFINED, unsubscribe.TopicIDType)
 		assert.Equal(topicID, unsubscribe.TopicID)
 
 		// client <--UNSUBACK-- GW
-		unsuback := msgs.NewUnsubackMessage()
+		unsuback := pkts.NewUnsubackMessage()
 		unsuback.CopyMessageID(unsubscribe)
 		stp.send(unsuback)
 
@@ -1562,11 +1562,11 @@ func TestPing(t *testing.T) {
 
 		// client --PINGREQ--> GW
 		msg := stp.recv()
-		_, ok := msg.(*msgs.PingreqMessage)
+		_, ok := msg.(*pkts.PingreqMessage)
 		assert.True(ok)
 
 		// client <--PINGRESP-- GW
-		pingresp := msgs.NewPingrespMessage()
+		pingresp := pkts.NewPingrespMessage()
 		stp.send(pingresp)
 
 		stp.disconnect()
@@ -1611,12 +1611,12 @@ func TestSleep(t *testing.T) {
 
 		for i := uint(0); i < stp.client.cfg.RetryCount+1; i++ {
 			// client --DISCONNECT(1)--> GW
-			disconnect := stp.recv().(*msgs.DisconnectMessage)
+			disconnect := stp.recv().(*pkts.DisconnectMessage)
 			assert.Equal(sleepSecs, disconnect.Duration)
 		}
 
 		// client <--DISCONNECT(0)-- GW
-		stp.send(msgs.NewDisconnectMessage(0))
+		stp.send(pkts.NewDisconnectMessage(0))
 
 		for i := 0; i < numSleeps; i++ {
 			sleepStart := time.Now()
@@ -1624,7 +1624,7 @@ func TestSleep(t *testing.T) {
 			// (sleep)
 
 			// client --PINGREQ--> GW
-			_ = stp.recv().(*msgs.PingreqMessage)
+			_ = stp.recv().(*pkts.PingreqMessage)
 			sleepDuration := time.Since(sleepStart)
 			wantedSleepDuration := time.Duration(sleepSecs) * time.Second
 			sleepDiff := sleepDuration - wantedSleepDuration
@@ -1633,13 +1633,13 @@ func TestSleep(t *testing.T) {
 			assert.Equal(util.StateAwake, stp.client.state.Get())
 
 			// client <--PUBLISH-- GW
-			encodedTopic := msgs.EncodeShortTopic(topic)
-			publish := msgs.NewPublishMessage(encodedTopic,
-				msgs.TIT_SHORT, []byte(""), 0, false, false)
+			encodedTopic := pkts.EncodeShortTopic(topic)
+			publish := pkts.NewPublishMessage(encodedTopic,
+				pkts.TIT_SHORT, []byte(""), 0, false, false)
 			stp.send(publish)
 
 			// client <--PINGRESP-- GW
-			pingresp := msgs.NewPingrespMessage()
+			pingresp := pkts.NewPingrespMessage()
 			stp.send(pingresp)
 		}
 
@@ -1691,7 +1691,7 @@ func TestSleepTimeout(t *testing.T) {
 
 		for i := uint(0); i < stp.client.cfg.RetryCount+1; i++ {
 			// client --DISCONNECT(1)--> GW
-			disconnect := stp.recv().(*msgs.DisconnectMessage)
+			disconnect := stp.recv().(*pkts.DisconnectMessage)
 			assert.Equal(sleepSecs, disconnect.Duration)
 		}
 
@@ -1735,12 +1735,12 @@ func TestDisconnectRetry(t *testing.T) {
 
 		for i := uint(0); i < stp.client.cfg.RetryCount+1; i++ {
 			// client --DISCONNECT--> GW
-			disconnect := stp.recv().(*msgs.DisconnectMessage)
+			disconnect := stp.recv().(*pkts.DisconnectMessage)
 			assert.Equal(uint16(0), disconnect.Duration)
 		}
 
 		// client <--DISCONNECT-- GW
-		stp.send(msgs.NewDisconnectMessage(0))
+		stp.send(pkts.NewDisconnectMessage(0))
 	}()
 
 	if err := stp.client.Connect(); err != nil {
@@ -1773,7 +1773,7 @@ func TestDisconnectTimeout(t *testing.T) {
 
 		for i := uint(0); i < stp.client.cfg.RetryCount+1; i++ {
 			// client --DISCONNECT--> GW
-			disconnect := stp.recv().(*msgs.DisconnectMessage)
+			disconnect := stp.recv().(*pkts.DisconnectMessage)
 			assert.Equal(uint16(0), disconnect.Duration)
 		}
 	}()
@@ -1868,13 +1868,13 @@ func (stp *testSetup) createSocketPair(sockType string, rand *rand.Rand) (*net.U
 	return listener, conn
 }
 
-func (stp *testSetup) send(msg msgs.Message) {
+func (stp *testSetup) send(msg pkts.Message) {
 	if err := msg.Write(stp.conn); err != nil {
 		stp.t.Fatal(err)
 	}
 }
 
-func (stp *testSetup) recv() msgs.Message {
+func (stp *testSetup) recv() pkts.Message {
 	buff := make([]byte, maxTestPktLength)
 	n, err := stp.conn.Read(buff)
 	if err != nil {
@@ -1884,9 +1884,9 @@ func (stp *testSetup) recv() msgs.Message {
 	}
 
 	pktReader := bytes.NewReader(buff[:n])
-	header := &msgs.Header{}
+	header := &pkts.Header{}
 	header.Unpack(pktReader)
-	msg := msgs.NewMessageWithHeader(*header)
+	msg := pkts.NewMessageWithHeader(*header)
 	msg.Unpack(pktReader)
 
 	return msg
@@ -1952,7 +1952,7 @@ func (stp *testSetup) connect(clientID string) {
 	assert := assert.New(stp.t)
 
 	// client --CONNECT--> GW
-	connect := stp.recv().(*msgs.ConnectMessage)
+	connect := stp.recv().(*pkts.ConnectMessage)
 	assert.Equal(true, connect.CleanSession)
 	assert.Equal([]byte(clientID), connect.ClientID)
 	assert.Equal(uint16(0), connect.Duration)
@@ -1960,7 +1960,7 @@ func (stp *testSetup) connect(clientID string) {
 	assert.Equal(false, connect.Will)
 
 	// client <--CONNACK-- GW
-	stp.send(msgs.NewConnackMessage(msgs.RC_ACCEPTED))
+	stp.send(pkts.NewConnackMessage(pkts.RC_ACCEPTED))
 }
 
 // DISCONNECT transaction.
@@ -1968,9 +1968,9 @@ func (stp *testSetup) disconnect() {
 	assert := assert.New(stp.t)
 
 	// client --DISCONNECT--> GW
-	disconnect := stp.recv().(*msgs.DisconnectMessage)
+	disconnect := stp.recv().(*pkts.DisconnectMessage)
 	assert.Equal(uint16(0), disconnect.Duration)
 
 	// client <--DISCONNECT-- GW
-	stp.send(msgs.NewDisconnectMessage(0))
+	stp.send(pkts.NewDisconnectMessage(0))
 }

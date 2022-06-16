@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	mqttPackets "github.com/eclipse/paho.mqtt.golang/packets"
-	snMsgs "github.com/energomonitor/bisquitt/messages"
+	snPkts "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
 
@@ -32,11 +32,11 @@ func newBrokerPublishQOS2Transaction(ctx context.Context, h *handler, msgID uint
 	return t
 }
 
-func (t *brokerPublishQOS2Transaction) Regack(snRegack *snMsgs.RegackMessage) error {
+func (t *brokerPublishQOS2Transaction) Regack(snRegack *snPkts.RegackMessage) error {
 	return t.regack(snRegack, awaitingPubrec)
 }
 
-func (t *brokerPublishQOS2Transaction) Pubrec(snPubrec *snMsgs.PubrecMessage) error {
+func (t *brokerPublishQOS2Transaction) Pubrec(snPubrec *snPkts.PubrecMessage) error {
 	if t.State != awaitingPubrec {
 		t.log.Debug("Unexpected message in %d: %v", t.State, snPubrec)
 		return nil
@@ -51,12 +51,12 @@ func (t *brokerPublishQOS2Transaction) Pubrel(mqPubrel *mqttPackets.PubrelPacket
 		t.log.Debug("Unexpected message in %d: %v", t.State, mqPubrel)
 		return nil
 	}
-	snPubrel := snMsgs.NewPubrelMessage()
+	snPubrel := snPkts.NewPubrelMessage()
 	snPubrel.SetMessageID(mqPubrel.MessageID)
 	return t.ProceedSN(awaitingPubcomp, snPubrel)
 }
 
-func (t *brokerPublishQOS2Transaction) Pubcomp(snPubcomp *snMsgs.PubcompMessage) error {
+func (t *brokerPublishQOS2Transaction) Pubcomp(snPubcomp *snPkts.PubcompMessage) error {
 	if t.State != awaitingPubcomp {
 		t.log.Debug("Unexpected message in %d: %v", t.State, snPubcomp)
 		return nil
