@@ -15,7 +15,7 @@ type sleepTransaction struct {
 	*transactions.TransactionBase
 	client              *Client
 	log                 util.Logger
-	disconnect          *pkts.DisconnectMessage
+	disconnect          *pkts.Disconnect
 	retryDelay          time.Duration
 	retryCount          uint
 	disconnectResendNum uint
@@ -66,7 +66,7 @@ func (t *sleepTransaction) Sleep() error {
 	switch state {
 	case util.StateActive:
 		duration := uint16(t.sleepDuration / time.Second)
-		t.disconnect = pkts.NewDisconnectMessage(duration)
+		t.disconnect = pkts.NewDisconnect(duration)
 		t.state = awaitingDisconnect
 		if err := t.client.send(t.disconnect); err != nil {
 			t.Fail(err)
@@ -96,7 +96,7 @@ func (t *sleepTransaction) resendDisconnect() {
 	t.timer = time.AfterFunc(t.retryDelay, t.resendDisconnect)
 }
 
-func (t *sleepTransaction) Disconnect(disconnect *pkts.DisconnectMessage) {
+func (t *sleepTransaction) Disconnect(disconnect *pkts.Disconnect) {
 	if t.state != awaitingDisconnect {
 		t.log.Debug("Unexpected message in %d: %v", t.state, disconnect)
 		return
@@ -106,7 +106,7 @@ func (t *sleepTransaction) Disconnect(disconnect *pkts.DisconnectMessage) {
 	t.startSleep()
 }
 
-func (t *sleepTransaction) Pingresp(pingresp *pkts.PingrespMessage) {
+func (t *sleepTransaction) Pingresp(pingresp *pkts.Pingresp) {
 	if t.state != awaitingPingresp {
 		t.log.Debug("Unexpected message in %d: %v", t.state, pingresp)
 		return
@@ -131,7 +131,7 @@ func (t *sleepTransaction) wakeup() {
 	t.client.setState(util.StateAwake)
 	t.log.Debug("Awake")
 	t.state = awaitingPingresp
-	ping := pkts.NewPingreqMessage([]byte(t.client.cfg.ClientID))
+	ping := pkts.NewPingreq([]byte(t.client.cfg.ClientID))
 	if err := t.client.send(ping); err != nil {
 		t.Fail(err)
 		return

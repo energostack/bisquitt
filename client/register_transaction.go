@@ -33,13 +33,13 @@ func newRegisterTransaction(client *Client, msgID uint16, topic string) *registe
 	}
 }
 
-func (t *registerTransaction) Regack(regack *pkts.RegackMessage) {
+func (t *registerTransaction) Regack(regack *pkts.Regack) {
 	if regack.ReturnCode != pkts.RC_ACCEPTED {
 		t.Fail(fmt.Errorf("registration rejected with code %d", regack.ReturnCode))
 		return
 	}
 
-	register := t.Data.(*pkts.RegisterMessage)
+	register := t.Data.(*pkts.Register)
 	t.client.registeredTopicsLock.Lock()
 	t.client.registeredTopics[register.TopicName] = regack.TopicID
 	t.client.registeredTopicsLock.Unlock()

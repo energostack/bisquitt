@@ -31,6 +31,6 @@ func newDisconnectTransaction(client *Client) *disconnectTransaction {
 	}
 }
 
-func (t *disconnectTransaction) Disconnect(disconnect *pkts.DisconnectMessage) {
+func (t *disconnectTransaction) Disconnect(disconnect *pkts.Disconnect) {
 	t.Success()
 }

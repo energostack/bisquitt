@@ -38,14 +38,14 @@ func newSubscribeTransaction(client *Client, msgID uint16, callback MessageHandl
 	}
 }
 
-func (t *subscribeTransaction) Suback(suback *pkts.SubackMessage) {
+func (t *subscribeTransaction) Suback(suback *pkts.Suback) {
 	if suback.ReturnCode != pkts.RC_ACCEPTED {
 		t.Fail(fmt.Errorf("subscription rejected with code %d", suback.ReturnCode))
 		return
 	}
 
 	var topicName string
-	subscribe := t.Data.(*pkts.SubscribeMessage)
+	subscribe := t.Data.(*pkts.Subscribe)
 
 	switch subscribe.TopicIDType {
 	case pkts.TIT_STRING:

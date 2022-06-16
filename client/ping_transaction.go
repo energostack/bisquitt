@@ -31,6 +31,6 @@ func newPingTransaction(client *Client) *pingTransaction {
 	}
 }
 
-func (t *pingTransaction) Pingresp(pingresp *pkts.PingrespMessage) {
+func (t *pingTransaction) Pingresp(pingresp *pkts.Pingresp) {
 	t.Success()
 }
