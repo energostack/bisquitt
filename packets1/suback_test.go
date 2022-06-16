@@ -16,7 +16,7 @@ func TestSubackStruct(t *testing.T) {
 
 	if assert.NotNil(t, msg, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.Suback", reflect.TypeOf(msg).String(), "Type should be Suback")
-		assert.Equal(t, uint16(8), msg.MessageLength(), "Default Length should be 8")
+		assert.Equal(t, uint16(8), msg.PacketLength(), "Default Length should be 8")
 		assert.Equal(t, qos, msg.QOS, "Bad QOS value")
 		assert.Equal(t, RC_ACCEPTED, msg.ReturnCode, "ReturnCode should be RC_ACCEPTED")
 		assert.Equal(t, topicID, msg.TopicID, "Bad TopicID value")

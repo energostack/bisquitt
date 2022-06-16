@@ -18,7 +18,7 @@ func TestPubackStruct(t *testing.T) {
 		assert.Equal(t, topicID, msg.TopicID, fmt.Sprintf("TopicID should be %d", topicID))
 		assert.Equal(t, uint16(0), msg.MessageID(), "Default MessageID should be 0")
 		assert.Equal(t, RC_ACCEPTED, msg.ReturnCode, "ReturnCode should be RC_ACCEPTED")
-		assert.Equal(t, uint16(7), msg.MessageLength(), "Default Length should be 2")
+		assert.Equal(t, uint16(7), msg.PacketLength(), "Default Length should be 2")
 	}
 }
 
