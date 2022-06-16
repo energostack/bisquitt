@@ -201,7 +201,7 @@ func handleAction() cli.ActionFunc {
 			return err
 		}
 
-		handler := func(client *snClient.Client, topic string, msg *pkts.PublishMessage) {
+		handler := func(client *snClient.Client, topic string, msg *pkts.Publish) {
 			var flags []string
 			if msg.Retain {
 				flags = append(flags, "retained")
