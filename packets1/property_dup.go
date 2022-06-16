@@ -12,8 +12,8 @@ func (m *DUPProperty) DUP() bool {
 	return m.dup
 }
 
-// MessageWithDUP is an interface for all messages which include DUP property.
-type MessageWithDUP interface {
+// PacketWithDUP is an interface for all packets which include DUP property.
+type PacketWithDUP interface {
 	DUP() bool
 	SetDUP(bool)
 }
