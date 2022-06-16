@@ -32,11 +32,11 @@ func newBrokerPublishQOS1Transaction(ctx context.Context, h *handler, msgID uint
 	return t
 }
 
-func (t *brokerPublishQOS1Transaction) Regack(snRegack *snPkts.RegackMessage) error {
+func (t *brokerPublishQOS1Transaction) Regack(snRegack *snPkts.Regack) error {
 	return t.regack(snRegack, awaitingPuback)
 }
 
-func (t *brokerPublishQOS1Transaction) Puback(snPuback *snPkts.PubackMessage) error {
+func (t *brokerPublishQOS1Transaction) Puback(snPuback *snPkts.Puback) error {
 	if t.State != awaitingPuback {
 		t.log.Debug("Unexpected message in %d: %v", t.State, snPuback)
 		return nil

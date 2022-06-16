@@ -72,13 +72,13 @@ func (t *connectTransaction) Start(ctx context.Context) error {
 
 	if t.mqConnect.WillFlag {
 		// Continue with WILLTOPICREQ.
-		return t.handler.snSend(snPkts.NewWillTopicReqMessage())
+		return t.handler.snSend(snPkts.NewWillTopicReq())
 	}
 
 	return t.handler.mqttSend(t.mqConnect)
 }
 
-func (t *connectTransaction) Auth(snMsg *snPkts.AuthMessage) error {
+func (t *connectTransaction) Auth(snMsg *snPkts.Auth) error {
 	// Extract username and password from PLAIN data.
 	if snMsg.Method == snPkts.AUTH_PLAIN {
 		user, password, err := snPkts.DecodePlain(snMsg)
@@ -101,23 +101,23 @@ func (t *connectTransaction) Auth(snMsg *snPkts.AuthMessage) error {
 
 	if t.mqConnect.WillFlag {
 		// Continue with WILLTOPICREQ.
-		return t.handler.snSend(snPkts.NewWillTopicReqMessage())
+		return t.handler.snSend(snPkts.NewWillTopicReq())
 	}
 
 	// All information successfully gathered - send MQTT connect.
 	return t.handler.mqttSend(t.mqConnect)
 }
 
-func (t *connectTransaction) WillTopic(snWillTopic *snPkts.WillTopicMessage) error {
+func (t *connectTransaction) WillTopic(snWillTopic *snPkts.WillTopic) error {
 	t.mqConnect.WillQos = snWillTopic.QOS
 	t.mqConnect.WillRetain = snWillTopic.Retain
 	t.mqConnect.WillTopic = snWillTopic.WillTopic
 
 	// Continue with WILLMSGREQ.
-	return t.handler.snSend(snPkts.NewWillMsgReqMessage())
+	return t.handler.snSend(snPkts.NewWillMsgReq())
 }
 
-func (t *connectTransaction) WillMsg(snWillMsg *snPkts.WillMsgMessage) error {
+func (t *connectTransaction) WillMsg(snWillMsg *snPkts.WillMsg) error {
 	t.mqConnect.WillMessage = snWillMsg.WillMsg
 
 	// All information successfully gathered - send MQTT connect.
@@ -154,7 +154,7 @@ func (t *connectTransaction) Connack(mqConnack *mqttPackets.ConnackPacket) error
 
 // Inform client that the CONNECT request was refused.
 func (t *connectTransaction) SendConnack(code snPkts.ReturnCode) error {
-	snConnack := snPkts.NewConnackMessage(code)
+	snConnack := snPkts.NewConnack(code)
 	if err := t.handler.snSend(snConnack); err != nil {
 		t.Fail(err)
 		return err

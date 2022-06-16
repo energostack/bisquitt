@@ -53,7 +53,7 @@ func (t *subscribeTransaction) Suback(mqSuback *mqttPackets.SubackPacket) error 
 		returnCode = snPkts.RC_NOT_SUPPORTED
 		t.Fail(fmt.Errorf("MQTT SUBACK return code: %d", mqSuback.ReturnCodes[0]))
 	}
-	snMsg := snPkts.NewSubackMessage(t.topicID, mqSuback.Qos, returnCode)
+	snMsg := snPkts.NewSuback(t.topicID, mqSuback.Qos, returnCode)
 	snMsg.SetMessageID(mqSuback.MessageID)
 	return t.handler.snSend(snMsg)
 }

@@ -22,12 +22,12 @@ const (
 )
 
 type transactionWithRegack interface {
-	Regack(snRegack *snPkts.RegackMessage) error
+	Regack(snRegack *snPkts.Regack) error
 }
 
 type brokerPublishTransaction interface {
 	transactions.StatefulTransaction
-	SetSNPublish(*snPkts.PublishMessage)
+	SetSNPublish(*snPkts.Publish)
 	ProceedSN(newState transactionState, snMsg snPkts.Message) error
 	ProceedMQTT(newState transactionState, mqMsg mqttPackets.ControlPacket) error
 }
@@ -35,15 +35,15 @@ type brokerPublishTransaction interface {
 type brokerPublishTransactionBase struct {
 	*transactions.RetryTransaction
 	log       util.Logger
-	snPublish *snPkts.PublishMessage
+	snPublish *snPkts.Publish
 	handler   *handler
 }
 
-func (t *brokerPublishTransactionBase) SetSNPublish(snPublish *snPkts.PublishMessage) {
+func (t *brokerPublishTransactionBase) SetSNPublish(snPublish *snPkts.Publish) {
 	t.snPublish = snPublish
 }
 
-func (t *brokerPublishTransactionBase) regack(snRegack *snPkts.RegackMessage, newState transactionState) error {
+func (t *brokerPublishTransactionBase) regack(snRegack *snPkts.Regack, newState transactionState) error {
 	if t.State != awaitingRegack {
 		t.log.Debug("Unexpected message in %d: %v", t.State, snRegack)
 		return nil
@@ -52,7 +52,7 @@ func (t *brokerPublishTransactionBase) regack(snRegack *snPkts.RegackMessage, ne
 		t.Fail(fmt.Errorf("REGACK return code: %d", snRegack.ReturnCode))
 		return nil
 	}
-	snRegister := t.Data.(*snPkts.RegisterMessage)
+	snRegister := t.Data.(*snPkts.Register)
 	t.handler.registeredTopics.Store(snRegister.TopicID, snRegister.TopicName)
 	return t.ProceedSN(newState, t.snPublish)
 }

@@ -47,7 +47,7 @@ func TestRepeatedConnect(t *testing.T) {
 	defer stp.cancel()
 
 	// client --CONNECT--> GW
-	snConnect := snPkts.NewConnectMessage(clientID, true, false, 1)
+	snConnect := snPkts.NewConnect(clientID, true, false, 1)
 	stp.snSend(snConnect, false)
 
 	// GW --CONNECT--> MQTT broker
@@ -99,7 +99,7 @@ func TestRepeatedConnect(t *testing.T) {
 	stp.mqttSend(mqttConnack, false)
 
 	// client <--CONNACK-- GW
-	snConnack := stp.snRecv().(*snPkts.ConnackMessage)
+	snConnack := stp.snRecv().(*snPkts.Connack)
 	assert.Equal(snPkts.RC_ACCEPTED, snConnack.ReturnCode)
 
 	assert.Equal(util.StateActive, stp.handler.state.Get())
@@ -129,7 +129,7 @@ func TestPubSubPredefined(t *testing.T) {
 	// SUBSCRIBE, PREDEFINED TOPIC
 
 	// client --SUBSCRIBE--> GW
-	snSubscribe := snPkts.NewSubscribeMessage(topicID, snPkts.TIT_PREDEFINED, nil, 0, false)
+	snSubscribe := snPkts.NewSubscribe(topicID, snPkts.TIT_PREDEFINED, nil, 0, false)
 	stp.snSend(snSubscribe, true)
 
 	// GW --SUBSCRIBE--> MQTT broker
@@ -146,7 +146,7 @@ func TestPubSubPredefined(t *testing.T) {
 	stp.mqttSend(mqttSuback, false)
 
 	// client <--SUBACK-- GW
-	snSuback := stp.snRecv().(*snPkts.SubackMessage)
+	snSuback := stp.snRecv().(*snPkts.Suback)
 	assert.Equal(snSubscribe.MessageID(), snSuback.MessageID())
 	assert.Equal(snPkts.RC_ACCEPTED, snSuback.ReturnCode)
 
@@ -155,7 +155,7 @@ func TestPubSubPredefined(t *testing.T) {
 	payload := []byte("test-msg-1")
 
 	// client --PUBLISH--> GW
-	snPublish := snPkts.NewPublishMessage(topicID, snPkts.TIT_PREDEFINED, payload, 0, false, false)
+	snPublish := snPkts.NewPublish(topicID, snPkts.TIT_PREDEFINED, payload, 0, false, false)
 	stp.snSend(snPublish, true)
 
 	// GW --PUBLISH--> MQTT broker
@@ -170,7 +170,7 @@ func TestPubSubPredefined(t *testing.T) {
 	stp.mqttSend(mqttPublish, true)
 
 	// client <--PUBLISH-- GW
-	snPublish = stp.snRecv().(*snPkts.PublishMessage)
+	snPublish = stp.snRecv().(*snPkts.Publish)
 	assert.Equal(topicID, snPublish.TopicID)
 	assert.Equal(snPkts.TIT_PREDEFINED, snPublish.TopicIDType)
 	assert.Equal(payload, snPublish.Data)
@@ -200,7 +200,7 @@ func TestPubSubPredefinedLong(t *testing.T) {
 	// SUBSCRIBE, PREDEFINED TOPIC
 
 	// client --SUBSCRIBE--> GW
-	snSubscribe := snPkts.NewSubscribeMessage(topicID, snPkts.TIT_PREDEFINED, nil, 0, false)
+	snSubscribe := snPkts.NewSubscribe(topicID, snPkts.TIT_PREDEFINED, nil, 0, false)
 	stp.snSend(snSubscribe, true)
 
 	// GW --SUBSCRIBE--> MQTT broker
@@ -217,7 +217,7 @@ func TestPubSubPredefinedLong(t *testing.T) {
 	stp.mqttSend(mqttSuback, false)
 
 	// client <--SUBACK-- GW
-	snSuback := stp.snRecv().(*snPkts.SubackMessage)
+	snSuback := stp.snRecv().(*snPkts.Suback)
 	assert.Equal(snSubscribe.MessageID(), snSuback.MessageID())
 	assert.Equal(snPkts.RC_ACCEPTED, snSuback.ReturnCode)
 
@@ -232,7 +232,7 @@ func TestPubSubPredefinedLong(t *testing.T) {
 	}
 
 	// client --PUBLISH--> GW
-	snPublish := snPkts.NewPublishMessage(topicID, snPkts.TIT_PREDEFINED, payload, 0, false, false)
+	snPublish := snPkts.NewPublish(topicID, snPkts.TIT_PREDEFINED, payload, 0, false, false)
 	stp.snSend(snPublish, true)
 
 	// GW --PUBLISH--> MQTT broker
@@ -247,7 +247,7 @@ func TestPubSubPredefinedLong(t *testing.T) {
 	stp.mqttSend(mqttPublish, true)
 
 	// client <--PUBLISH-- GW
-	snPublish = stp.snRecv().(*snPkts.PublishMessage)
+	snPublish = stp.snRecv().(*snPkts.Publish)
 	assert.Equal(topicID, snPublish.TopicID)
 	assert.Equal(snPkts.TIT_PREDEFINED, snPublish.TopicIDType)
 	assert.Equal(payload, snPublish.Data)
@@ -263,7 +263,7 @@ func TestDisconnectedRegister(t *testing.T) {
 	defer stp.cancel()
 
 	stp.snSend(
-		snPkts.NewRegisterMessage(0, "test-topic-0"),
+		snPkts.NewRegister(0, "test-topic-0"),
 		true,
 	)
 
@@ -277,7 +277,7 @@ func TestDisconnectedSubscribe(t *testing.T) {
 	defer stp.cancel()
 
 	stp.snSend(
-		snPkts.NewSubscribeMessage(0, snPkts.TIT_STRING,
+		snPkts.NewSubscribe(0, snPkts.TIT_STRING,
 			[]byte("test-topic-0"), 0, false),
 		true,
 	)
@@ -291,7 +291,7 @@ func TestDisconnectedPublishQOS0(t *testing.T) {
 	stp := newTestSetup(t, false, topics.PredefinedTopics{})
 	defer stp.cancel()
 
-	snPublish := snPkts.NewPublishMessage(
+	snPublish := snPkts.NewPublish(
 		snPkts.EncodeShortTopic("ab"),
 		snPkts.TIT_SHORT, []byte("test-payload"), 0, false, false,
 	)
@@ -306,7 +306,7 @@ func TestDisconnectedPublishQOS3Registered(t *testing.T) {
 	stp := newTestSetup(t, false, topics.PredefinedTopics{})
 	defer stp.cancel()
 
-	snPublish := snPkts.NewPublishMessage(
+	snPublish := snPkts.NewPublish(
 		123, snPkts.TIT_REGISTERED, []byte("test-payload"), 3, false, false)
 	stp.snSend(snPublish, true)
 
@@ -324,7 +324,7 @@ func TestDisconnectedAuthPublishQOS3Registered(t *testing.T) {
 	payload := []byte("test-msg-0")
 	qos := uint8(3)
 
-	snPublish := snPkts.NewPublishMessage(topicID, snPkts.TIT_SHORT,
+	snPublish := snPkts.NewPublish(topicID, snPkts.TIT_SHORT,
 		payload, qos, false, false)
 	stp.snSend(snPublish, true)
 
@@ -345,7 +345,7 @@ func TestDisconnectedPublishQOS3Short(t *testing.T) {
 	qos := uint8(3)
 
 	// client --PUBLISH--> GW
-	snPublish := snPkts.NewPublishMessage(topicID, snPkts.TIT_SHORT,
+	snPublish := snPkts.NewPublish(topicID, snPkts.TIT_SHORT,
 		payload, qos, false, false)
 	stp.snSend(snPublish, true)
 
@@ -377,7 +377,7 @@ func TestDisconnectedPublishQOS3Predefined(t *testing.T) {
 	defer stp.cancel()
 
 	// client --PUBLISH--> GW
-	snPublish := snPkts.NewPublishMessage(topicID, snPkts.TIT_PREDEFINED,
+	snPublish := snPkts.NewPublish(topicID, snPkts.TIT_PREDEFINED,
 		payload, qos, false, false)
 	stp.snSend(snPublish, true)
 
@@ -405,7 +405,7 @@ func TestClientPublishQOS0(t *testing.T) {
 	topicID := stp.register(topic)
 
 	// client --PUBLISH--> GW
-	snPublish := snPkts.NewPublishMessage(topicID, snPkts.TIT_REGISTERED, payload, 0, false, false)
+	snPublish := snPkts.NewPublish(topicID, snPkts.TIT_REGISTERED, payload, 0, false, false)
 	stp.snSend(snPublish, true)
 
 	// GW --PUBLISH--> MQTT broker
@@ -435,7 +435,7 @@ func TestClientPublishQOS1(t *testing.T) {
 	payload = []byte("test-msg-1")
 
 	// client --PUBLISH--> GW
-	snPublish := snPkts.NewPublishMessage(topicID, snPkts.TIT_REGISTERED, payload, 1, false, false)
+	snPublish := snPkts.NewPublish(topicID, snPkts.TIT_REGISTERED, payload, 1, false, false)
 	stp.snSend(snPublish, true)
 
 	// GW --PUBLISH--> MQTT broker
@@ -451,7 +451,7 @@ func TestClientPublishQOS1(t *testing.T) {
 	stp.mqttSend(mqttPuback, false)
 
 	// client <--PUBACK-- GW
-	snPuback := stp.snRecv().(*snPkts.PubackMessage)
+	snPuback := stp.snRecv().(*snPkts.Puback)
 	assert.Equal(snPublish.MessageID(), snPuback.MessageID())
 
 	// DISCONNECT
@@ -474,7 +474,7 @@ func TestClientPublishQOS2(t *testing.T) {
 	payload = []byte("test-msg-2")
 
 	// client --PUBLISH--> GW
-	snPublish := snPkts.NewPublishMessage(topicID, snPkts.TIT_REGISTERED, payload, 2, false, false)
+	snPublish := snPkts.NewPublish(topicID, snPkts.TIT_REGISTERED, payload, 2, false, false)
 	stp.snSend(snPublish, true)
 
 	// GW --PUBLISH--> MQTT broker
@@ -490,11 +490,11 @@ func TestClientPublishQOS2(t *testing.T) {
 	stp.mqttSend(mqttPubrec, false)
 
 	// client <--PUBREC-- GW
-	snPubrec := stp.snRecv().(*snPkts.PubrecMessage)
+	snPubrec := stp.snRecv().(*snPkts.Pubrec)
 	assert.Equal(snPublish.MessageID(), snPubrec.MessageID())
 
 	// client --PUBREL--> GW
-	snPubrel := snPkts.NewPubrelMessage()
+	snPubrel := snPkts.NewPubrel()
 	snPubrel.SetMessageID(mqttPublish.MessageID)
 	stp.snSend(snPubrel, false)
 
@@ -532,19 +532,19 @@ func TestSubscribeQOS0Wildcard(t *testing.T) {
 	stp.mqttSend(mqttPublish, true)
 
 	// client <--REGISTER-- GW
-	snRegister := stp.snRecv().(*snPkts.RegisterMessage)
+	snRegister := stp.snRecv().(*snPkts.Register)
 	assert.Equal(topic, snRegister.TopicName)
 	assert.GreaterOrEqual(snRegister.MessageID(), snPkts.MinMessageID)
 	assert.LessOrEqual(snRegister.MessageID(), snPkts.MaxMessageID)
 	topicID := snRegister.TopicID
 
 	// client --REGACK--> GW
-	snRegack := snPkts.NewRegackMessage(topicID, snPkts.RC_ACCEPTED)
+	snRegack := snPkts.NewRegack(topicID, snPkts.RC_ACCEPTED)
 	snRegack.SetMessageID(snRegister.MessageID())
 	stp.snSend(snRegack, false)
 
 	// client <--PUBLISH-- GW
-	snPublish := stp.snRecv().(*snPkts.PublishMessage)
+	snPublish := stp.snRecv().(*snPkts.Publish)
 	assert.Equal(topicID, snPublish.TopicID)
 	assert.Equal(snPkts.TIT_REGISTERED, snPublish.TopicIDType)
 	assert.Equal(payload, snPublish.Data)
@@ -580,7 +580,7 @@ func TestSubscribeQOS1(t *testing.T) {
 	stp.mqttSend(mqttPublish, true)
 
 	// client <--PUBLISH-- GW
-	snPublish := stp.snRecv().(*snPkts.PublishMessage)
+	snPublish := stp.snRecv().(*snPkts.Publish)
 	assert.Equal(topicID, snPublish.TopicID)
 	assert.Equal(snPkts.TIT_REGISTERED, snPublish.TopicIDType)
 	assert.Equal(payload, snPublish.Data)
@@ -592,7 +592,7 @@ func TestSubscribeQOS1(t *testing.T) {
 		// (lost: client --PUBACK--> GW)
 
 		// resend: client <--PUBLISH-- GW
-		snPublish = stp.snRecv().(*snPkts.PublishMessage)
+		snPublish = stp.snRecv().(*snPkts.Publish)
 		assert.Equal(topicID, snPublish.TopicID)
 		assert.Equal(snPkts.TIT_REGISTERED, snPublish.TopicIDType)
 		assert.Equal(payload, snPublish.Data)
@@ -601,7 +601,7 @@ func TestSubscribeQOS1(t *testing.T) {
 	}
 
 	// client --PUBACK--> GW
-	snPuback := snPkts.NewPubackMessage(snPublish.TopicID, snPkts.RC_ACCEPTED)
+	snPuback := snPkts.NewPuback(snPublish.TopicID, snPkts.RC_ACCEPTED)
 	snPuback.SetMessageID(snPublish.MessageID())
 	stp.snSend(snPuback, false)
 
@@ -642,17 +642,17 @@ func TestSubscribeQOS1Wildcard(t *testing.T) {
 	stp.mqttSend(mqttPublish, true)
 
 	// client <--REGISTER-- GW
-	snRegister := stp.snRecv().(*snPkts.RegisterMessage)
+	snRegister := stp.snRecv().(*snPkts.Register)
 	assert.Equal(topic, snRegister.TopicName)
 	topicID := snRegister.TopicID
 
 	// client --REGACK--> GW
-	snRegack := snPkts.NewRegackMessage(topicID, snPkts.RC_ACCEPTED)
+	snRegack := snPkts.NewRegack(topicID, snPkts.RC_ACCEPTED)
 	snRegack.SetMessageID(snRegister.MessageID())
 	stp.snSend(snRegack, false)
 
 	// client <--PUBLISH-- GW
-	snPublish := stp.snRecv().(*snPkts.PublishMessage)
+	snPublish := stp.snRecv().(*snPkts.Publish)
 	assert.Equal(topicID, snPublish.TopicID)
 	assert.Equal(snPkts.TIT_REGISTERED, snPublish.TopicIDType)
 	assert.Equal(payload, snPublish.Data)
@@ -664,7 +664,7 @@ func TestSubscribeQOS1Wildcard(t *testing.T) {
 		// (lost: client --PUBACK--> GW)
 
 		// resend: client <--PUBLISH-- GW
-		snPublish = stp.snRecv().(*snPkts.PublishMessage)
+		snPublish = stp.snRecv().(*snPkts.Publish)
 		assert.Equal(topicID, snPublish.TopicID)
 		assert.Equal(snPkts.TIT_REGISTERED, snPublish.TopicIDType)
 		assert.Equal(payload, snPublish.Data)
@@ -673,7 +673,7 @@ func TestSubscribeQOS1Wildcard(t *testing.T) {
 	}
 
 	// client --PUBACK--> GW
-	snPuback := snPkts.NewPubackMessage(snPublish.TopicID, snPkts.RC_ACCEPTED)
+	snPuback := snPkts.NewPuback(snPublish.TopicID, snPkts.RC_ACCEPTED)
 	snPuback.SetMessageID(snPublish.MessageID())
 	stp.snSend(snPuback, false)
 
@@ -714,7 +714,7 @@ func TestSubscribeQOS2(t *testing.T) {
 	msgID := mqttPublish.MessageID
 
 	// client <--PUBLISH-- GW
-	snPublish := stp.snRecv().(*snPkts.PublishMessage)
+	snPublish := stp.snRecv().(*snPkts.Publish)
 	assert.Equal(topicID, snPublish.TopicID)
 	assert.Equal(snPkts.TIT_REGISTERED, snPublish.TopicIDType)
 	assert.Equal(payload, snPublish.Data)
@@ -726,7 +726,7 @@ func TestSubscribeQOS2(t *testing.T) {
 		// (lost: client --PUBREC--> GW)
 
 		// resend: client <--PUBLISH-- GW
-		snPublish := stp.snRecv().(*snPkts.PublishMessage)
+		snPublish := stp.snRecv().(*snPkts.Publish)
 		assert.Equal(topicID, snPublish.TopicID)
 		assert.Equal(snPkts.TIT_REGISTERED, snPublish.TopicIDType)
 		assert.Equal(payload, snPublish.Data)
@@ -736,7 +736,7 @@ func TestSubscribeQOS2(t *testing.T) {
 	}
 
 	// client --PUBREC--> GW
-	snPubrec := snPkts.NewPubrecMessage()
+	snPubrec := snPkts.NewPubrec()
 	snPubrec.SetMessageID(msgID)
 	stp.snSend(snPubrec, false)
 
@@ -755,7 +755,7 @@ func TestSubscribeQOS2(t *testing.T) {
 	stp.mqttSend(mqttPubrel, false)
 
 	// client <--PUBREL-- GW
-	snPubrel := stp.snRecv().(*snPkts.PubrelMessage)
+	snPubrel := stp.snRecv().(*snPkts.Pubrel)
 	assert.Equal(msgID, snPubrel.MessageID())
 
 	// Two lost PUBCOMPs => two PUBREL resends
@@ -763,12 +763,12 @@ func TestSubscribeQOS2(t *testing.T) {
 		// (lost: client --PUBCOMP--> GW)
 
 		// resend: client <--PUBREL-- GW
-		snPubrel := stp.snRecv().(*snPkts.PubrelMessage)
+		snPubrel := stp.snRecv().(*snPkts.Pubrel)
 		assert.Equal(msgID, snPubrel.MessageID())
 	}
 
 	// client --PUBCOMP--> GW
-	snPubcomp := snPkts.NewPubcompMessage()
+	snPubcomp := snPkts.NewPubcomp()
 	snPubcomp.SetMessageID(msgID)
 	stp.snSend(snPubcomp, false)
 
@@ -807,17 +807,17 @@ func TestSubscribeQOS2Wildcard(t *testing.T) {
 	msgID := mqttPublish.MessageID
 
 	// client <--REGISTER-- GW
-	snRegister := stp.snRecv().(*snPkts.RegisterMessage)
+	snRegister := stp.snRecv().(*snPkts.Register)
 	assert.Equal(topic, snRegister.TopicName)
 	topicID := snRegister.TopicID
 
 	// client --REGACK--> GW
-	snRegack := snPkts.NewRegackMessage(topicID, snPkts.RC_ACCEPTED)
+	snRegack := snPkts.NewRegack(topicID, snPkts.RC_ACCEPTED)
 	snRegack.SetMessageID(snRegister.MessageID())
 	stp.snSend(snRegack, false)
 
 	// client <--PUBLISH-- GW
-	snPublish := stp.snRecv().(*snPkts.PublishMessage)
+	snPublish := stp.snRecv().(*snPkts.Publish)
 	assert.Equal(topicID, snPublish.TopicID)
 	assert.Equal(snPkts.TIT_REGISTERED, snPublish.TopicIDType)
 	assert.Equal(payload, snPublish.Data)
@@ -829,7 +829,7 @@ func TestSubscribeQOS2Wildcard(t *testing.T) {
 		// (lost: client --PUBREC--> GW)
 
 		// resend: client <--PUBLISH-- GW
-		snPublish := stp.snRecv().(*snPkts.PublishMessage)
+		snPublish := stp.snRecv().(*snPkts.Publish)
 		assert.Equal(topicID, snPublish.TopicID)
 		assert.Equal(snPkts.TIT_REGISTERED, snPublish.TopicIDType)
 		assert.Equal(payload, snPublish.Data)
@@ -839,7 +839,7 @@ func TestSubscribeQOS2Wildcard(t *testing.T) {
 	}
 
 	// client --PUBREC--> GW
-	snPubrec := snPkts.NewPubrecMessage()
+	snPubrec := snPkts.NewPubrec()
 	snPubrec.SetMessageID(msgID)
 	stp.snSend(snPubrec, false)
 
@@ -858,7 +858,7 @@ func TestSubscribeQOS2Wildcard(t *testing.T) {
 	stp.mqttSend(mqttPubrel, false)
 
 	// client <--PUBREL-- GW
-	snPubrel := stp.snRecv().(*snPkts.PubrelMessage)
+	snPubrel := stp.snRecv().(*snPkts.Pubrel)
 	assert.Equal(msgID, snPubrel.MessageID())
 
 	// Two lost PUBCOMPs => two PUBREL resends
@@ -866,12 +866,12 @@ func TestSubscribeQOS2Wildcard(t *testing.T) {
 		// (lost: client --PUBCOMP--> GW)
 
 		// resend: client <--PUBREL-- GW
-		snPubrel := stp.snRecv().(*snPkts.PubrelMessage)
+		snPubrel := stp.snRecv().(*snPkts.Pubrel)
 		assert.Equal(msgID, snPubrel.MessageID())
 	}
 
 	// client --PUBCOMP--> GW
-	snPubcomp := snPkts.NewPubcompMessage()
+	snPubcomp := snPkts.NewPubcomp()
 	snPubcomp.SetMessageID(msgID)
 	stp.snSend(snPubcomp, false)
 
@@ -896,7 +896,7 @@ func TestUnsubscribeString(t *testing.T) {
 	stp.subscribe(topic, 0)
 
 	// client --UNSUBSCRIBE--> GW
-	snUnsubscribe := snPkts.NewUnsubscribeMessage(0, snPkts.TIT_STRING, []byte(topic))
+	snUnsubscribe := snPkts.NewUnsubscribe(0, snPkts.TIT_STRING, []byte(topic))
 	stp.snSend(snUnsubscribe, true)
 
 	// GW --UNSUBSCRIBE--> MQTT broker
@@ -910,7 +910,7 @@ func TestUnsubscribeString(t *testing.T) {
 	stp.mqttSend(mqttUnsuback, false)
 
 	// client <--UNSUBACK-- GW
-	snUnsuback := stp.snRecv().(*snPkts.UnsubackMessage)
+	snUnsuback := stp.snRecv().(*snPkts.Unsuback)
 	assert.Equal(snUnsubscribe.MessageID(), snUnsuback.MessageID())
 
 	// DISCONNECT
@@ -930,7 +930,7 @@ func TestUnsubscribeShort(t *testing.T) {
 	stp.subscribeShort(topic, 0)
 
 	// client --UNSUBSCRIBE--> GW
-	snUnsubscribe := snPkts.NewUnsubscribeMessage(snPkts.EncodeShortTopic(topic), snPkts.TIT_SHORT, []byte(""))
+	snUnsubscribe := snPkts.NewUnsubscribe(snPkts.EncodeShortTopic(topic), snPkts.TIT_SHORT, []byte(""))
 	stp.snSend(snUnsubscribe, true)
 
 	// GW --UNSUBSCRIBE--> MQTT broker
@@ -944,7 +944,7 @@ func TestUnsubscribeShort(t *testing.T) {
 	stp.mqttSend(mqttUnsuback, false)
 
 	// client <--UNSUBACK-- GW
-	snUnsuback := stp.snRecv().(*snPkts.UnsubackMessage)
+	snUnsuback := stp.snRecv().(*snPkts.Unsuback)
 	assert.Equal(snUnsubscribe.MessageID(), snUnsuback.MessageID())
 
 	// DISCONNECT
@@ -971,7 +971,7 @@ func TestUnsubscribePredefined(t *testing.T) {
 	// SUBSCRIBE, PREDEFINED TOPIC
 
 	// client --SUBSCRIBE--> GW
-	snSubscribe := snPkts.NewSubscribeMessage(topicID, snPkts.TIT_PREDEFINED, nil, 0, false)
+	snSubscribe := snPkts.NewSubscribe(topicID, snPkts.TIT_PREDEFINED, nil, 0, false)
 	stp.snSend(snSubscribe, true)
 
 	// GW --SUBSCRIBE--> MQTT broker
@@ -988,12 +988,12 @@ func TestUnsubscribePredefined(t *testing.T) {
 	stp.mqttSend(mqttSuback, false)
 
 	// client <--SUBACK-- GW
-	snSuback := stp.snRecv().(*snPkts.SubackMessage)
+	snSuback := stp.snRecv().(*snPkts.Suback)
 	assert.Equal(snSubscribe.MessageID(), snSuback.MessageID())
 	assert.Equal(snPkts.RC_ACCEPTED, snSuback.ReturnCode)
 
 	// client --UNSUBSCRIBE--> GW
-	snUnsubscribe := snPkts.NewUnsubscribeMessage(topicID, snPkts.TIT_PREDEFINED, []byte(""))
+	snUnsubscribe := snPkts.NewUnsubscribe(topicID, snPkts.TIT_PREDEFINED, []byte(""))
 	stp.snSend(snUnsubscribe, true)
 
 	// GW --UNSUBSCRIBE--> MQTT broker
@@ -1007,7 +1007,7 @@ func TestUnsubscribePredefined(t *testing.T) {
 	stp.mqttSend(mqttUnsuback, false)
 
 	// client <--UNSUBACK-- GW
-	snUnsuback := stp.snRecv().(*snPkts.UnsubackMessage)
+	snUnsuback := stp.snRecv().(*snPkts.Unsuback)
 	assert.Equal(snUnsubscribe.MessageID(), snUnsuback.MessageID())
 
 	// DISCONNECT
@@ -1030,23 +1030,23 @@ func TestLastWill(t *testing.T) {
 	// CONNECT
 
 	// client --CONNECT--> GW
-	snConnect := snPkts.NewConnectMessage(clientID, true, true, keepalive)
+	snConnect := snPkts.NewConnect(clientID, true, true, keepalive)
 	stp.snSend(snConnect, false)
 
 	// client <--WILLTOPICREQ-- GW
-	_, ok := stp.snRecv().(*snPkts.WillTopicReqMessage)
+	_, ok := stp.snRecv().(*snPkts.WillTopicReq)
 	assert.True(ok)
 
 	// client --CONNECT--> GW
-	snWillTopic := snPkts.NewWillTopicMessage(willTopic, willQos, willRetain)
+	snWillTopic := snPkts.NewWillTopic(willTopic, willQos, willRetain)
 	stp.snSend(snWillTopic, false)
 
 	// client <--WILLMSGREQ-- GW
-	_, ok = stp.snRecv().(*snPkts.WillMsgReqMessage)
+	_, ok = stp.snRecv().(*snPkts.WillMsgReq)
 	assert.True(ok)
 
 	// client --CONNECT--> GW
-	snWillMsg := snPkts.NewWillMsgMessage(willPayload)
+	snWillMsg := snPkts.NewWillMsg(willPayload)
 	stp.snSend(snWillMsg, false)
 
 	// GW --CONNECT--> MQTT broker
@@ -1063,7 +1063,7 @@ func TestLastWill(t *testing.T) {
 	stp.mqttSend(mqttConnack, false)
 
 	// client <--CONNACK-- GW
-	snConnack := stp.snRecv().(*snPkts.ConnackMessage)
+	snConnack := stp.snRecv().(*snPkts.Connack)
 	assert.Equal(snPkts.RC_ACCEPTED, snConnack.ReturnCode)
 
 	assert.Equal(util.StateActive, stp.handler.state.Get())
@@ -1079,7 +1079,7 @@ func TestLastWill(t *testing.T) {
 
 	// NOTE: It is unclean if the gateway should send DISCONNECT here or not.
 	// client <--DISCONNECT-- GW
-	snDisconnectReply := stp.snRecv().(*snPkts.DisconnectMessage)
+	snDisconnectReply := stp.snRecv().(*snPkts.Disconnect)
 	assert.Equal(uint16(0), snDisconnectReply.Duration)
 
 	wg := &sync.WaitGroup{}
@@ -1110,11 +1110,11 @@ func TestConnectTimeout(t *testing.T) {
 	// CONNECT
 
 	// client --CONNECT--> GW
-	snConnect := snPkts.NewConnectMessage(clientID, true, true, 2)
+	snConnect := snPkts.NewConnect(clientID, true, true, 2)
 	stp.snSend(snConnect, false)
 
 	// client <--WILLTOPICREQ-- GW
-	_, ok := stp.snRecv().(*snPkts.WillTopicReqMessage)
+	_, ok := stp.snRecv().(*snPkts.WillTopicReq)
 	assert.True(ok)
 
 	// A malicious client does not continue the transaction.
@@ -1137,7 +1137,7 @@ func TestAuthSuccess(t *testing.T) {
 	// CONNECT
 
 	// client --CONNECT--> GW
-	snConnect := snPkts.NewConnectMessage(clientID, true, false, 1)
+	snConnect := snPkts.NewConnect(clientID, true, false, 1)
 	stp.snSend(snConnect, false)
 
 	// client --AUTH--> GW
@@ -1162,7 +1162,7 @@ func TestAuthSuccess(t *testing.T) {
 	stp.mqttSend(mqttConnack, false)
 
 	// client <--CONNACK-- GW
-	snConnack := stp.snRecv().(*snPkts.ConnackMessage)
+	snConnack := stp.snRecv().(*snPkts.Connack)
 	assert.Equal(snPkts.RC_ACCEPTED, snConnack.ReturnCode)
 
 	assert.Equal(util.StateActive, stp.handler.state.Get())
@@ -1181,7 +1181,7 @@ func TestAuthFail(t *testing.T) {
 	// CONNECT
 
 	// client --CONNECT--> GW
-	snConnect := snPkts.NewConnectMessage(clientID, true, false, 1)
+	snConnect := snPkts.NewConnect(clientID, true, false, 1)
 	stp.snSend(snConnect, false)
 
 	// client --AUTH--> GW
@@ -1206,7 +1206,7 @@ func TestAuthFail(t *testing.T) {
 	stp.mqttSend(mqttConnack, false)
 
 	// client <--CONNACK-- GW
-	snConnack := stp.snRecv().(*snPkts.ConnackMessage)
+	snConnack := stp.snRecv().(*snPkts.Connack)
 	assert.Equal(snPkts.RC_CONGESTION, snConnack.ReturnCode)
 
 	assert.Equal(util.StateDisconnected, stp.handler.state.Get())
@@ -1454,7 +1454,7 @@ func (stp *testSetup) connect() {
 	clientID := []byte("test-client")
 
 	// client --CONNECT--> GW
-	snConnect := snPkts.NewConnectMessage(clientID, true, false, 1)
+	snConnect := snPkts.NewConnect(clientID, true, false, 1)
 	stp.snSend(snConnect, false)
 
 	// GW --CONNECT--> MQTT broker
@@ -1471,7 +1471,7 @@ func (stp *testSetup) connect() {
 	stp.mqttSend(mqttConnack, false)
 
 	// client <--CONNACK-- GW
-	snConnack := stp.snRecv().(*snPkts.ConnackMessage)
+	snConnack := stp.snRecv().(*snPkts.Connack)
 	assert.Equal(snPkts.RC_ACCEPTED, snConnack.ReturnCode)
 
 	assert.Equal(util.StateActive, stp.handler.state.Get())
@@ -1482,12 +1482,12 @@ func (stp *testSetup) register(topic string) uint16 {
 	assert := assert.New(stp.t)
 
 	// client --REGISTER--> GW
-	snRegister := snPkts.NewRegisterMessage(0, topic)
+	snRegister := snPkts.NewRegister(0, topic)
 	snRegister.TopicName = topic
 	stp.snSend(snRegister, true)
 
 	// client <--REGACK-- GW
-	snRegack := stp.snRecv().(*snPkts.RegackMessage)
+	snRegack := stp.snRecv().(*snPkts.Regack)
 	assert.Equal(snPkts.RC_ACCEPTED, snRegack.ReturnCode)
 	assert.Equal(snRegister.MessageID(), snRegack.MessageID())
 	assert.Greater(snRegack.TopicID, uint16(0))
@@ -1500,7 +1500,7 @@ func (stp *testSetup) subscribe(topic string, qos uint8) uint16 {
 	assert := assert.New(stp.t)
 
 	// client --SUBSCRIBE--> GW
-	snSubscribe := snPkts.NewSubscribeMessage(0, snPkts.TIT_STRING, []byte(topic), qos, false)
+	snSubscribe := snPkts.NewSubscribe(0, snPkts.TIT_STRING, []byte(topic), qos, false)
 	stp.snSend(snSubscribe, true)
 
 	// GW --SUBSCRIBE--> MQTT broker
@@ -1517,7 +1517,7 @@ func (stp *testSetup) subscribe(topic string, qos uint8) uint16 {
 	stp.mqttSend(mqttSuback, false)
 
 	// client <--SUBACK-- GW
-	snSuback := stp.snRecv().(*snPkts.SubackMessage)
+	snSuback := stp.snRecv().(*snPkts.Suback)
 	assert.Equal(snSubscribe.MessageID(), snSuback.MessageID())
 	assert.Equal(snPkts.RC_ACCEPTED, snSuback.ReturnCode)
 	if hasWildcard(topic) {
@@ -1537,7 +1537,7 @@ func (stp *testSetup) subscribeShort(topic string, qos uint8) {
 
 	// client --SUBSCRIBE--> GW
 	topicID := snPkts.EncodeShortTopic(topic)
-	snSubscribe := snPkts.NewSubscribeMessage(topicID, snPkts.TIT_SHORT, nil, qos, false)
+	snSubscribe := snPkts.NewSubscribe(topicID, snPkts.TIT_SHORT, nil, qos, false)
 	stp.snSend(snSubscribe, true)
 
 	// GW --SUBSCRIBE--> MQTT broker
@@ -1554,7 +1554,7 @@ func (stp *testSetup) subscribeShort(topic string, qos uint8) {
 	stp.mqttSend(mqttSuback, false)
 
 	// client <--SUBACK-- GW
-	snSuback := stp.snRecv().(*snPkts.SubackMessage)
+	snSuback := stp.snRecv().(*snPkts.Suback)
 	assert.Equal(snSubscribe.MessageID(), snSuback.MessageID())
 	assert.Equal(snPkts.RC_ACCEPTED, snSuback.ReturnCode)
 	assert.Equal(snSuback.TopicID, uint16(0))
@@ -1565,7 +1565,7 @@ func (stp *testSetup) disconnect() {
 	assert := assert.New(stp.t)
 
 	// client --DISCONNECT--> GW
-	snDisconnect := snPkts.NewDisconnectMessage(0)
+	snDisconnect := snPkts.NewDisconnect(0)
 	stp.snSend(snDisconnect, true)
 
 	// GW --DISCONNECT--> MQTT broker
@@ -1573,7 +1573,7 @@ func (stp *testSetup) disconnect() {
 	assert.Equal(uint8(mqttPackets.Disconnect), mqttDisconnect.MessageType)
 
 	// client <--DISCONNECT-- GW
-	snDisconnectReply := stp.snRecv().(*snPkts.DisconnectMessage)
+	snDisconnectReply := stp.snRecv().(*snPkts.Disconnect)
 	assert.Equal(uint16(0), snDisconnectReply.Duration)
 
 	stp.assertHandlerDone()

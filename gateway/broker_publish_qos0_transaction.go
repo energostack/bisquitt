@@ -31,6 +31,6 @@ func newBrokerPublishQOS0Transaction(ctx context.Context, h *handler, msgID uint
 	return t
 }
 
-func (t *brokerPublishQOS0Transaction) Regack(snRegack *snPkts.RegackMessage) error {
+func (t *brokerPublishQOS0Transaction) Regack(snRegack *snPkts.Regack) error {
 	return t.regack(snRegack, transactionDone)
 }
