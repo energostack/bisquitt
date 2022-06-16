@@ -14,7 +14,7 @@ func TestUnsubscribeStruct(t *testing.T) {
 	topicName := []byte("test-topic")
 	msg := NewUnsubscribe(topicID, topicIDType, topicName)
 
-	if assert.NotNil(t, msg, "New message should not be nil") {
+	if assert.NotNil(t, msg, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.Unsubscribe", reflect.TypeOf(msg).String(), "Type should be Unsubscribe")
 		assert.Equal(t, topicIDType, msg.TopicIDType, "Bad TopicIDType value")
 		assert.Equal(t, topicID, msg.TopicID, "Bad TopicID value")

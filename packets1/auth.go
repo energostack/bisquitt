@@ -47,7 +47,7 @@ func NewAuthPlain(user string, password []byte) *Auth {
 	return auth
 }
 
-// DecodePlain decodes username and password from AUTH message data encoded
+// DecodePlain decodes username and password from AUTH package data encoded
 // using "PLAIN" method.
 func DecodePlain(auth *Auth) (string, []byte, error) {
 	dataParts := bytes.Split(auth.Data, []byte{0})

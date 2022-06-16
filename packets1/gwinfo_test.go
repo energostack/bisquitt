@@ -13,7 +13,7 @@ func TestGwInfoStruct(t *testing.T) {
 	gatewayAddress := []byte("test-gw")
 	msg := NewGwInfo(gatewayID, gatewayAddress)
 
-	if assert.NotNil(t, msg, "New message should not be nil") {
+	if assert.NotNil(t, msg, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.GwInfo", reflect.TypeOf(msg).String(), "Type should be GwInfo")
 		assert.Equal(t, gatewayID, msg.GatewayID, "Bad GatewayID value")
 		assert.Equal(t, gatewayAddress, msg.GatewayAddress, "Bad GatewayAddress value")

@@ -11,7 +11,7 @@ import (
 func TestWillMsgRespStruct(t *testing.T) {
 	msg := NewWillMsgResp(RC_ACCEPTED)
 
-	if assert.NotNil(t, msg, "New message should not be nil") {
+	if assert.NotNil(t, msg, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.WillMsgResp", reflect.TypeOf(msg).String(), "Type should be WillMsgResp")
 		assert.Equal(t, RC_ACCEPTED, msg.ReturnCode, "Default ReturnCode should be RC_ACCEPTED")
 	}

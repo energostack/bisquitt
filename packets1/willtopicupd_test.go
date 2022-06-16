@@ -14,7 +14,7 @@ func TestWillTopicUpdateStruct(t *testing.T) {
 	retain := true
 	msg := NewWillTopicUpdate(willTopic, qos, retain)
 
-	if assert.NotNil(t, msg, "New message should not be nil") {
+	if assert.NotNil(t, msg, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.WillTopicUpdate", reflect.TypeOf(msg).String(), "Type should be WillTopicUpdate")
 		assert.Equal(t, qos, msg.QOS, "Bad QOS value")
 		assert.Equal(t, retain, msg.Retain, "Bad Retain flag value")

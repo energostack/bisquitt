@@ -12,7 +12,7 @@ func TestWillMsgUpdateStruct(t *testing.T) {
 	willMsg := []byte("test-msg")
 	msg := NewWillMsgUpdate(willMsg)
 
-	if assert.NotNil(t, msg, "New message should not be nil") {
+	if assert.NotNil(t, msg, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.WillMsgUpdate", reflect.TypeOf(msg).String(), "Type should be WillMsgUpdate")
 		assert.Equal(t, willMsg, msg.WillMsg, "Bad WillMsg value")
 	}

@@ -17,7 +17,7 @@ func TestPublishStruct(t *testing.T) {
 	payload := []byte("test-payload")
 	msg := NewPublish(topicID, topicIDType, payload, qos, retain, dup)
 
-	if assert.NotNil(t, msg, "New message should not be nil") {
+	if assert.NotNil(t, msg, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.Publish", reflect.TypeOf(msg).String(), "Type should be Publish")
 		assert.Equal(t, dup, msg.DUP(), "Bad Dup flag value")
 		assert.Equal(t, retain, msg.Retain, "Bad Retain flag value")

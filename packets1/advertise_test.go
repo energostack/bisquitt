@@ -13,7 +13,7 @@ func TestAdvertiseStruct(t *testing.T) {
 	duration := uint16(123)
 	msg := NewAdvertise(gatewayID, duration)
 
-	if assert.NotNil(t, msg, "New message should not be nil") {
+	if assert.NotNil(t, msg, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.Advertise", reflect.TypeOf(msg).String(), "Type should be Advertise")
 		assert.Equal(t, gatewayID, msg.GatewayID, "Bad GatewayID")
 		assert.Equal(t, duration, msg.Duration, "Bad Duration value")

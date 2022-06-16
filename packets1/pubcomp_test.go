@@ -11,7 +11,7 @@ import (
 func TestPubcompStruct(t *testing.T) {
 	msg := NewPubcomp()
 
-	if assert.NotNil(t, msg, "New message should not be nil") {
+	if assert.NotNil(t, msg, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.Pubcomp", reflect.TypeOf(msg).String(), "Type should be Pubcomp")
 		assert.Equal(t, uint16(4), msg.MessageLength(), "Default Length should be 4")
 		assert.Equal(t, uint16(0), msg.MessageID(), "Default MessageID should be 0")

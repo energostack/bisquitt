@@ -13,7 +13,7 @@ func TestRegackStruct(t *testing.T) {
 	returnCode := RC_ACCEPTED
 	msg := NewRegack(topicID, returnCode)
 
-	if assert.NotNil(t, msg, "New message should not be nil") {
+	if assert.NotNil(t, msg, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.Regack", reflect.TypeOf(msg).String(), "Type should be Regack")
 		assert.Equal(t, uint16(7), msg.MessageLength(), "Default Length should be 7")
 		assert.Equal(t, topicID, msg.TopicID, "Bad TopicID value")
