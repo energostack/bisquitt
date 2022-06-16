@@ -20,7 +20,7 @@ func newPublishQOS2Transaction(client *Client, msgID uint16) *publishQOS2Transac
 				client.groupCtx, client.cfg.RetryDelay, client.cfg.RetryCount,
 				func(lastMsg interface{}) error {
 					tLog.Debug("Resend.")
-					return client.send(lastMsg.(pkts.Message))
+					return client.send(lastMsg.(pkts.Packet))
 				},
 				func() {
 					client.transactions.Delete(msgID)

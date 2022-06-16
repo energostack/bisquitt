@@ -18,7 +18,7 @@ func newDisconnectTransaction(client *Client) *disconnectTransaction {
 				client.groupCtx, client.cfg.RetryDelay, client.cfg.RetryCount,
 				func(lastMsg interface{}) error {
 					tLog.Debug("Resend.")
-					return client.send(lastMsg.(pkts.Message))
+					return client.send(lastMsg.(pkts.Packet))
 				},
 				func() {
 					client.transactions.DeleteByType(pkts.DISCONNECT)

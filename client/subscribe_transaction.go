@@ -24,7 +24,7 @@ func newSubscribeTransaction(client *Client, msgID uint16, callback MessageHandl
 					tLog.Debug("Resend.")
 					dupMsg := lastMsg.(pkts.MessageWithDUP)
 					dupMsg.SetDUP(true)
-					return client.send(lastMsg.(pkts.Message))
+					return client.send(lastMsg.(pkts.Packet))
 				},
 				func() {
 					tLog.Debug("Deleted.")
