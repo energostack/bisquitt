@@ -32,11 +32,11 @@ func newBrokerPublishQOS2Transaction(ctx context.Context, h *handler, msgID uint
 	return t
 }
 
-func (t *brokerPublishQOS2Transaction) Regack(snRegack *snPkts.RegackMessage) error {
+func (t *brokerPublishQOS2Transaction) Regack(snRegack *snPkts.Regack) error {
 	return t.regack(snRegack, awaitingPubrec)
 }
 
-func (t *brokerPublishQOS2Transaction) Pubrec(snPubrec *snPkts.PubrecMessage) error {
+func (t *brokerPublishQOS2Transaction) Pubrec(snPubrec *snPkts.Pubrec) error {
 	if t.State != awaitingPubrec {
 		t.log.Debug("Unexpected message in %d: %v", t.State, snPubrec)
 		return nil
@@ -51,12 +51,12 @@ func (t *brokerPublishQOS2Transaction) Pubrel(mqPubrel *mqttPackets.PubrelPacket
 		t.log.Debug("Unexpected message in %d: %v", t.State, mqPubrel)
 		return nil
 	}
-	snPubrel := snPkts.NewPubrelMessage()
+	snPubrel := snPkts.NewPubrel()
 	snPubrel.SetMessageID(mqPubrel.MessageID)
 	return t.ProceedSN(awaitingPubcomp, snPubrel)
 }
 
-func (t *brokerPublishQOS2Transaction) Pubcomp(snPubcomp *snPkts.PubcompMessage) error {
+func (t *brokerPublishQOS2Transaction) Pubcomp(snPubcomp *snPkts.Pubcomp) error {
 	if t.State != awaitingPubcomp {
 		t.log.Debug("Unexpected message in %d: %v", t.State, snPubcomp)
 		return nil

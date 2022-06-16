@@ -133,7 +133,7 @@ func (h *handler) run(ctx context.Context, snConn net.Conn) error {
 		// first.
 		switch h.state.Get() {
 		case util.StateActive, util.StateAwake:
-			snMsg := snPkts.NewDisconnectMessage(0)
+			snMsg := snPkts.NewDisconnect(0)
 			if err := h.snSend(snMsg); err != nil {
 				h.log.Error("Error sending DISCONNECT to a connection: %s", err)
 			}
@@ -157,7 +157,7 @@ func (h *handler) run(ctx context.Context, snConn net.Conn) error {
 		mqttConn, err = dialer.DialContext(ctx, "tcp", h.cfg.MqttBrokerAddress.String())
 		if err != nil {
 			h.log.Error("Error connecting to MQTT broker: %s", err)
-			snMsg := snPkts.NewConnackMessage(snPkts.RC_CONGESTION)
+			snMsg := snPkts.NewConnack(snPkts.RC_CONGESTION)
 			if err := h.snSend(snMsg); err != nil {
 				h.log.Error("Error sending CONNACK to a connection: %s", err)
 			}
@@ -223,7 +223,7 @@ func (h *handler) findTopicID(topic string) (uint16, uint8, bool) {
 	return 0, 0, false
 }
 
-func (h *handler) handleClientPublish(ctx context.Context, snPublish *snPkts.PublishMessage) error {
+func (h *handler) handleClientPublish(ctx context.Context, snPublish *snPkts.Publish) error {
 	msgID := snPublish.MessageID()
 
 	mqPublish := mqttPackets.NewControlPacket(mqttPackets.Publish).(*mqttPackets.PublishPacket)
@@ -278,7 +278,7 @@ func (h *handler) handleBrokerPublish(ctx context.Context, mqPublish *mqttPacket
 		needsRegister = !ok
 	}
 
-	snPublish := snPkts.NewPublishMessage(topicID, topicIDType,
+	snPublish := snPkts.NewPublish(topicID, topicIDType,
 		mqPublish.Payload, mqPublish.Qos, mqPublish.Retain, mqPublish.Dup)
 	snPublish.SetMessageID(mqPublish.MessageID)
 
@@ -342,7 +342,7 @@ func (h *handler) handleBrokerPublish(ctx context.Context, mqPublish *mqttPacket
 		snPublish.TopicID = topicID
 		transaction.SetSNPublish(snPublish)
 
-		snRegister := snPkts.NewRegisterMessage(topicID, mqPublish.TopicName)
+		snRegister := snPkts.NewRegister(topicID, mqPublish.TopicName)
 		snRegister.SetMessageID(msgID)
 		nextState = awaitingRegack
 		snMsg = snRegister
@@ -386,13 +386,13 @@ func (h *handler) handleMqtt(ctx context.Context, msg mqttPackets.ControlPacket)
 
 	// Client PUBLISH QoS 2 transaction.
 	case *mqttPackets.PubrecPacket:
-		snPubrec := snPkts.NewPubrecMessage()
+		snPubrec := snPkts.NewPubrec()
 		snPubrec.SetMessageID(mqMsg.MessageID)
 		return h.snSend(snPubrec)
 
 	// Client PUBLISH QoS 2 transaction.
 	case *mqttPackets.PubcompPacket:
-		snPubcomp := snPkts.NewPubcompMessage()
+		snPubcomp := snPkts.NewPubcomp()
 		snPubcomp.SetMessageID(mqMsg.MessageID)
 		return h.snSend(snPubcomp)
 
@@ -408,7 +408,7 @@ func (h *handler) handleMqtt(ctx context.Context, msg mqttPackets.ControlPacket)
 
 	// Client UNSUBSCRIBE transaction.
 	case *mqttPackets.UnsubackPacket:
-		snUnsuback := snPkts.NewUnsubackMessage()
+		snUnsuback := snPkts.NewUnsuback()
 		snUnsuback.SetMessageID(mqMsg.MessageID)
 		return h.snSend(snUnsuback)
 
@@ -418,7 +418,7 @@ func (h *handler) handleMqtt(ctx context.Context, msg mqttPackets.ControlPacket)
 		if h.state.Get() != util.StateActive {
 			return nil
 		}
-		return h.snSend(snPkts.NewPingrespMessage())
+		return h.snSend(snPkts.NewPingresp())
 
 	// MQTT broker PUBLISH QOS 0,1,2 transaction.
 	case *mqttPackets.PublishPacket:
@@ -514,11 +514,11 @@ func (h *handler) registerTopic(topic string) (uint16, error) {
 	return topicID, nil
 }
 
-func (h *handler) handleConnect(ctx context.Context, snConnect *snPkts.ConnectMessage) error {
+func (h *handler) handleConnect(ctx context.Context, snConnect *snPkts.Connect) error {
 	// The ProtocolId [...] is coded 0x01. All other values are reserved.
 	// MQTT-SN specification v. 1.2, chapter 5.3.8
 	if snConnect.ProtocolID != 0x01 {
-		reply := &snPkts.ConnackMessage{
+		reply := &snPkts.Connack{
 			ReturnCode: snPkts.RC_NOT_SUPPORTED,
 		}
 		return h.snSend(reply)
@@ -526,7 +526,7 @@ func (h *handler) handleConnect(ctx context.Context, snConnect *snPkts.ConnectMe
 
 	if h.state.Get() == util.StateAwake {
 		h.setState(util.StateActive)
-		reply := &snPkts.ConnackMessage{
+		reply := &snPkts.Connack{
 			ReturnCode: snPkts.RC_ACCEPTED,
 		}
 		return h.snSend(reply)
@@ -540,7 +540,7 @@ func (h *handler) handleConnect(ctx context.Context, snConnect *snPkts.ConnectMe
 	// exploitable memory leaks.
 	// Hence, we simply do not accept zero keepalive.
 	if snConnect.Duration == 0 {
-		reply := &snPkts.ConnackMessage{
+		reply := &snPkts.Connack{
 			ReturnCode: snPkts.RC_NOT_SUPPORTED,
 		}
 		return h.snSend(reply)
@@ -576,7 +576,7 @@ func (h *handler) handleConnect(ctx context.Context, snConnect *snPkts.ConnectMe
 	return transaction.Start(ctx)
 }
 
-func (h *handler) handleSubscribe(ctx context.Context, snSubscribe *snPkts.SubscribeMessage) error {
+func (h *handler) handleSubscribe(ctx context.Context, snSubscribe *snPkts.Subscribe) error {
 	var topic string
 	// From MQTT-SN specification v. 1.2, chapter 5.4.16 SUBACK:
 	// 	TopicID [...] [is] not relevant in case of subscriptions to a short topic name or to a topic name which
@@ -590,7 +590,7 @@ func (h *handler) handleSubscribe(ctx context.Context, snSubscribe *snPkts.Subsc
 			var err error
 			topicID, err = h.newTopicID()
 			if err != nil {
-				snSuback := snPkts.NewSubackMessage(0, 0, snPkts.RC_INVALID_TOPIC_ID)
+				snSuback := snPkts.NewSuback(0, 0, snPkts.RC_INVALID_TOPIC_ID)
 				// We are kind of misusing the "invalid topic ID" return code here.
 				// Please see note in `case *snPkts.RegisterMessage`.
 				snSuback.CopyMessageID(snSubscribe)
@@ -629,7 +629,7 @@ func (h *handler) handleSubscribe(ctx context.Context, snSubscribe *snPkts.Subsc
 	return h.mqttSend(mqSubscribe)
 }
 
-func (h *handler) handleUnsubscribe(_ context.Context, snUnsubscribe *snPkts.UnsubscribeMessage) error {
+func (h *handler) handleUnsubscribe(_ context.Context, snUnsubscribe *snPkts.Unsubscribe) error {
 	var topic string
 	switch snUnsubscribe.TopicIDType {
 	case snPkts.TIT_STRING:
@@ -666,19 +666,19 @@ func (h *handler) checkMessageLegal(msg snPkts.Message) error {
 	}
 
 	switch snMsg := msg.(type) {
-	case *snPkts.ConnectMessage:
+	case *snPkts.Connect:
 		return nil
-	case *snPkts.AuthMessage:
+	case *snPkts.Auth:
 		return nil
-	case *snPkts.WillMsgMessage:
+	case *snPkts.WillMsg:
 		return nil
-	case *snPkts.WillTopicMessage:
+	case *snPkts.WillTopic:
 		return nil
 	// Handler is switched to disconnected state _before_ client
 	// responds to DISCONNECT => we must enable DISCONNECT message.
-	case *snPkts.DisconnectMessage:
+	case *snPkts.Disconnect:
 		return nil
-	case *snPkts.PublishMessage:
+	case *snPkts.Publish:
 		// MQTT-SN specification v. 1.2, chapter 6.8 PUBLISH with QoS Level -1
 		// QOS 3 messages with short or predefined topics are allowed
 		// without prior CONNECT.
@@ -703,11 +703,11 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Message) error {
 	switch snMsg := msg.(type) {
 
 	// Client CONNECT transaction.
-	case *snPkts.ConnectMessage:
+	case *snPkts.Connect:
 		return h.handleConnect(ctx, snMsg)
 
 	// Client CONNECT transaction.
-	case *snPkts.AuthMessage:
+	case *snPkts.Auth:
 		transactionx, _ := h.transactions.GetByType(snPkts.CONNECT)
 		if transaction, ok := transactionx.(*connectTransaction); ok {
 			return transaction.Auth(snMsg)
@@ -716,7 +716,7 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Message) error {
 		return nil
 
 	// Client CONNECT transaction.
-	case *snPkts.WillTopicMessage:
+	case *snPkts.WillTopic:
 		transactionx, _ := h.transactions.GetByType(snPkts.CONNECT)
 		if transaction, ok := transactionx.(*connectTransaction); ok {
 			return transaction.WillTopic(snMsg)
@@ -725,7 +725,7 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Message) error {
 		return nil
 
 	// Client CONNECT transaction.
-	case *snPkts.WillMsgMessage:
+	case *snPkts.WillMsg:
 		transactionx, _ := h.transactions.GetByType(snPkts.CONNECT)
 		if transaction, ok := transactionx.(*connectTransaction); ok {
 			return transaction.WillMsg(snMsg)
@@ -734,7 +734,7 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Message) error {
 		return nil
 
 	// Client REGISTER transaction.
-	case *snPkts.RegisterMessage:
+	case *snPkts.Register:
 		returnCode := snPkts.RC_ACCEPTED
 		topicID, err := h.registerTopic(string(snMsg.TopicName))
 		if err != nil {
@@ -750,30 +750,30 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Message) error {
 			// thing to do.
 			returnCode = snPkts.RC_INVALID_TOPIC_ID
 		}
-		m2 := snPkts.NewRegackMessage(topicID, returnCode)
+		m2 := snPkts.NewRegack(topicID, returnCode)
 		m2.CopyMessageID(snMsg)
 		return h.snSend(m2)
 
 	// Client PUBLISH QoS 0,1,2,3 transaction.
-	case *snPkts.PublishMessage:
+	case *snPkts.Publish:
 		return h.handleClientPublish(ctx, snMsg)
 
 	// Client PUBLISH QoS 2 transaction.
-	case *snPkts.PubrelMessage:
+	case *snPkts.Pubrel:
 		mqPubrel := mqttPackets.NewControlPacket(mqttPackets.Pubrel).(*mqttPackets.PubrelPacket)
 		mqPubrel.MessageID = snMsg.MessageID()
 		return h.mqttSend(mqPubrel)
 
 	// Client SUBSCRIBE transaction.
-	case *snPkts.SubscribeMessage:
+	case *snPkts.Subscribe:
 		return h.handleSubscribe(ctx, snMsg)
 
 	// Client UNSUBSCRIBE transaction.
-	case *snPkts.UnsubscribeMessage:
+	case *snPkts.Unsubscribe:
 		return h.handleUnsubscribe(ctx, snMsg)
 
 	// Client PING transaction (going AWAKE or just a keepalive).
-	case *snPkts.PingreqMessage:
+	case *snPkts.Pingreq:
 		if h.state.Get() == util.StateAsleep {
 			// Must be set before snSend otherwise the messages will be queued...
 			h.setState(util.StateAwake)
@@ -783,19 +783,19 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Message) error {
 				}
 			}
 			h.msgBuffer = nil
-			return h.snSend(snPkts.NewPingrespMessage())
+			return h.snSend(snPkts.NewPingresp())
 		} else {
 			mqMsg := mqttPackets.NewControlPacket(mqttPackets.Pingreq).(*mqttPackets.PingreqPacket)
 			return h.mqttSend(mqMsg)
 		}
 
 	// Client DISCONNECT transaction.
-	case *snPkts.DisconnectMessage:
+	case *snPkts.Disconnect:
 		if snMsg.Duration == 0 {
 			mqMsg := mqttPackets.NewControlPacket(mqttPackets.Disconnect).(*mqttPackets.DisconnectPacket)
 			h.mqttSend(mqMsg)
 			h.setState(util.StateDisconnected)
-			m3 := snPkts.NewDisconnectMessage(0)
+			m3 := snPkts.NewDisconnect(0)
 			if err := h.snSend(m3); err != nil {
 				return err
 			}
@@ -808,7 +808,7 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Message) error {
 				time.AfterFunc(time.Duration(snMsg.Duration)*time.Second, cancelPinger)
 			}
 			h.msgBuffer = nil
-			m2 := snPkts.NewDisconnectMessage(0)
+			m2 := snPkts.NewDisconnect(0)
 			if err := h.snSend(m2); err != nil {
 				return err
 			}
@@ -822,7 +822,7 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Message) error {
 	// subscribes for a wildcard topic, a mqtt broker sends a "response" PUBLISH
 	// message with an unregistered topic => the gateway initializes
 	// registration and the client must acknowledge it.
-	case *snPkts.RegackMessage:
+	case *snPkts.Regack:
 		transactionx, _ := h.transactions.Get(snMsg.MessageID())
 		if transaction, ok := transactionx.(transactionWithRegack); ok {
 			return transaction.Regack(snMsg)
@@ -831,7 +831,7 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Message) error {
 		return nil
 
 	// MQTT broker PUBLISH QoS 1 transaction.
-	case *snPkts.PubackMessage:
+	case *snPkts.Puback:
 		transactionx, _ := h.transactions.Get(snMsg.MessageID())
 		if transaction, ok := transactionx.(*brokerPublishQOS1Transaction); ok {
 			return transaction.Puback(snMsg)
@@ -840,7 +840,7 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Message) error {
 		return nil
 
 	// MQTT broker PUBLISH QoS 2 transaction.
-	case *snPkts.PubrecMessage:
+	case *snPkts.Pubrec:
 		transactionx, _ := h.transactions.Get(snMsg.MessageID())
 		if transaction, ok := transactionx.(*brokerPublishQOS2Transaction); ok {
 			return transaction.Pubrec(snMsg)
@@ -849,7 +849,7 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Message) error {
 		return nil
 
 	// MQTT broker PUBLISH QoS 2 transaction.
-	case *snPkts.PubcompMessage:
+	case *snPkts.Pubcomp:
 		transactionx, _ := h.transactions.Get(snMsg.MessageID())
 		if transaction, ok := transactionx.(*brokerPublishQOS2Transaction); ok {
 			return transaction.Pubcomp(snMsg)
