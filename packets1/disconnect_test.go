@@ -10,11 +10,11 @@ import (
 
 func TestDisconnectStruct(t *testing.T) {
 	duration := uint16(123)
-	msg := NewDisconnect(duration)
+	pkt := NewDisconnect(duration)
 
-	if assert.NotNil(t, msg, "New packet should not be nil") {
-		assert.Equal(t, "*packets1.Disconnect", reflect.TypeOf(msg).String(), "Type should be Disconnect")
-		assert.Equal(t, duration, msg.Duration, "Bad Duration value")
+	if assert.NotNil(t, pkt, "New packet should not be nil") {
+		assert.Equal(t, "*packets1.Disconnect", reflect.TypeOf(pkt).String(), "Type should be Disconnect")
+		assert.Equal(t, duration, pkt.Duration, "Bad Duration value")
 	}
 }
 
@@ -22,17 +22,17 @@ func TestDisconnectMarshal(t *testing.T) {
 	assert := assert.New(t)
 	buf := bytes.NewBuffer(nil)
 
-	msg1 := NewDisconnect(75)
-	err := msg1.Write(buf)
+	pkt1 := NewDisconnect(75)
+	err := pkt1.Write(buf)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	r := bytes.NewReader(buf.Bytes())
-	msg2, err := ReadPacket(r)
+	pkt2, err := ReadPacket(r)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.Equal(msg1, msg2.(*Disconnect))
+	assert.Equal(pkt1, pkt2.(*Disconnect))
 }

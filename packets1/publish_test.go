@@ -15,17 +15,17 @@ func TestPublishStruct(t *testing.T) {
 	topicIDType := TIT_SHORT
 	topicID := uint16(123)
 	payload := []byte("test-payload")
-	msg := NewPublish(topicID, topicIDType, payload, qos, retain, dup)
+	pkt := NewPublish(topicID, topicIDType, payload, qos, retain, dup)
 
-	if assert.NotNil(t, msg, "New packet should not be nil") {
-		assert.Equal(t, "*packets1.Publish", reflect.TypeOf(msg).String(), "Type should be Publish")
-		assert.Equal(t, dup, msg.DUP(), "Bad Dup flag value")
-		assert.Equal(t, retain, msg.Retain, "Bad Retain flag value")
-		assert.Equal(t, qos, msg.QOS, "Bad QOS value")
-		assert.Equal(t, topicIDType, msg.TopicIDType, "Bad TopicIDType value")
-		assert.Equal(t, topicID, msg.TopicID, "Bad TopicID value")
-		assert.Equal(t, uint16(0), msg.MessageID(), "Default MessageID should be 0")
-		assert.Equal(t, payload, msg.Data, "Bad Data value")
+	if assert.NotNil(t, pkt, "New packet should not be nil") {
+		assert.Equal(t, "*packets1.Publish", reflect.TypeOf(pkt).String(), "Type should be Publish")
+		assert.Equal(t, dup, pkt.DUP(), "Bad Dup flag value")
+		assert.Equal(t, retain, pkt.Retain, "Bad Retain flag value")
+		assert.Equal(t, qos, pkt.QOS, "Bad QOS value")
+		assert.Equal(t, topicIDType, pkt.TopicIDType, "Bad TopicIDType value")
+		assert.Equal(t, topicID, pkt.TopicID, "Bad TopicID value")
+		assert.Equal(t, uint16(0), pkt.MessageID(), "Default MessageID should be 0")
+		assert.Equal(t, payload, pkt.Data, "Bad Data value")
 	}
 }
 
@@ -33,18 +33,18 @@ func TestPublishMarshal(t *testing.T) {
 	assert := assert.New(t)
 	buf := bytes.NewBuffer(nil)
 
-	msg1 := NewPublish(123, TIT_PREDEFINED,
+	pkt1 := NewPublish(123, TIT_PREDEFINED,
 		[]byte("test-payload"), 1, true, true)
-	msg1.SetMessageID(12)
-	if err := msg1.Write(buf); err != nil {
+	pkt1.SetMessageID(12)
+	if err := pkt1.Write(buf); err != nil {
 		t.Fatal(err)
 	}
 
 	r := bytes.NewReader(buf.Bytes())
-	msg2, err := ReadPacket(r)
+	pkt2, err := ReadPacket(r)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.Equal(msg1, msg2.(*Publish))
+	assert.Equal(pkt1, pkt2.(*Publish))
 }

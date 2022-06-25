@@ -9,11 +9,11 @@ import (
 )
 
 func TestPingrespStruct(t *testing.T) {
-	msg := NewPingresp()
+	pkt := NewPingresp()
 
-	if assert.NotNil(t, msg, "New packet should not be nil") {
-		assert.Equal(t, "*packets1.Pingresp", reflect.TypeOf(msg).String(), "Type should be Pingresp")
-		assert.Equal(t, uint16(2), msg.PacketLength(), "Default Length should be 2")
+	if assert.NotNil(t, pkt, "New packet should not be nil") {
+		assert.Equal(t, "*packets1.Pingresp", reflect.TypeOf(pkt).String(), "Type should be Pingresp")
+		assert.Equal(t, uint16(2), pkt.PacketLength(), "Default Length should be 2")
 	}
 }
 
@@ -21,16 +21,16 @@ func TestPingrespMarshal(t *testing.T) {
 	assert := assert.New(t)
 	buf := bytes.NewBuffer(nil)
 
-	msg1 := NewPingresp()
-	if err := msg1.Write(buf); err != nil {
+	pkt1 := NewPingresp()
+	if err := pkt1.Write(buf); err != nil {
 		t.Fatal(err)
 	}
 
 	r := bytes.NewReader(buf.Bytes())
-	msg2, err := ReadPacket(r)
+	pkt2, err := ReadPacket(r)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.Equal(msg1, msg2.(*Pingresp))
+	assert.Equal(pkt1, pkt2.(*Pingresp))
 }
