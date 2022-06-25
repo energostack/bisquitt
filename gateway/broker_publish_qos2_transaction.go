@@ -38,7 +38,7 @@ func (t *brokerPublishQOS2Transaction) Regack(snRegack *snPkts.Regack) error {
 
 func (t *brokerPublishQOS2Transaction) Pubrec(snPubrec *snPkts.Pubrec) error {
 	if t.State != awaitingPubrec {
-		t.log.Debug("Unexpected message in %d: %v", t.State, snPubrec)
+		t.log.Debug("Unexpected packet in %d: %v", t.State, snPubrec)
 		return nil
 	}
 	mqPubrec := mqttPackets.NewControlPacket(mqttPackets.Pubrec).(*mqttPackets.PubrecPacket)
@@ -48,7 +48,7 @@ func (t *brokerPublishQOS2Transaction) Pubrec(snPubrec *snPkts.Pubrec) error {
 
 func (t *brokerPublishQOS2Transaction) Pubrel(mqPubrel *mqttPackets.PubrelPacket) error {
 	if t.State != awaitingPubrel {
-		t.log.Debug("Unexpected message in %d: %v", t.State, mqPubrel)
+		t.log.Debug("Unexpected packet in %d: %v", t.State, mqPubrel)
 		return nil
 	}
 	snPubrel := snPkts.NewPubrel()
@@ -58,7 +58,7 @@ func (t *brokerPublishQOS2Transaction) Pubrel(mqPubrel *mqttPackets.PubrelPacket
 
 func (t *brokerPublishQOS2Transaction) Pubcomp(snPubcomp *snPkts.Pubcomp) error {
 	if t.State != awaitingPubcomp {
-		t.log.Debug("Unexpected message in %d: %v", t.State, snPubcomp)
+		t.log.Debug("Unexpected packet in %d: %v", t.State, snPubcomp)
 		return nil
 	}
 	mqPubcomp := mqttPackets.NewControlPacket(mqttPackets.Pubcomp).(*mqttPackets.PubcompPacket)

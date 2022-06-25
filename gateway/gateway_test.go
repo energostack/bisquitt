@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	// How long to wait to confirm no other message arrived on the connection.
+	// How long to wait to confirm no other packet arrived on the connection.
 	// Must be >connTimeout.
 	connEmptyTimeout = 500 * time.Millisecond
 	// How long to wait for handler to quit.
@@ -29,7 +29,7 @@ const (
 )
 
 // New CONNECT transaction must cancel a pending one, if any.  This is because
-// some messages of the CONNECT transaction can get lost and the client will
+// some packets of the CONNECT transaction can get lost and the client will
 // repeat the CONNECT transaction from the very beginning.
 // We want to be sure that the second transaction is a "fresh" one.
 func TestRepeatedConnect(t *testing.T) {
@@ -256,7 +256,7 @@ func TestPubSubPredefinedLong(t *testing.T) {
 	stp.disconnect()
 }
 
-// REGISTER message without previous CONNECT is illegal.
+// REGISTER packet without previous CONNECT is illegal.
 // The gateway should close the connection immediately.
 func TestDisconnectedRegister(t *testing.T) {
 	stp := newTestSetup(t, false, topics.PredefinedTopics{})
@@ -270,7 +270,7 @@ func TestDisconnectedRegister(t *testing.T) {
 	stp.assertHandlerDone()
 }
 
-// SUBSCRIBE message without previous CONNECT is illegal.
+// SUBSCRIBE packet without previous CONNECT is illegal.
 // The gateway should close the connection immediately.
 func TestDisconnectedSubscribe(t *testing.T) {
 	stp := newTestSetup(t, false, topics.PredefinedTopics{})
@@ -285,7 +285,7 @@ func TestDisconnectedSubscribe(t *testing.T) {
 	stp.assertHandlerDone()
 }
 
-// PUBLISH(QOS 0) message without previous CONNECT is illegal.
+// PUBLISH(QOS 0) packet without previous CONNECT is illegal.
 // The gateway should close the connection immediately.
 func TestDisconnectedPublishQOS0(t *testing.T) {
 	stp := newTestSetup(t, false, topics.PredefinedTopics{})
@@ -300,7 +300,7 @@ func TestDisconnectedPublishQOS0(t *testing.T) {
 	stp.assertHandlerDone()
 }
 
-// PUBLISH(QOS -1, registered topic) message without previous CONNECT is illegal.
+// PUBLISH(QOS -1, registered topic) packet without previous CONNECT is illegal.
 // The gateway should close the connection immediately.
 func TestDisconnectedPublishQOS3Registered(t *testing.T) {
 	stp := newTestSetup(t, false, topics.PredefinedTopics{})
@@ -1068,7 +1068,7 @@ func TestLastWill(t *testing.T) {
 
 	assert.Equal(util.StateActive, stp.handler.state.Get())
 
-	// Now, it is a MQTT broker's responsibility to send the last will message
+	// Now, it is a MQTT broker's responsibility to send the last will packet
 	// when the client dies unexpectedly - we can't test it here.
 	// The broker will detect a dead client by not receiving PINGREQ for
 	// >keepalive and will close the connection.
@@ -1312,15 +1312,15 @@ func (stp *testSetup) createSocketPair(sockType string) (*net.UnixListener, *net
 	return listener, conn
 }
 
-func (stp *testSetup) snSend(msg snPkts.Packet, setMsgID bool) {
+func (stp *testSetup) snSend(pkt snPkts.Packet, setMsgID bool) {
 	if setMsgID {
-		if msg2, ok := msg.(snPkts.PacketWithID); ok {
-			msg2.SetMessageID(stp.snNextMsgID)
+		if pkt2, ok := pkt.(snPkts.PacketWithID); ok {
+			pkt2.SetMessageID(stp.snNextMsgID)
 			stp.snNextMsgID++
 		}
 	}
 
-	err := msg.Write(stp.snConn)
+	err := pkt.Write(stp.snConn)
 	if err != nil {
 		stp.t.Fatal(err)
 	}
@@ -1338,36 +1338,36 @@ func (stp *testSetup) snRecv() snPkts.Packet {
 	pktReader := bytes.NewReader(buff[:n])
 	header := &snPkts.Header{}
 	header.Unpack(pktReader)
-	msg := snPkts.NewPacketWithHeader(*header)
-	msg.Unpack(pktReader)
+	pkt := snPkts.NewPacketWithHeader(*header)
+	pkt.Unpack(pktReader)
 
-	return msg
+	return pkt
 }
 
-func (stp *testSetup) mqttSend(msg mqttPackets.ControlPacket, setMsgID bool) {
+func (stp *testSetup) mqttSend(pkt mqttPackets.ControlPacket, setMsgID bool) {
 	if setMsgID {
-		switch msg2 := msg.(type) {
+		switch pkt2 := pkt.(type) {
 		case *mqttPackets.PublishPacket:
-			msg2.MessageID = stp.mqttNextMsgID
+			pkt2.MessageID = stp.mqttNextMsgID
 		default:
-			stp.t.Fatalf("Cannot set MsgID for %v", msg)
+			stp.t.Fatalf("Cannot set MsgID for %v", pkt)
 		}
 		stp.mqttNextMsgID++
 	}
 
-	err := msg.Write(stp.mqttConn)
+	err := pkt.Write(stp.mqttConn)
 	if err != nil {
 		stp.t.Fatal(err)
 	}
 }
 
 func (stp *testSetup) mqttRecv() mqttPackets.ControlPacket {
-	msg, err := mqttPackets.ReadPacket(stp.mqttConn)
+	pkt, err := mqttPackets.ReadPacket(stp.mqttConn)
 	if err != nil {
 		stp.t.Fatal(err)
 	}
 
-	return msg
+	return pkt
 }
 
 func testRead(connID string, conn net.Conn, timeout time.Duration) ([]byte, error) {

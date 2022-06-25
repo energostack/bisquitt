@@ -45,7 +45,7 @@ func (t *brokerPublishTransactionBase) SetSNPublish(snPublish *snPkts.Publish) {
 
 func (t *brokerPublishTransactionBase) regack(snRegack *snPkts.Regack, newState transactionState) error {
 	if t.State != awaitingRegack {
-		t.log.Debug("Unexpected message in %d: %v", t.State, snRegack)
+		t.log.Debug("Unexpected packet in %d: %v", t.State, snRegack)
 		return nil
 	}
 	if snRegack.ReturnCode != snPkts.RC_ACCEPTED {
@@ -81,23 +81,23 @@ func (t *brokerPublishTransactionBase) ProceedMQTT(newState transactionState, mq
 	return nil
 }
 
-// Resend MQTT or MQTT-SN message.
-func (t *brokerPublishTransactionBase) resend(msgx interface{}) error {
+// Resend MQTT or MQTT-SN packet.
+func (t *brokerPublishTransactionBase) resend(pktx interface{}) error {
 	t.log.Debug("Resend.")
-	switch msg := msgx.(type) {
+	switch pkt := pktx.(type) {
 	case snPkts.Packet:
 		// Set DUP if applicable.
-		if dupMsg, ok := msg.(snPkts.PacketWithDUP); ok {
+		if dupMsg, ok := pkt.(snPkts.PacketWithDUP); ok {
 			dupMsg.SetDUP(true)
 		}
-		return t.handler.snSend(msg)
+		return t.handler.snSend(pkt)
 	case mqttPackets.ControlPacket:
-		// PUBLISH is the only message with DUP in MQTT.
-		if publish, ok := msg.(*mqttPackets.PublishPacket); ok {
+		// PUBLISH is the only packet with DUP in MQTT.
+		if publish, ok := pkt.(*mqttPackets.PublishPacket); ok {
 			publish.Dup = true
 		}
-		return t.handler.mqttSend(msg)
+		return t.handler.mqttSend(pkt)
 	default:
-		return fmt.Errorf("invalid message type (%T): %v", msgx, msgx)
+		return fmt.Errorf("invalid package type (%T): %v", pktx, pktx)
 	}
 }
