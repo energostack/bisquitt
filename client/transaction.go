@@ -26,12 +26,12 @@ type transaction struct {
 	log    util.Logger
 }
 
-// Transactions involving DISCONNECT message.
+// Transactions involving DISCONNECT packet.
 type transactionWithDisconnect interface {
 	Disconnect(*pkts.Disconnect)
 }
 
-// Transactions involving PINGRESP message.
+// Transactions involving PINGRESP packet.
 type transactionWithPingresp interface {
 	Pingresp(pingresp *pkts.Pingresp)
 }

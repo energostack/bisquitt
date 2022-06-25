@@ -954,7 +954,7 @@ func TestSubscribeQOS0(t *testing.T) {
 
 	callbackFired := make(chan struct{})
 
-	callback := func(client *Client, topic string, msg *pkts.Publish) {
+	callback := func(client *Client, topic string, pubPkt *pkts.Publish) {
 		close(callbackFired)
 	}
 	if err := stp.client.Subscribe(topic, qos, callback); err != nil {
@@ -1026,7 +1026,7 @@ func TestSubscribeQOS1(t *testing.T) {
 
 	callbackFired := make(chan struct{})
 
-	callback := func(client *Client, topic string, msg *pkts.Publish) {
+	callback := func(client *Client, topic string, pubPkt *pkts.Publish) {
 		close(callbackFired)
 	}
 	if err := stp.client.Subscribe(topic, qos, callback); err != nil {
@@ -1109,7 +1109,7 @@ func TestSubscribeQOS2(t *testing.T) {
 
 	callbackFired := make(chan struct{})
 
-	callback := func(client *Client, topic string, msg *pkts.Publish) {
+	callback := func(client *Client, topic string, pubPkt *pkts.Publish) {
 		close(callbackFired)
 	}
 	if err := stp.client.Subscribe(topic, qos, callback); err != nil {
@@ -1190,7 +1190,7 @@ func TestSubscribeWildcard(t *testing.T) {
 
 	callbackFired := make(chan struct{})
 
-	callback := func(client *Client, topic string, msg *pkts.Publish) {
+	callback := func(client *Client, topic string, pubPkt *pkts.Publish) {
 		close(callbackFired)
 	}
 	if err := stp.client.Subscribe(wildcard, qos, callback); err != nil {
@@ -1264,7 +1264,7 @@ func TestSubscribeShort(t *testing.T) {
 
 	callbackFired := make(chan struct{})
 
-	callback := func(client *Client, topic string, msg *pkts.Publish) {
+	callback := func(client *Client, topic string, pubPkt *pkts.Publish) {
 		close(callbackFired)
 	}
 	if err := stp.client.Subscribe(topic, qos, callback); err != nil {
@@ -1331,7 +1331,7 @@ func TestSubscribePredefined(t *testing.T) {
 
 	callbackFired := make(chan struct{})
 
-	callback := func(client *Client, topic string, msg *pkts.Publish) {
+	callback := func(client *Client, topic string, pubPkt *pkts.Publish) {
 		close(callbackFired)
 	}
 	if err := stp.client.SubscribePredefined(topicID, qos, callback); err != nil {
@@ -1561,8 +1561,8 @@ func TestPing(t *testing.T) {
 		stp.connect(clientID)
 
 		// client --PINGREQ--> GW
-		msg := stp.recv()
-		_, ok := msg.(*pkts.Pingreq)
+		pkt := stp.recv()
+		_, ok := pkt.(*pkts.Pingreq)
 		assert.True(ok)
 
 		// client <--PINGRESP-- GW
@@ -1868,8 +1868,8 @@ func (stp *testSetup) createSocketPair(sockType string, rand *rand.Rand) (*net.U
 	return listener, conn
 }
 
-func (stp *testSetup) send(msg pkts.Packet) {
-	if err := msg.Write(stp.conn); err != nil {
+func (stp *testSetup) send(pkt pkts.Packet) {
+	if err := pkt.Write(stp.conn); err != nil {
 		stp.t.Fatal(err)
 	}
 }
@@ -1886,10 +1886,10 @@ func (stp *testSetup) recv() pkts.Packet {
 	pktReader := bytes.NewReader(buff[:n])
 	header := &pkts.Header{}
 	header.Unpack(pktReader)
-	msg := pkts.NewPacketWithHeader(*header)
-	msg.Unpack(pktReader)
+	pkt := pkts.NewPacketWithHeader(*header)
+	pkt.Unpack(pktReader)
 
-	return msg
+	return pkt
 }
 
 func testRead(conn net.Conn, timeout time.Duration) ([]byte, error) {

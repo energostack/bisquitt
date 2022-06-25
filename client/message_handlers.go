@@ -9,7 +9,7 @@ import (
 )
 
 // Subscribed message handler callback type.
-type MessageHandlerFunc func(client *Client, topic string, msg *pkts.Publish)
+type MessageHandlerFunc func(client *Client, topic string, pkt *pkts.Publish)
 
 type messageHandler struct {
 	route    []string
@@ -31,7 +31,7 @@ func (mhs *messageHandlers) delete(route []string) {
 	mhs.handlers.Delete(join(route))
 }
 
-func (mhs *messageHandlers) handle(client *Client, topic string, msg *pkts.Publish) {
+func (mhs *messageHandlers) handle(client *Client, topic string, pubPkt *pkts.Publish) {
 	var callback MessageHandlerFunc
 	route := split(topic)
 	mhs.handlers.Range(func(key, value interface{}) bool {
@@ -49,7 +49,7 @@ func (mhs *messageHandlers) handle(client *Client, topic string, msg *pkts.Publi
 	})
 
 	if callback != nil {
-		go callback(client, topic, msg)
+		go callback(client, topic, pubPkt)
 		return
 	}
 }
