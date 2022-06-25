@@ -9,10 +9,10 @@ import (
 )
 
 func TestWillMsgReqStruct(t *testing.T) {
-	msg := NewWillMsgReq()
+	pkt := NewWillMsgReq()
 
-	if assert.NotNil(t, msg, "New packet should not be nil") {
-		assert.Equal(t, "*packets1.WillMsgReq", reflect.TypeOf(msg).String(), "Type should be WillMsgReq")
+	if assert.NotNil(t, pkt, "New packet should not be nil") {
+		assert.Equal(t, "*packets1.WillMsgReq", reflect.TypeOf(pkt).String(), "Type should be WillMsgReq")
 	}
 }
 
@@ -20,16 +20,16 @@ func TestWillMsgReqMarshal(t *testing.T) {
 	assert := assert.New(t)
 	buf := bytes.NewBuffer(nil)
 
-	msg1 := NewWillMsgReq()
-	if err := msg1.Write(buf); err != nil {
+	pkt1 := NewWillMsgReq()
+	if err := pkt1.Write(buf); err != nil {
 		t.Fatal(err)
 	}
 
 	r := bytes.NewReader(buf.Bytes())
-	msg2, err := ReadPacket(r)
+	pkt2, err := ReadPacket(r)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.Equal(msg1, msg2.(*WillMsgReq))
+	assert.Equal(pkt1, pkt2.(*WillMsgReq))
 }

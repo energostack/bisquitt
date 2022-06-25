@@ -14,16 +14,16 @@ func TestSubscribeStruct(t *testing.T) {
 	topicName := []byte("test-topic")
 	qos := uint8(1)
 	dup := true
-	msg := NewSubscribe(topicID, topicIDType, topicName, qos, dup)
+	pkt := NewSubscribe(topicID, topicIDType, topicName, qos, dup)
 
-	if assert.NotNil(t, msg, "New packet should not be nil") {
-		assert.Equal(t, "*packets1.Subscribe", reflect.TypeOf(msg).String(), "Type should be Subscribe")
-		assert.Equal(t, dup, msg.DUP(), "Bad Dup flag value")
-		assert.Equal(t, qos, msg.QOS, "Bad QOS value")
-		assert.Equal(t, topicIDType, msg.TopicIDType, "Bad TopicIDType value")
-		assert.Equal(t, topicID, msg.TopicID, "Bad TopicID value")
-		assert.Equal(t, uint16(0), msg.MessageID(), "Default MessageID should be 0")
-		assert.Equal(t, topicName, msg.TopicName, "Bad Topicname value")
+	if assert.NotNil(t, pkt, "New packet should not be nil") {
+		assert.Equal(t, "*packets1.Subscribe", reflect.TypeOf(pkt).String(), "Type should be Subscribe")
+		assert.Equal(t, dup, pkt.DUP(), "Bad Dup flag value")
+		assert.Equal(t, qos, pkt.QOS, "Bad QOS value")
+		assert.Equal(t, topicIDType, pkt.TopicIDType, "Bad TopicIDType value")
+		assert.Equal(t, topicID, pkt.TopicID, "Bad TopicID value")
+		assert.Equal(t, uint16(0), pkt.MessageID(), "Default MessageID should be 0")
+		assert.Equal(t, topicName, pkt.TopicName, "Bad Topicname value")
 	}
 }
 
@@ -31,36 +31,36 @@ func TestSubscribeMarshalString(t *testing.T) {
 	assert := assert.New(t)
 	buf := bytes.NewBuffer(nil)
 
-	msg1 := NewSubscribe(0, TIT_STRING, []byte("test-topic"), 1, true)
-	msg1.SetMessageID(12)
-	if err := msg1.Write(buf); err != nil {
+	pkt1 := NewSubscribe(0, TIT_STRING, []byte("test-topic"), 1, true)
+	pkt1.SetMessageID(12)
+	if err := pkt1.Write(buf); err != nil {
 		t.Fatal(err)
 	}
 
 	r := bytes.NewReader(buf.Bytes())
-	msg2, err := ReadPacket(r)
+	pkt2, err := ReadPacket(r)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.Equal(msg1, msg2.(*Subscribe))
+	assert.Equal(pkt1, pkt2.(*Subscribe))
 }
 
 func TestSubscribeMarshalShort(t *testing.T) {
 	assert := assert.New(t)
 	buf := bytes.NewBuffer(nil)
 
-	msg1 := NewSubscribe(123, TIT_SHORT, nil, 1, true)
-	msg1.SetMessageID(12)
-	if err := msg1.Write(buf); err != nil {
+	pkt1 := NewSubscribe(123, TIT_SHORT, nil, 1, true)
+	pkt1.SetMessageID(12)
+	if err := pkt1.Write(buf); err != nil {
 		t.Fatal(err)
 	}
 
 	r := bytes.NewReader(buf.Bytes())
-	msg2, err := ReadPacket(r)
+	pkt2, err := ReadPacket(r)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.Equal(msg1, msg2.(*Subscribe))
+	assert.Equal(pkt1, pkt2.(*Subscribe))
 }

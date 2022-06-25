@@ -11,16 +11,16 @@ func TestAuthMarshal(t *testing.T) {
 	assert := assert.New(t)
 	buf := bytes.NewBuffer(nil)
 
-	msg1 := NewAuthPlain("test-user", []byte("test-password"))
-	if err := msg1.Write(buf); err != nil {
+	pkt1 := NewAuthPlain("test-user", []byte("test-password"))
+	if err := pkt1.Write(buf); err != nil {
 		t.Fatal(err)
 	}
 
 	r := bytes.NewReader(buf.Bytes())
-	msg2, err := ReadPacket(r)
+	pkt2, err := ReadPacket(r)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.Equal(msg1, msg2.(*Auth))
+	assert.Equal(pkt1, pkt2.(*Auth))
 }
