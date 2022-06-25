@@ -38,7 +38,7 @@ func (t *brokerPublishQOS1Transaction) Regack(snRegack *snPkts.Regack) error {
 
 func (t *brokerPublishQOS1Transaction) Puback(snPuback *snPkts.Puback) error {
 	if t.State != awaitingPuback {
-		t.log.Debug("Unexpected message in %d: %v", t.State, snPuback)
+		t.log.Debug("Unexpected packet in %d: %v", t.State, snPuback)
 		return nil
 	}
 	if snPuback.ReturnCode != snPkts.RC_ACCEPTED {

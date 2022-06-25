@@ -1,5 +1,5 @@
-// The MQTT broker watches the connection state using keepalive (PING* messages)
-// _after_ the connection is established (after a CONNECT message is received by
+// The MQTT broker watches the connection state using keepalive (PING* packets)
+// _after_ the connection is established (after a CONNECT packet is received by
 // the broker).  Before the connection is established, the MQTT-SN gateway
 // must watch the connection itself because a malicious client could leave the
 // connection half-established (=> possible DoS attack vulnerability).
@@ -66,7 +66,7 @@ func (t *connectTransaction) Start(ctx context.Context) error {
 	})
 
 	if t.authEnabled {
-		t.log.Debug("Waiting for AUTH message.")
+		t.log.Debug("Waiting for AUTH packet.")
 		return nil
 	}
 

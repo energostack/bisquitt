@@ -1,17 +1,17 @@
-// MQTT-SN specification v 1.2 (chapter 5.4.13) says that the PUBACK message contains:
+// MQTT-SN specification v 1.2 (chapter 5.4.13) says that the PUBACK packet contains:
 //
-// 	TopicId: same value the one contained in the corresponding PUBLISH message.
+// 	TopicId: same value the one contained in the corresponding PUBLISH packet.
 //
 // I don't understand the logic behind this field because:
 //
-// 1. The PUBACK message contains a MsgId field which already identifies the corresponding
-//    PUBLISH message.
-// 2. The MQTT PUBACK message of course does not include TopicID
+// 1. The PUBACK packet contains a MsgId field which already identifies the corresponding
+//    PUBLISH packet.
+// 2. The MQTT PUBACK packet of course does not include TopicID
 // 3. I.e. the existence of the TopicID field in the PUBACK complicates the implementation
 //    of a transparent gateway (it must remember the MsgID -> TopicID mapping)
 //
 // Therefore I consider the TopicID field unnecessary and would rather not include
-// it in the PUBACK message. But we include it for the specification compliance and
+// it in the PUBACK packet. But we include it for the specification compliance and
 // therefore we must implement the clientPublish1Transaction just to remember the
 // TopicID value :(
 
@@ -52,7 +52,7 @@ func newClientPublishQOS1Transaction(ctx context.Context, h *handler, msgID uint
 }
 
 func (t *clientPublishQOS1Transaction) Puback(mqPuback *mqttPackets.PubackPacket) error {
-	// MQTT-SN PUBACK message contains ReturnCode field. MQTT PUBACK message
+	// MQTT-SN PUBACK packet contains ReturnCode field. MQTT PUBACK packet
 	// does not contain it - PUBACK's implicit meaning is "accepted".
 	// See MQTT-SN specification v. 1.2, chapter 5.4.13.
 	snPuback := snPkts.NewPuback(t.topicID, snPkts.RC_ACCEPTED)

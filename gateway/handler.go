@@ -1,7 +1,7 @@
 // Handler serves one MQTT-SN client. It is run by the Gateway and receives
 // an already-established connection to MQTT-SN client from it.
-// After receiving a CONNECT message from the client, it connects to the MQTT broker
-// and translates MQTT-SN messages to MQTT ones and vice versa.
+// After receiving a CONNECT packet from the client, it connects to the MQTT broker
+// and translates MQTT-SN packets to MQTT ones and vice versa.
 //
 // Goroutines orchestration is implemented using `errgroup` according to the following rules:
 // - All goroutines are spawned using `Handler.group.Go()`.
@@ -49,7 +49,7 @@ type handler struct {
 	keepAlive        uint16
 	clientID         string
 	topicID          *util.IDSequence
-	msgBuffer        []snPkts.Packet
+	pktBuffer        []snPkts.Packet
 	group            *errgroup.Group
 	transactions     *transactions.TransactionStore
 	// for testing
@@ -71,7 +71,7 @@ const (
 var Shutdown = errors.New("clean shutdown")
 var ErrTopicIDsExhausted = errors.New("no more TopicIDs available")
 var ErrMqttConnClosed = errors.New("MQTT broker closed connection")
-var ErrIllegalMessageWhenDisconnected = errors.New("illegal message in disconnected state")
+var ErrIllegalPacketWhenDisconnected = errors.New("illegal packet in disconnected state")
 
 func hasWildcard(topic string) bool {
 	if strings.Contains(topic, "+") {
@@ -118,7 +118,7 @@ func (h *handler) run(ctx context.Context, snConn net.Conn) error {
 	h.group, groupCtx = errgroup.WithContext(ctx)
 
 	// We must create a separate MQTT-SN connection context because we want to
-	// send DISCONNECT message when the handler is destroyed => we don't want
+	// send DISCONNECT packet when the handler is destroyed => we don't want
 	// h.snConn to be closed by groupCtx.
 	snCtx, snCancel := context.WithCancel(context.Background())
 	h.group.Go(func() error {
@@ -126,7 +126,7 @@ func (h *handler) run(ctx context.Context, snConn net.Conn) error {
 
 		// The specification doesn't mention when or under what
 		// circumstances DISCONNECT should be sent to a client.  Common
-		// sense compels us to send the message when the client is either
+		// sense compels us to send the packet when the client is either
 		// active or awake. The rest of the client states, i.e. ASLEEP,
 		// will be handled once we have an actual
 		// use case or someone else takes issue, whichever happens
@@ -288,7 +288,7 @@ func (h *handler) handleBrokerPublish(ctx context.Context, mqPublish *mqttPacket
 			return h.snSend(snPublish)
 		}
 
-		// We are reusing PUBLISH message's MsgID because we
+		// We are reusing PUBLISH packet's MsgID because we
 		// really want to keep MQTT-SN MsgIDs and MQTT MsgIDs in
 		// sync. If we created a new MsgID, we would need
 		// to maintain a MQTT-SN MsgID <-> MQTT MsgID map which
@@ -360,16 +360,16 @@ func (h *handler) handleBrokerPublish(ctx context.Context, mqPublish *mqttPacket
 	return transaction.ProceedSN(nextState, snMsg)
 }
 
-func (h *handler) handleMqtt(ctx context.Context, msg mqttPackets.ControlPacket) error {
-	h.log.Debug("=> %v", msg)
-	switch mqMsg := msg.(type) {
+func (h *handler) handleMqtt(ctx context.Context, pkt mqttPackets.ControlPacket) error {
+	h.log.Debug("=> %v", pkt)
+	switch mqMsg := pkt.(type) {
 
 	// Client CONNECT transaction.
 	case *mqttPackets.ConnackPacket:
 		transactionx, _ := h.transactions.GetByType(snPkts.CONNECT)
 		transaction, ok := transactionx.(*connectTransaction)
 		if !ok {
-			h.log.Error("Unexpected transaction type %T for message: %v", transactionx, mqMsg)
+			h.log.Error("Unexpected transaction type %T for packet: %v", transactionx, mqMsg)
 			return nil
 		}
 		return transaction.Connack(mqMsg)
@@ -379,7 +379,7 @@ func (h *handler) handleMqtt(ctx context.Context, msg mqttPackets.ControlPacket)
 		transactionx, _ := h.transactions.Get(mqMsg.MessageID)
 		transaction, ok := transactionx.(*clientPublishQOS1Transaction)
 		if !ok {
-			h.log.Error("Unexpected transaction type %T for message: %v", transactionx, mqMsg)
+			h.log.Error("Unexpected transaction type %T for packet: %v", transactionx, mqMsg)
 			return nil
 		}
 		return transaction.Puback(mqMsg)
@@ -401,7 +401,7 @@ func (h *handler) handleMqtt(ctx context.Context, msg mqttPackets.ControlPacket)
 		transactionx, _ := h.transactions.Get(mqMsg.MessageID)
 		transaction, ok := transactionx.(*subscribeTransaction)
 		if !ok {
-			h.log.Error("Unexpected transaction type %T for message: %v", transactionx, mqMsg)
+			h.log.Error("Unexpected transaction type %T for packet: %v", transactionx, mqMsg)
 			return nil
 		}
 		return transaction.Suback(mqMsg)
@@ -429,13 +429,13 @@ func (h *handler) handleMqtt(ctx context.Context, msg mqttPackets.ControlPacket)
 		transactionx, _ := h.transactions.Get(mqMsg.MessageID)
 		transaction, ok := transactionx.(*brokerPublishQOS2Transaction)
 		if !ok {
-			h.log.Error("Unexpected transaction type %T for message: %v", transactionx, mqMsg)
+			h.log.Error("Unexpected transaction type %T for packet: %v", transactionx, mqMsg)
 			return nil
 		}
 		return transaction.Pubrel(mqMsg)
 
 	default:
-		return fmt.Errorf("Unsupported MQTT message type: %v", msg)
+		return fmt.Errorf("Unsupported MQTT packet type: %v", pkt)
 	}
 }
 
@@ -443,7 +443,7 @@ func (h *handler) snReceiveLoop(ctx context.Context) error {
 	h.log.Debug("MQTT-SN receiver starts.")
 	defer h.log.Debug("MQTT-SN receiver quits.")
 	for {
-		msg, err := h.snReceive()
+		pkt, err := h.snReceive()
 		if err != nil {
 			if err == context.Canceled {
 				return nil
@@ -451,7 +451,7 @@ func (h *handler) snReceiveLoop(ctx context.Context) error {
 			h.log.Error("MQTT-SN receive error: %v", err)
 			return err
 		}
-		err = h.handleMqttSn(ctx, msg)
+		err = h.handleMqttSn(ctx, pkt)
 		if err != nil {
 			return err
 		}
@@ -462,7 +462,7 @@ func (h *handler) mqttReceiveLoop(ctx context.Context) error {
 	h.log.Debug("MQTT receiver starts.")
 	defer h.log.Debug("MQTT receiver quits.")
 	for {
-		msg, err := mqttPackets.ReadPacket(h.mqttConn)
+		pkt, err := mqttPackets.ReadPacket(h.mqttConn)
 		if err != nil {
 			if err == context.Canceled {
 				return nil
@@ -478,7 +478,7 @@ func (h *handler) mqttReceiveLoop(ctx context.Context) error {
 			h.log.Error("MQTT decode error: %v", err)
 			return err
 		}
-		if err := h.handleMqtt(ctx, msg); err != nil {
+		if err := h.handleMqtt(ctx, pkt); err != nil {
 			return err
 		}
 	}
@@ -592,7 +592,7 @@ func (h *handler) handleSubscribe(ctx context.Context, snSubscribe *snPkts.Subsc
 			if err != nil {
 				snSuback := snPkts.NewSuback(0, 0, snPkts.RC_INVALID_TOPIC_ID)
 				// We are kind of misusing the "invalid topic ID" return code here.
-				// Please see note in `case *snPkts.RegisterMessage`.
+				// Please see note in `case *snPkts.Register`.
 				snSuback.CopyMessageID(snSubscribe)
 				return h.snSend(snSuback)
 			}
@@ -650,22 +650,22 @@ func (h *handler) handleUnsubscribe(_ context.Context, snUnsubscribe *snPkts.Uns
 	return h.mqttSend(mqUnsubscribe)
 }
 
-// Check whether the given message is legal in the current Handler's state.
+// Check whether the given packet is legal in the current Handler's state.
 //
-// We check only messages received in the "disconnected" state because:
-// 1. It is the only state before authentication, hence illegal messages could
+// We check only packets received in the "disconnected" state because:
+// 1. It is the only state before authentication, hence illegal packets could
 //    potentially be used to attack the gateway by an unauthenticated user.
-// 2. Messages in other states are correctly handled by their respective
-//    transactions. Also unexpected messages can be caused by delayed UDP
+// 2. Packets in other states are correctly handled by their respective
+//    transactions. Also unexpected packets can be caused by delayed UDP
 //    packets etc. therefore we do not want to close the connection
-//    when such a message appears.
-func (h *handler) checkMessageLegal(msg snPkts.Packet) error {
+//    when such packet appears.
+func (h *handler) checkPacketLegal(pkt snPkts.Packet) error {
 	state := h.state.Get()
 	if state != util.StateDisconnected {
 		return nil
 	}
 
-	switch snMsg := msg.(type) {
+	switch snMsg := pkt.(type) {
 	case *snPkts.Connect:
 		return nil
 	case *snPkts.Auth:
@@ -675,14 +675,14 @@ func (h *handler) checkMessageLegal(msg snPkts.Packet) error {
 	case *snPkts.WillTopic:
 		return nil
 	// Handler is switched to disconnected state _before_ client
-	// responds to DISCONNECT => we must enable DISCONNECT message.
+	// responds to DISCONNECT => we must enable DISCONNECT packet.
 	case *snPkts.Disconnect:
 		return nil
 	case *snPkts.Publish:
-		// MQTT-SN specification v. 1.2, chapter 6.8 PUBLISH with QoS Level -1
-		// QOS 3 messages with short or predefined topics are allowed
+		// QOS 3 packets with short or predefined topics are allowed
 		// without prior CONNECT.
-		// We do not allow these messages when authentication is enabled.
+		// See MQTT-SN specification v. 1.2, chapter 6.8 PUBLISH with QoS Level -1
+		// We do not allow these packets when authentication is enabled.
 		if !h.cfg.AuthEnabled &&
 			snMsg.QOS == 3 &&
 			(snMsg.TopicIDType == snPkts.TIT_SHORT ||
@@ -691,16 +691,16 @@ func (h *handler) checkMessageLegal(msg snPkts.Packet) error {
 		}
 	}
 
-	h.log.Error("Illegal message in %q state: %v", state, msg)
-	return ErrIllegalMessageWhenDisconnected
+	h.log.Error("Illegal packet in %q state: %v", state, pkt)
+	return ErrIllegalPacketWhenDisconnected
 }
 
-func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Packet) error {
-	if err := h.checkMessageLegal(msg); err != nil {
+func (h *handler) handleMqttSn(ctx context.Context, pkt snPkts.Packet) error {
+	if err := h.checkPacketLegal(pkt); err != nil {
 		return err
 	}
 
-	switch snMsg := msg.(type) {
+	switch snMsg := pkt.(type) {
 
 	// Client CONNECT transaction.
 	case *snPkts.Connect:
@@ -712,7 +712,7 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Packet) error {
 		if transaction, ok := transactionx.(*connectTransaction); ok {
 			return transaction.Auth(snMsg)
 		}
-		h.log.Error("Unexpected transaction type %T for message: %v", transactionx, snMsg)
+		h.log.Error("Unexpected transaction type %T for packet: %v", transactionx, snMsg)
 		return nil
 
 	// Client CONNECT transaction.
@@ -721,7 +721,7 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Packet) error {
 		if transaction, ok := transactionx.(*connectTransaction); ok {
 			return transaction.WillTopic(snMsg)
 		}
-		h.log.Error("Unexpected transaction type %T for message: %v", transactionx, snMsg)
+		h.log.Error("Unexpected transaction type %T for packet: %v", transactionx, snMsg)
 		return nil
 
 	// Client CONNECT transaction.
@@ -730,7 +730,7 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Packet) error {
 		if transaction, ok := transactionx.(*connectTransaction); ok {
 			return transaction.WillMsg(snMsg)
 		}
-		h.log.Error("Unexpected transaction type %T for message: %v", transactionx, snMsg)
+		h.log.Error("Unexpected transaction type %T for packet: %v", transactionx, snMsg)
 		return nil
 
 	// Client REGISTER transaction.
@@ -775,14 +775,14 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Packet) error {
 	// Client PING transaction (going AWAKE or just a keepalive).
 	case *snPkts.Pingreq:
 		if h.state.Get() == util.StateAsleep {
-			// Must be set before snSend otherwise the messages will be queued...
+			// Must be set before snSend otherwise the packets will be queued...
 			h.setState(util.StateAwake)
-			for _, m2 := range h.msgBuffer {
+			for _, m2 := range h.pktBuffer {
 				if err := h.snSend(m2); err != nil {
 					return err
 				}
 			}
-			h.msgBuffer = nil
+			h.pktBuffer = nil
 			return h.snSend(snPkts.NewPingresp())
 		} else {
 			mqMsg := mqttPackets.NewControlPacket(mqttPackets.Pingreq).(*mqttPackets.PingreqPacket)
@@ -807,27 +807,27 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Packet) error {
 				cancelPinger := h.startSleepPinger(ctx)
 				time.AfterFunc(time.Duration(snMsg.Duration)*time.Second, cancelPinger)
 			}
-			h.msgBuffer = nil
+			h.pktBuffer = nil
 			m2 := snPkts.NewDisconnect(0)
 			if err := h.snSend(m2); err != nil {
 				return err
 			}
-			// Must be set after snSend otherwise the message will be queued...
+			// Must be set after snSend otherwise the packet will be queued...
 			h.setState(util.StateAsleep)
 			return nil
 		}
 
 	// MQTT-SN gateway REGISTER transaction.
-	// Reply to REGISTER messages sent from the gateway to a client. The client
+	// Reply to REGISTER packets sent from the gateway to a client. The client
 	// subscribes for a wildcard topic, a mqtt broker sends a "response" PUBLISH
-	// message with an unregistered topic => the gateway initializes
+	// packet with an unregistered topic => the gateway initializes
 	// registration and the client must acknowledge it.
 	case *snPkts.Regack:
 		transactionx, _ := h.transactions.Get(snMsg.MessageID())
 		if transaction, ok := transactionx.(transactionWithRegack); ok {
 			return transaction.Regack(snMsg)
 		}
-		h.log.Error("Unexpected transaction type %T for message: %v", transactionx, snMsg)
+		h.log.Error("Unexpected transaction type %T for packet: %v", transactionx, snMsg)
 		return nil
 
 	// MQTT broker PUBLISH QoS 1 transaction.
@@ -836,7 +836,7 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Packet) error {
 		if transaction, ok := transactionx.(*brokerPublishQOS1Transaction); ok {
 			return transaction.Puback(snMsg)
 		}
-		h.log.Error("Unexpected transaction type %T for message: %v", transactionx, snMsg)
+		h.log.Error("Unexpected transaction type %T for packet: %v", transactionx, snMsg)
 		return nil
 
 	// MQTT broker PUBLISH QoS 2 transaction.
@@ -845,7 +845,7 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Packet) error {
 		if transaction, ok := transactionx.(*brokerPublishQOS2Transaction); ok {
 			return transaction.Pubrec(snMsg)
 		}
-		h.log.Error("Unexpected transaction type %T for message: %v", transactionx, snMsg)
+		h.log.Error("Unexpected transaction type %T for packet: %v", transactionx, snMsg)
 		return nil
 
 	// MQTT broker PUBLISH QoS 2 transaction.
@@ -854,11 +854,11 @@ func (h *handler) handleMqttSn(ctx context.Context, msg snPkts.Packet) error {
 		if transaction, ok := transactionx.(*brokerPublishQOS2Transaction); ok {
 			return transaction.Pubcomp(snMsg)
 		}
-		h.log.Error("Unexpected transaction type %T for message: %v", transactionx, snMsg)
+		h.log.Error("Unexpected transaction type %T for packet: %v", transactionx, snMsg)
 		return nil
 
 	default:
-		return fmt.Errorf("Unsupported MQTT-SN message type: %v", msg)
+		return fmt.Errorf("Unsupported MQTT-SN packet type: %v", pkt)
 	}
 }
 
@@ -870,8 +870,8 @@ func (h *handler) startSleepPinger(ctx context.Context) context.CancelFunc {
 		for {
 			select {
 			case <-time.After(time.Duration(h.keepAlive) * time.Second):
-				m := mqttPackets.NewControlPacket(mqttPackets.Pingreq).(*mqttPackets.PingreqPacket)
-				if err := h.mqttSend(m); err != nil {
+				p := mqttPackets.NewControlPacket(mqttPackets.Pingreq).(*mqttPackets.PingreqPacket)
+				if err := h.mqttSend(p); err != nil {
 					return err
 				}
 			case <-ctx2.Done():
@@ -882,15 +882,15 @@ func (h *handler) startSleepPinger(ctx context.Context) context.CancelFunc {
 	return cancel
 }
 
-func (h *handler) snSend(msg snPkts.Packet) error {
+func (h *handler) snSend(pkt snPkts.Packet) error {
 	if h.state.Get() == util.StateAsleep {
-		h.log.Debug("Queued %v", msg)
-		h.msgBuffer = append(h.msgBuffer, msg)
+		h.log.Debug("Queued %v", pkt)
+		h.pktBuffer = append(h.pktBuffer, pkt)
 		// TODO: Potentional serialization errors will be delayed!
 		return nil
 	}
-	h.log.Debug("<- %v", msg)
-	err := msg.Write(h.snConn)
+	h.log.Debug("<- %v", pkt)
+	err := pkt.Write(h.snConn)
 	if err != nil {
 		return err
 	}
@@ -909,26 +909,26 @@ func (h *handler) snReceive() (snPkts.Packet, error) {
 		return nil, err
 	}
 
-	pkt := buffer[:n]
+	pktBuf := buffer[:n]
 
-	if len(pkt) < 2 {
+	if len(pktBuf) < 2 {
 		return nil, errors.New("Illegal packet: too short")
 	}
 
-	pktReader := bytes.NewReader(pkt)
+	pktReader := bytes.NewReader(pktBuf)
 	header := &snPkts.Header{}
 	header.Unpack(pktReader)
-	msg := snPkts.NewPacketWithHeader(*header)
-	msg.Unpack(pktReader)
+	pkt := snPkts.NewPacketWithHeader(*header)
+	pkt.Unpack(pktReader)
 
-	h.log.Debug("-> %v", msg)
-	return msg, nil
+	h.log.Debug("-> %v", pkt)
+	return pkt, nil
 }
 
-func (h *handler) mqttSend(msg mqttPackets.ControlPacket) error {
-	h.log.Debug("<= %v", msg)
+func (h *handler) mqttSend(pkt mqttPackets.ControlPacket) error {
+	h.log.Debug("<= %v", pkt)
 	buff := &bytes.Buffer{}
-	err := msg.Write(buff)
+	err := pkt.Write(buff)
 	if err != nil {
 		return err
 	}
