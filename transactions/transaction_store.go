@@ -6,8 +6,8 @@ import (
 	pkts "github.com/energomonitor/bisquitt/packets1"
 )
 
-// TransactionStore stores transactions by message ID or by message type
-// (for message types without a message ID). The typical usage is to store
+// TransactionStore stores transactions by MessageID or MessageType
+// (for packets types without MessageID). The typical usage is to store
 // transactions in progress.
 //
 // It's safe for concurrent use.
@@ -25,21 +25,21 @@ func NewTransactionStore() *TransactionStore {
 	}
 }
 
-// Store inserts a new transaction to the store by the message ID.
+// Store inserts a new transaction to the store by the MessageID.
 func (ts *TransactionStore) Store(msgID uint16, transaction Transaction) {
 	ts.Lock()
 	defer ts.Unlock()
 	ts.byMsgID[msgID] = transaction
 }
 
-// StoreByType inserts a new transaction to the store by the message type.
+// StoreByType inserts a new transaction to the store by the MessageType.
 func (ts *TransactionStore) StoreByType(msgType pkts.MessageType, transaction Transaction) {
 	ts.Lock()
 	defer ts.Unlock()
 	ts.byMsgType[msgType] = transaction
 }
 
-// Get retrieves a transaction from the store by the message ID.
+// Get retrieves a transaction from the store by the MessageID.
 func (ts *TransactionStore) Get(msgID uint16) (Transaction, bool) {
 	ts.RLock()
 	defer ts.RUnlock()
@@ -47,7 +47,7 @@ func (ts *TransactionStore) Get(msgID uint16) (Transaction, bool) {
 	return transaction, ok
 }
 
-// GetByType retrieves a transaction from the store by the message type.
+// GetByType retrieves a transaction from the store by the MessageType.
 func (ts *TransactionStore) GetByType(msgType pkts.MessageType) (Transaction, bool) {
 	ts.Lock()
 	defer ts.Unlock()
@@ -55,14 +55,14 @@ func (ts *TransactionStore) GetByType(msgType pkts.MessageType) (Transaction, bo
 	return transaction, ok
 }
 
-// Delete removes a transaction from the store by the message ID.
+// Delete removes a transaction from the store by the MessageID.
 func (ts *TransactionStore) Delete(msgID uint16) {
 	ts.Lock()
 	defer ts.Unlock()
 	delete(ts.byMsgID, msgID)
 }
 
-// DeleteByType removes a transaction from the store by the message type.
+// DeleteByType removes a transaction from the store by the MessageType.
 func (ts *TransactionStore) DeleteByType(msgType pkts.MessageType) {
 	ts.Lock()
 	defer ts.Unlock()

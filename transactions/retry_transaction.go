@@ -10,7 +10,7 @@ import (
 // RetryTransaction implements a StatefulTransaction with automatic time-based
 // limited-repetition retries for every transaction step.
 //
-// E.g. a PUBLISH message should be sent N_retry times with T_retry delay unless
+// E.g. a PUBLISH packet should be sent N_retry times with T_retry delay unless
 // correspondent PUBACK is received.
 type RetryTransaction struct {
 	*TransactionBase
@@ -25,7 +25,7 @@ type RetryTransaction struct {
 }
 
 // Retry callback type.
-type RTRetryCallback func(msg interface{}) error
+type RTRetryCallback func(data interface{}) error
 
 // ErrNoMoreRetries error signalizes that the retry callback was called retryCount
 // times in succession and another retryDelay passed without Proceed, Success nor

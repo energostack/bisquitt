@@ -2,8 +2,8 @@
 // in the specific transaction types.
 //
 // A transaction is a tool to implement asynchronous, concurrent, stateful event handling.
-// In Bisquitt, it's used to keep track of the related messages (e.g. PUBLISH - PUBACK)
-// in the interweaved messages stream.
+// In Bisquitt, it's used to keep track of the related packets (e.g. PUBLISH - PUBACK)
+// in the interweaved packets stream.
 package transactions
 
 // Transaction is a common transactions interface.
