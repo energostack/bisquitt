@@ -98,7 +98,7 @@ func (t *sleepTransaction) resendDisconnect() {
 
 func (t *sleepTransaction) Disconnect(disconnect *pkts.Disconnect) {
 	if t.state != awaitingDisconnect {
-		t.log.Debug("Unexpected message in %d: %v", t.state, disconnect)
+		t.log.Debug("Unexpected packet in %d: %v", t.state, disconnect)
 		return
 	}
 	t.stopTimer()
@@ -108,7 +108,7 @@ func (t *sleepTransaction) Disconnect(disconnect *pkts.Disconnect) {
 
 func (t *sleepTransaction) Pingresp(pingresp *pkts.Pingresp) {
 	if t.state != awaitingPingresp {
-		t.log.Debug("Unexpected message in %d: %v", t.state, pingresp)
+		t.log.Debug("Unexpected packet in %d: %v", t.state, pingresp)
 		return
 	}
 	t.stopTimer()

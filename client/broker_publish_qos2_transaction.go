@@ -1,7 +1,7 @@
-// brokerPublishQOS2 just saves the original PUBLISH message for later handlers firing.
+// brokerPublishQOS2 just saves the original PUBLISH packet for later handlers firing.
 //
 // [the sender] MUST NOT re-send the PUBLISH once it has sent the corresponding
-// PUBREL message.
+// PUBREL packet.
 // MQTT specification v. 5.0, chapter 4.3.3 QoS 2: Exactly once delivery
 //
 // Hence, we fire subscription handlers as soon as the corresponding PUBREL is

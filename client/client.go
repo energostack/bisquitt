@@ -259,7 +259,7 @@ func (c *Client) Wait() error {
 }
 
 // Close closes the connection with the MQTT-SN gateway. The client sends
-// a DISCONNECT message before closing the connection.
+// a DISCONNECT packet before closing the connection.
 func (c *Client) Close() error {
 	if err := c.Disconnect(); err != nil {
 		return err
@@ -286,7 +286,7 @@ func (c *Client) setState(new util.ClientState) {
 
 // notifyStateChange sends last state change to a channel. The channel is read
 // by keep-alive goroutine which uses the new state to schedule the next issue
-// of keep-alive message.
+// of keep-alive packet.
 func (c *Client) notifyStateChange(s util.ClientState) {
 	if c.cfg.KeepAlive == 0 {
 		return
@@ -298,9 +298,9 @@ func (c *Client) notifyStateChange(s util.ClientState) {
 	}
 }
 
-// Connect sends a CONNECT message to the MQTT-SN gateway. According to the
-// MQTT-SN specification, this must be the first message the client sends
-// unless it's a PUBLISH message with QoS = -1.
+// Connect sends a CONNECT packet to the MQTT-SN gateway. According to the
+// MQTT-SN specification, this must be the first packet the client sends
+// unless it's a PUBLISH packet with QoS = -1.
 func (c *Client) Connect() error {
 	connect := pkts.NewConnect(
 		[]byte(c.cfg.ClientID),
@@ -345,7 +345,7 @@ func (c *Client) Connect() error {
 	return errors.New("connect timeout")
 }
 
-// Register sends a REGISTER message to the MQTT-SN gateway.
+// Register sends a REGISTER packet to the MQTT-SN gateway.
 func (c *Client) Register(topic string) error {
 	msgID, _ := c.msgID.Next()
 	transaction := newRegisterTransaction(c, msgID, topic)
@@ -383,7 +383,7 @@ func (c *Client) subscribe(topicName string, topicIDType uint8, topicID uint16, 
 }
 
 // Subscribe subscribes to a topic with the provided QoS. If the topic is 2 characters
-// long, it's treated as a short topic. The received messages are passed to the
+// long, it's treated as a short topic. The received packets are passed to the
 // provided callback.
 func (c *Client) Subscribe(topic string, qos uint8, callback MessageHandlerFunc) error {
 	if pkts.IsShortTopic(topic) {
@@ -394,7 +394,7 @@ func (c *Client) Subscribe(topic string, qos uint8, callback MessageHandlerFunc)
 }
 
 // SubscribePredefined subscribes to a predefined topic with the provided QoS.
-// The received messages are passed to the provided callback.
+// The received packets are passed to the provided callback.
 func (c *Client) SubscribePredefined(topicID uint16, qos uint8, callback MessageHandlerFunc) error {
 	return c.subscribe("", pkts.TIT_PREDEFINED, topicID, qos, callback)
 }
@@ -486,12 +486,12 @@ func (c *Client) Publish(topic string, qos uint8, retain bool, payload []byte) e
 	return c.publish(topicIDType, topicID, qos, retain, payload)
 }
 
-// PublishPredefined publishes a message to the provided topic.
+// PublishPredefined publishes a message to the provided predefined topic.
 func (c *Client) PublishPredefined(topicID uint16, qos uint8, retain bool, payload []byte) error {
 	return c.publish(pkts.TIT_PREDEFINED, topicID, qos, retain, payload)
 }
 
-// Ping sends a PING message to the MQTT-SN gateway.
+// Ping sends a PING packet to the MQTT-SN gateway.
 func (c *Client) Ping() error {
 	transaction := newPingTransaction(c)
 	ping := pkts.NewPingreq(nil)
@@ -523,10 +523,10 @@ func (c *Client) Sleep(duration time.Duration) error {
 	}
 }
 
-// Disconnect sends a DISCONNECT message to the MQTT-SN gateway.
+// Disconnect sends a DISCONNECT packet to the MQTT-SN gateway.
 // According to the "Client's state transition diagram" in the MQTT-SN
 // specification v. 1.2, chapter 6.14, the client can send a DISCONNECT
-// message only in an ACTIVE or AWAKE state.
+// packet only in an ACTIVE or AWAKE state.
 // This function does not return error if the client is in other states
 // so it's usable unconditionally in defer.
 func (c *Client) Disconnect() error {
@@ -550,7 +550,7 @@ func (c *Client) Disconnect() error {
 		case nil:
 			c.log.Debug("DISCONNECT ACKed, quitting.")
 		case transactions.ErrNoMoreRetries:
-			c.log.Info("No reply for DISCONNECT message from broker, quitting anyway.")
+			c.log.Info("No reply for DISCONNECT packet from broker, quitting anyway.")
 		default:
 			return err
 		}

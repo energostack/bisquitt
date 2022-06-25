@@ -12,9 +12,9 @@ import (
 	dtlsProtocol "github.com/pion/dtls/v2/pkg/protocol"
 )
 
-func (c *Client) send(msg pkts.Packet) error {
-	c.log.Debug("<- %v", msg)
-	return msg.Write(c.conn)
+func (c *Client) send(pkt pkts.Packet) error {
+	c.log.Debug("<- %v", pkt)
+	return pkt.Write(c.conn)
 }
 
 func (c *Client) keepaliveLoop(ctx context.Context) error {
@@ -72,7 +72,7 @@ func (c *Client) receiveLoop(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		msg, err := pkts.ReadPacket(c.conn)
+		pkt, err := pkts.ReadPacket(c.conn)
 		if err != nil {
 			switch e := err.(type) {
 			case net.Error:
@@ -84,179 +84,179 @@ func (c *Client) receiveLoop(ctx context.Context) error {
 			}
 			return err
 		}
-		c.log.Debug("-> %v", msg)
-		if err := c.handlePacket(msg); err != nil {
+		c.log.Debug("-> %v", pkt)
+		if err := c.handlePacket(pkt); err != nil {
 			return err
 		}
 	}
 }
 
-func (c *Client) topicForPublish(msg *pkts.Publish) (string, error) {
+func (c *Client) topicForPublish(pkt *pkts.Publish) (string, error) {
 	var topic string
-	switch msg.TopicIDType {
+	switch pkt.TopicIDType {
 	case pkts.TIT_REGISTERED:
 		var ok bool
 		c.registeredTopicsLock.RLock()
-		topic, ok = findTopic(msg.TopicID, c.registeredTopics)
+		topic, ok = findTopic(pkt.TopicID, c.registeredTopics)
 		c.registeredTopicsLock.RUnlock()
 		if !ok {
-			return "", fmt.Errorf("Invalid topic ID: %d", msg.TopicID)
+			return "", fmt.Errorf("Invalid topic ID: %d", pkt.TopicID)
 		}
 	case pkts.TIT_PREDEFINED:
 		var ok bool
-		topic, ok = c.cfg.PredefinedTopics.GetTopicName(c.cfg.ClientID, msg.TopicID)
+		topic, ok = c.cfg.PredefinedTopics.GetTopicName(c.cfg.ClientID, pkt.TopicID)
 		if !ok {
-			return "", fmt.Errorf("Invalid predefined topic ID: %d", msg.TopicID)
+			return "", fmt.Errorf("Invalid predefined topic ID: %d", pkt.TopicID)
 		}
 	case pkts.TIT_SHORT:
-		topic = pkts.DecodeShortTopic(msg.TopicID)
+		topic = pkts.DecodeShortTopic(pkt.TopicID)
 
 	default:
-		return "", fmt.Errorf("Invalid Topic ID Type: %d", msg.TopicIDType)
+		return "", fmt.Errorf("Invalid Topic ID Type: %d", pkt.TopicIDType)
 	}
 
 	return topic, nil
 }
 
-func (c *Client) handlePacket(msgx pkts.Packet) error {
-	switch msg := msgx.(type) {
+func (c *Client) handlePacket(pktx pkts.Packet) error {
+	switch pkt := pktx.(type) {
 	case *pkts.Connack:
 		transactionx, _ := c.transactions.GetByType(pkts.CONNECT)
 		transaction, ok := transactionx.(*connectTransaction)
 		if !ok {
-			c.log.Error("Unexpected transaction type %T for message: %v", transactionx, msg)
+			c.log.Error("Unexpected transaction type %T for packet: %v", transactionx, pkt)
 			return nil
 		}
-		transaction.Connack(msg)
+		transaction.Connack(pkt)
 		return nil
 
 	case *pkts.Register:
 		c.registeredTopicsLock.Lock()
 		// MQTT-SN specification v. 1.2 does not specify what to do if
-		// the REGISTER message contains an already registered TopicID.
+		// the REGISTER packet contains an already registered TopicID.
 		// I suppose the right reaction is to reject the registratin with
 		// `Rejected: invalid topic ID`.
 		var returnCode pkts.ReturnCode
-		if _, ok := c.registeredTopics[string(msg.TopicName)]; ok {
+		if _, ok := c.registeredTopics[string(pkt.TopicName)]; ok {
 			returnCode = pkts.RC_INVALID_TOPIC_ID
 		} else {
 			returnCode = pkts.RC_ACCEPTED
-			c.registeredTopics[string(msg.TopicName)] = msg.TopicID
+			c.registeredTopics[string(pkt.TopicName)] = pkt.TopicID
 		}
 		c.registeredTopicsLock.Unlock()
 
-		reply := pkts.NewRegack(msg.TopicID, returnCode)
-		reply.CopyMessageID(msg)
+		reply := pkts.NewRegack(pkt.TopicID, returnCode)
+		reply.CopyMessageID(pkt)
 		return c.send(reply)
 
 	case *pkts.Regack:
-		transactionx, _ := c.transactions.Get(msg.MessageID())
+		transactionx, _ := c.transactions.Get(pkt.MessageID())
 		transaction, ok := transactionx.(*registerTransaction)
 		if !ok {
-			c.log.Error("Unexpected transaction type %T for message: %v", transactionx, msg)
+			c.log.Error("Unexpected transaction type %T for packet: %v", transactionx, pkt)
 			return nil
 		}
-		transaction.Regack(msg)
+		transaction.Regack(pkt)
 		return nil
 
 	case *pkts.Suback:
-		transactionx, _ := c.transactions.Get(msg.MessageID())
+		transactionx, _ := c.transactions.Get(pkt.MessageID())
 		transaction, ok := transactionx.(*subscribeTransaction)
 		if !ok {
-			c.log.Error("Unexpected transaction type %T for message: %v", transactionx, msg)
+			c.log.Error("Unexpected transaction type %T for packet: %v", transactionx, pkt)
 			return nil
 		}
-		transaction.Suback(msg)
+		transaction.Suback(pkt)
 		return nil
 
 	case *pkts.Unsuback:
-		transactionx, _ := c.transactions.Get(msg.MessageID())
+		transactionx, _ := c.transactions.Get(pkt.MessageID())
 		transaction, ok := transactionx.(*unsubscribeTransaction)
 		if !ok {
-			c.log.Error("Unexpected transaction type %T for message: %v", transactionx, msg)
+			c.log.Error("Unexpected transaction type %T for packet: %v", transactionx, pkt)
 			return nil
 		}
-		transaction.Unsuback(msg)
+		transaction.Unsuback(pkt)
 		return nil
 
 	// Broker PUBLISH QoS 0,1,2 transaction.
 	case *pkts.Publish:
-		switch msg.QOS {
+		switch pkt.QOS {
 		case 0:
 			// continue
 		case 1:
-			puback := pkts.NewPuback(msg.TopicID, pkts.RC_ACCEPTED)
-			puback.CopyMessageID(msg)
+			puback := pkts.NewPuback(pkt.TopicID, pkts.RC_ACCEPTED)
+			puback.CopyMessageID(pkt)
 			if err := c.send(puback); err != nil {
 				return err
 			}
 		case 2:
 			var transaction *brokerPublishQOS2Transaction
-			transactionx, hasTransaction := c.transactions.Get(msg.MessageID())
+			transactionx, hasTransaction := c.transactions.Get(pkt.MessageID())
 			if hasTransaction {
 				// We already have such transaction -> resent PUBLISH.
 				var ok bool
 				transaction, ok = transactionx.(*brokerPublishQOS2Transaction)
 				if !ok {
-					c.log.Error("Unexpected transaction type %T for message: %v", transactionx, msg)
+					c.log.Error("Unexpected transaction type %T for packet: %v", transactionx, pkt)
 					return nil
 				}
 			} else {
-				transaction = newBrokerPublishQOS2Transaction(c, msg.MessageID())
-				c.transactions.Store(msg.MessageID(), transaction)
+				transaction = newBrokerPublishQOS2Transaction(c, pkt.MessageID())
+				c.transactions.Store(pkt.MessageID(), transaction)
 			}
-			return transaction.Publish(msg)
+			return transaction.Publish(pkt)
 		default:
-			return fmt.Errorf("invalid QOS in %s", msg)
+			return fmt.Errorf("invalid QOS in %s", pkt)
 		}
-		topic, err := c.topicForPublish(msg)
+		topic, err := c.topicForPublish(pkt)
 		if err != nil {
 			return err
 		}
-		c.messageHandlers.handle(c, topic, msg)
+		c.messageHandlers.handle(c, topic, pkt)
 		return nil
 
 	// Broker PUBLISH QoS 2 transaction.
 	case *pkts.Pubrel:
-		transactionx, _ := c.transactions.Get(msg.MessageID())
+		transactionx, _ := c.transactions.Get(pkt.MessageID())
 		transaction, ok := transactionx.(*brokerPublishQOS2Transaction)
 		if !ok {
-			c.log.Error("Unexpected transaction type %T for message: %v", transactionx, msg)
+			c.log.Error("Unexpected transaction type %T for packet: %v", transactionx, pkt)
 			return nil
 		}
-		transaction.Pubrel(msg)
+		transaction.Pubrel(pkt)
 		return nil
 
 	// Client PUBLISH QoS 1 transaction.
 	case *pkts.Puback:
-		transactionx, _ := c.transactions.Get(msg.MessageID())
+		transactionx, _ := c.transactions.Get(pkt.MessageID())
 		transaction, ok := transactionx.(*publishQOS1Transaction)
 		if !ok {
-			c.log.Error("Unexpected transaction type %T for message: %v", transactionx, msg)
+			c.log.Error("Unexpected transaction type %T for packet: %v", transactionx, pkt)
 			return nil
 		}
-		transaction.Puback(msg)
+		transaction.Puback(pkt)
 		return nil
 
 	// Client PUBLISH QoS 2 transaction.
 	case *pkts.Pubrec:
-		transactionx, _ := c.transactions.Get(msg.MessageID())
+		transactionx, _ := c.transactions.Get(pkt.MessageID())
 		transaction, ok := transactionx.(*publishQOS2Transaction)
 		if !ok {
-			c.log.Error("Unexpected transaction type %T for message: %v", transactionx, msg)
+			c.log.Error("Unexpected transaction type %T for packet: %v", transactionx, pkt)
 			return nil
 		}
-		return transaction.Pubrec(msg)
+		return transaction.Pubrec(pkt)
 
 	// Client PUBLISH QoS 2 transaction.
 	case *pkts.Pubcomp:
-		transactionx, _ := c.transactions.Get(msg.MessageID())
+		transactionx, _ := c.transactions.Get(pkt.MessageID())
 		transaction, ok := transactionx.(*publishQOS2Transaction)
 		if !ok {
-			c.log.Error("Unexpected transaction type %T for message: %v", transactionx, msg)
+			c.log.Error("Unexpected transaction type %T for packet: %v", transactionx, pkt)
 			return nil
 		}
-		transaction.Pubcomp(msg)
+		transaction.Pubcomp(pkt)
 		return nil
 
 	case *pkts.Disconnect:
@@ -272,10 +272,10 @@ func (c *Client) handlePacket(msgx pkts.Packet) error {
 
 		transaction, ok := transactionx.(transactionWithDisconnect)
 		if !ok {
-			c.log.Error("Unexpected transaction type %T for message: %v", transactionx, msg)
+			c.log.Error("Unexpected transaction type %T for packet: %v", transactionx, pkt)
 			return nil
 		}
-		transaction.Disconnect(msg)
+		transaction.Disconnect(pkt)
 		return nil
 
 	case *pkts.WillTopicReq:
@@ -294,13 +294,13 @@ func (c *Client) handlePacket(msgx pkts.Packet) error {
 		}
 		transaction, ok := transactionx.(transactionWithPingresp)
 		if !ok {
-			c.log.Error("Unexpected transaction type %T for message: %v", transactionx, msg)
+			c.log.Error("Unexpected transaction type %T for packet: %v", transactionx, pkt)
 			return nil
 		}
-		transaction.Pingresp(msg)
+		transaction.Pingresp(pkt)
 		return nil
 
 	default:
-		return fmt.Errorf("Unhandled MQTT-SN message: %v", msgx)
+		return fmt.Errorf("Unhandled MQTT-SN packet: %v", pktx)
 	}
 }
