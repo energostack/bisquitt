@@ -18,19 +18,19 @@ func NewPubrel() *Pubrel {
 	}
 }
 
-func (m *Pubrel) Write(w io.Writer) error {
-	buf := m.Header.pack()
-	buf.Write(encodeUint16(m.messageID))
+func (p *Pubrel) Write(w io.Writer) error {
+	buf := p.Header.pack()
+	buf.Write(encodeUint16(p.messageID))
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *Pubrel) Unpack(r io.Reader) (err error) {
-	m.messageID, err = readUint16(r)
+func (p *Pubrel) Unpack(r io.Reader) (err error) {
+	p.messageID, err = readUint16(r)
 	return
 }
 
-func (m Pubrel) String() string {
-	return fmt.Sprintf("PUBREL(MessageID=%d)", m.messageID)
+func (p Pubrel) String() string {
+	return fmt.Sprintf("PUBREL(MessageID=%d)", p.messageID)
 }

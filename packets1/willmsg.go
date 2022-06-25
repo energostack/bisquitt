@@ -12,35 +12,35 @@ type WillMsg struct {
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewWillMsg(willMsg []byte) *WillMsg {
-	m := &WillMsg{
+	p := &WillMsg{
 		Header:  *NewHeader(WILLMSG, 0),
 		WillMsg: willMsg,
 	}
-	m.computeLength()
-	return m
+	p.computeLength()
+	return p
 }
 
-func (m *WillMsg) computeLength() {
-	msgLength := len(m.WillMsg)
-	m.Header.SetVarPartLength(uint16(msgLength))
+func (p *WillMsg) computeLength() {
+	msgLength := len(p.WillMsg)
+	p.Header.SetVarPartLength(uint16(msgLength))
 }
 
-func (m *WillMsg) Write(w io.Writer) error {
-	m.computeLength()
+func (p *WillMsg) Write(w io.Writer) error {
+	p.computeLength()
 
-	buf := m.Header.pack()
-	buf.Write(m.WillMsg)
+	buf := p.Header.pack()
+	buf.Write(p.WillMsg)
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *WillMsg) Unpack(r io.Reader) (err error) {
-	m.WillMsg = make([]byte, m.VarPartLength())
-	_, err = io.ReadFull(r, m.WillMsg)
+func (p *WillMsg) Unpack(r io.Reader) (err error) {
+	p.WillMsg = make([]byte, p.VarPartLength())
+	_, err = io.ReadFull(r, p.WillMsg)
 	return
 }
 
-func (m WillMsg) String() string {
-	return fmt.Sprintf("WILLMSG(WillMsg=%#v)", string(m.WillMsg))
+func (p WillMsg) String() string {
+	return fmt.Sprintf("WILLMSG(WillMsg=%#v)", string(p.WillMsg))
 }

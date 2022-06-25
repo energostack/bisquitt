@@ -18,19 +18,19 @@ func NewPubcomp() *Pubcomp {
 	}
 }
 
-func (m *Pubcomp) Write(w io.Writer) error {
-	buf := m.Header.pack()
-	buf.Write(encodeUint16(m.messageID))
+func (p *Pubcomp) Write(w io.Writer) error {
+	buf := p.Header.pack()
+	buf.Write(encodeUint16(p.messageID))
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *Pubcomp) Unpack(r io.Reader) (err error) {
-	m.messageID, err = readUint16(r)
+func (p *Pubcomp) Unpack(r io.Reader) (err error) {
+	p.messageID, err = readUint16(r)
 	return
 }
 
-func (m Pubcomp) String() string {
-	return fmt.Sprintf("PUBCOMP(MessageID=%d)", m.messageID)
+func (p Pubcomp) String() string {
+	return fmt.Sprintf("PUBCOMP(MessageID=%d)", p.messageID)
 }

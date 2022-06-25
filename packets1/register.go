@@ -16,50 +16,50 @@ type Register struct {
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewRegister(topicID uint16, topicName string) *Register {
-	m := &Register{
+	p := &Register{
 		Header:    *NewHeader(REGISTER, 0),
 		TopicID:   topicID,
 		TopicName: topicName,
 	}
-	m.computeLength()
-	return m
+	p.computeLength()
+	return p
 }
 
-func (m *Register) computeLength() {
-	topicLength := uint16(len(m.TopicName))
-	m.Header.SetVarPartLength(registerHeaderLength + topicLength)
+func (p *Register) computeLength() {
+	topicLength := uint16(len(p.TopicName))
+	p.Header.SetVarPartLength(registerHeaderLength + topicLength)
 }
 
-func (m *Register) Write(w io.Writer) error {
-	m.computeLength()
+func (p *Register) Write(w io.Writer) error {
+	p.computeLength()
 
-	buf := m.Header.pack()
-	buf.Write(encodeUint16(m.TopicID))
-	buf.Write(encodeUint16(m.messageID))
-	buf.Write([]byte(m.TopicName))
+	buf := p.Header.pack()
+	buf.Write(encodeUint16(p.TopicID))
+	buf.Write(encodeUint16(p.messageID))
+	buf.Write([]byte(p.TopicName))
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *Register) Unpack(r io.Reader) (err error) {
-	if m.TopicID, err = readUint16(r); err != nil {
+func (p *Register) Unpack(r io.Reader) (err error) {
+	if p.TopicID, err = readUint16(r); err != nil {
 		return
 	}
 
-	if m.messageID, err = readUint16(r); err != nil {
+	if p.messageID, err = readUint16(r); err != nil {
 		return
 	}
 
-	topic := make([]byte, m.VarPartLength()-registerHeaderLength)
+	topic := make([]byte, p.VarPartLength()-registerHeaderLength)
 	if _, err = io.ReadFull(r, topic); err != nil {
 		return
 	}
-	m.TopicName = string(topic)
+	p.TopicName = string(topic)
 	return
 }
 
-func (m Register) String() string {
-	return fmt.Sprintf("REGISTER(TopicName=%#v, TopicID=%d, MessageID=%d)", string(m.TopicName),
-		m.TopicID, m.messageID)
+func (p Register) String() string {
+	return fmt.Sprintf("REGISTER(TopicName=%#v, TopicID=%d, MessageID=%d)", string(p.TopicName),
+		p.TopicID, p.messageID)
 }

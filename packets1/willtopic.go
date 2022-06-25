@@ -16,75 +16,75 @@ type WillTopic struct {
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewWillTopic(willTopic string, qos uint8, retain bool) *WillTopic {
-	m := &WillTopic{
+	p := &WillTopic{
 		Header:    *NewHeader(WILLTOPIC, 0),
 		QOS:       qos,
 		Retain:    retain,
 		WillTopic: willTopic,
 	}
-	m.computeLength()
-	return m
+	p.computeLength()
+	return p
 }
 
-func (m *WillTopic) computeLength() {
+func (p *WillTopic) computeLength() {
 	// An empty WILLTOPIC message is a WILLTOPIC message without Flags and
 	// WillTopic field (i.e. it is exactly 2 octets long).
 	// [MQTT-SN specification v. 1.2, chapter 5.4.7 WILLTOPIC]
-	if len(m.WillTopic) == 0 {
-		m.Header.SetVarPartLength(0)
+	if len(p.WillTopic) == 0 {
+		p.Header.SetVarPartLength(0)
 	} else {
-		length := willTopicFlagsLength + uint16(len(m.WillTopic))
-		m.Header.SetVarPartLength(length)
+		length := willTopicFlagsLength + uint16(len(p.WillTopic))
+		p.Header.SetVarPartLength(length)
 	}
 }
 
-func (m *WillTopic) encodeFlags() byte {
+func (p *WillTopic) encodeFlags() byte {
 	var b byte
 
-	b |= (m.QOS << 5) & flagsQOSBits
-	if m.Retain {
+	b |= (p.QOS << 5) & flagsQOSBits
+	if p.Retain {
 		b |= flagsRetainBit
 	}
 	return b
 }
 
-func (m *WillTopic) decodeFlags(b byte) {
-	m.QOS = (b & flagsQOSBits) >> 5
-	m.Retain = (b & flagsRetainBit) == flagsRetainBit
+func (p *WillTopic) decodeFlags(b byte) {
+	p.QOS = (b & flagsQOSBits) >> 5
+	p.Retain = (b & flagsRetainBit) == flagsRetainBit
 }
 
-func (m *WillTopic) Write(w io.Writer) error {
-	m.computeLength()
+func (p *WillTopic) Write(w io.Writer) error {
+	p.computeLength()
 
-	buf := m.Header.pack()
-	if m.Header.VarPartLength() > 0 {
-		buf.WriteByte(m.encodeFlags())
-		buf.Write([]byte(m.WillTopic))
+	buf := p.Header.pack()
+	if p.Header.VarPartLength() > 0 {
+		buf.WriteByte(p.encodeFlags())
+		buf.Write([]byte(p.WillTopic))
 	}
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *WillTopic) Unpack(r io.Reader) (err error) {
-	if m.VarPartLength() > 0 {
+func (p *WillTopic) Unpack(r io.Reader) (err error) {
+	if p.VarPartLength() > 0 {
 		var flagsByte uint8
 		if flagsByte, err = readByte(r); err != nil {
 			return
 		}
-		m.decodeFlags(flagsByte)
+		p.decodeFlags(flagsByte)
 
-		buff := make([]byte, m.VarPartLength()-willTopicFlagsLength)
+		buff := make([]byte, p.VarPartLength()-willTopicFlagsLength)
 		if _, err = io.ReadFull(r, buff); err != nil {
 			return
 		}
-		m.WillTopic = string(buff)
+		p.WillTopic = string(buff)
 	} else {
-		m.WillTopic = ""
+		p.WillTopic = ""
 	}
 	return
 }
 
-func (m WillTopic) String() string {
-	return fmt.Sprintf("WILLTOPIC(WillTopic=%#v, QOS=%d, Retain=%t)", m.WillTopic, m.QOS, m.Retain)
+func (p WillTopic) String() string {
+	return fmt.Sprintf("WILLTOPIC(WillTopic=%#v, QOS=%d, Retain=%t)", p.WillTopic, p.QOS, p.Retain)
 }

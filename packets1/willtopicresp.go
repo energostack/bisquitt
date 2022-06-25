@@ -19,21 +19,21 @@ func NewWillTopicResp(returnCode ReturnCode) *WillTopicResp {
 	}
 }
 
-func (m *WillTopicResp) Write(w io.Writer) error {
-	buf := m.Header.pack()
-	buf.WriteByte(byte(m.ReturnCode))
+func (p *WillTopicResp) Write(w io.Writer) error {
+	buf := p.Header.pack()
+	buf.WriteByte(byte(p.ReturnCode))
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *WillTopicResp) Unpack(r io.Reader) (err error) {
+func (p *WillTopicResp) Unpack(r io.Reader) (err error) {
 	var returnCodeByte uint8
 	returnCodeByte, err = readByte(r)
-	m.ReturnCode = ReturnCode(returnCodeByte)
+	p.ReturnCode = ReturnCode(returnCodeByte)
 	return
 }
 
-func (m WillTopicResp) String() string {
-	return fmt.Sprintf("WILLTOPICRESP(ReturnCode=%d)", m.ReturnCode)
+func (p WillTopicResp) String() string {
+	return fmt.Sprintf("WILLTOPICRESP(ReturnCode=%d)", p.ReturnCode)
 }

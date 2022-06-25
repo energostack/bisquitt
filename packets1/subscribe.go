@@ -19,7 +19,7 @@ type Subscribe struct {
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewSubscribe(topicID uint16, topicIDType uint8, topicName []byte, qos uint8, dup bool) *Subscribe {
-	m := &Subscribe{
+	p := &Subscribe{
 		Header:      *NewHeader(SUBSCRIBE, 0),
 		DUPProperty: DUPProperty{dup},
 		QOS:         qos,
@@ -27,80 +27,80 @@ func NewSubscribe(topicID uint16, topicIDType uint8, topicName []byte, qos uint8
 		TopicID:     topicID,
 		TopicName:   topicName,
 	}
-	m.computeLength()
-	return m
+	p.computeLength()
+	return p
 }
 
-func (m *Subscribe) computeLength() {
+func (p *Subscribe) computeLength() {
 	var topicLength uint16
-	switch m.TopicIDType {
+	switch p.TopicIDType {
 	case TIT_STRING:
-		topicLength = uint16(len(m.TopicName))
+		topicLength = uint16(len(p.TopicName))
 	case TIT_PREDEFINED, TIT_SHORT:
 		topicLength = 2
 	}
-	m.Header.SetVarPartLength(subscribeHeaderLength + topicLength)
+	p.Header.SetVarPartLength(subscribeHeaderLength + topicLength)
 }
 
-func (m *Subscribe) encodeFlags() byte {
+func (p *Subscribe) encodeFlags() byte {
 	var b byte
-	if m.dup {
+	if p.dup {
 		b |= flagsDUPBit
 	}
-	b |= (m.QOS << 5) & flagsQOSBits
-	b |= m.TopicIDType & flagsTopicIDTypeBits
+	b |= (p.QOS << 5) & flagsQOSBits
+	b |= p.TopicIDType & flagsTopicIDTypeBits
 	return b
 }
 
-func (m *Subscribe) decodeFlags(b byte) {
-	m.dup = (b & flagsDUPBit) == flagsDUPBit
-	m.QOS = (b & flagsQOSBits) >> 5
-	m.TopicIDType = b & flagsTopicIDTypeBits
+func (p *Subscribe) decodeFlags(b byte) {
+	p.dup = (b & flagsDUPBit) == flagsDUPBit
+	p.QOS = (b & flagsQOSBits) >> 5
+	p.TopicIDType = b & flagsTopicIDTypeBits
 }
 
-func (m *Subscribe) Write(w io.Writer) error {
-	m.computeLength()
+func (p *Subscribe) Write(w io.Writer) error {
+	p.computeLength()
 
-	buf := m.Header.pack()
-	buf.WriteByte(m.encodeFlags())
-	buf.Write(encodeUint16(m.messageID))
-	switch m.TopicIDType {
+	buf := p.Header.pack()
+	buf.WriteByte(p.encodeFlags())
+	buf.Write(encodeUint16(p.messageID))
+	switch p.TopicIDType {
 	case TIT_STRING:
-		buf.Write(m.TopicName)
+		buf.Write(p.TopicName)
 	case TIT_PREDEFINED, TIT_SHORT:
-		buf.Write(encodeUint16(m.TopicID))
+		buf.Write(encodeUint16(p.TopicID))
 	}
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *Subscribe) Unpack(r io.Reader) (err error) {
+func (p *Subscribe) Unpack(r io.Reader) (err error) {
 	var flagsByte uint8
 	if flagsByte, err = readByte(r); err != nil {
 		return
 	}
-	m.decodeFlags(flagsByte)
+	p.decodeFlags(flagsByte)
 
-	if m.messageID, err = readUint16(r); err != nil {
+	if p.messageID, err = readUint16(r); err != nil {
 		return
 	}
 
-	switch m.TopicIDType {
+	switch p.TopicIDType {
 	case TIT_STRING:
-		m.TopicID = 0
-		m.TopicName = make([]byte, m.VarPartLength()-subscribeHeaderLength)
-		_, err = io.ReadFull(r, m.TopicName)
+		p.TopicID = 0
+		p.TopicName = make([]byte, p.VarPartLength()-subscribeHeaderLength)
+		_, err = io.ReadFull(r, p.TopicName)
 	case TIT_PREDEFINED, TIT_SHORT:
-		m.TopicName = nil
-		m.TopicID, err = readUint16(r)
+		p.TopicName = nil
+		p.TopicID, err = readUint16(r)
 	default:
-		err = fmt.Errorf("invalid TopicIDType: %d", m.TopicIDType)
+		err = fmt.Errorf("invalid TopicIDType: %d", p.TopicIDType)
 	}
 	return
 }
 
-func (m Subscribe) String() string {
+func (p Subscribe) String() string {
 	return fmt.Sprintf("SUBSCRIBE(TopicName=%#v, QOS=%d, TopicID=%d, TopicIDType=%d, MessageID=%d, Dup=%t)",
-		string(m.TopicName), m.QOS, m.TopicID, m.TopicIDType, m.messageID, m.dup)
+		string(p.TopicName), p.QOS, p.TopicID, p.TopicIDType, p.messageID, p.dup)
 }

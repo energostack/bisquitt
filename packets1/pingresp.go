@@ -16,17 +16,17 @@ func NewPingresp() *Pingresp {
 	}
 }
 
-func (m *Pingresp) Write(w io.Writer) error {
-	buf := m.Header.pack()
+func (p *Pingresp) Write(w io.Writer) error {
+	buf := p.Header.pack()
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *Pingresp) Unpack(r io.Reader) error {
+func (p *Pingresp) Unpack(r io.Reader) error {
 	return nil
 }
 
-func (m Pingresp) String() string {
+func (p Pingresp) String() string {
 	return "PINGRESP"
 }

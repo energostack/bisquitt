@@ -16,17 +16,17 @@ func NewWillMsgReq() *WillMsgReq {
 	}
 }
 
-func (m *WillMsgReq) Write(w io.Writer) error {
-	buf := m.Header.pack()
+func (p *WillMsgReq) Write(w io.Writer) error {
+	buf := p.Header.pack()
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *WillMsgReq) Unpack(r io.Reader) error {
+func (p *WillMsgReq) Unpack(r io.Reader) error {
 	return nil
 }
 
-func (m WillMsgReq) String() string {
+func (p WillMsgReq) String() string {
 	return "WILLMSGREQ"
 }

@@ -16,17 +16,17 @@ func NewWillTopicReq() *WillTopicReq {
 	}
 }
 
-func (m *WillTopicReq) Write(w io.Writer) error {
-	buf := m.Header.pack()
+func (p *WillTopicReq) Write(w io.Writer) error {
+	buf := p.Header.pack()
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *WillTopicReq) Unpack(r io.Reader) error {
+func (p *WillTopicReq) Unpack(r io.Reader) error {
 	return nil
 }
 
-func (m WillTopicReq) String() string {
+func (p WillTopicReq) String() string {
 	return "WILLTOPICREQ"
 }
