@@ -19,19 +19,19 @@ func NewSearchGw(radius uint8) *SearchGw {
 	}
 }
 
-func (m *SearchGw) Write(w io.Writer) error {
-	buf := m.Header.pack()
-	buf.WriteByte(m.Radius)
+func (p *SearchGw) Write(w io.Writer) error {
+	buf := p.Header.pack()
+	buf.WriteByte(p.Radius)
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *SearchGw) Unpack(r io.Reader) (err error) {
-	m.Radius, err = readByte(r)
+func (p *SearchGw) Unpack(r io.Reader) (err error) {
+	p.Radius, err = readByte(r)
 	return
 }
 
-func (m SearchGw) String() string {
-	return fmt.Sprintf("SEARCHGW(Radius=%d)", m.Radius)
+func (p SearchGw) String() string {
+	return fmt.Sprintf("SEARCHGW(Radius=%d)", p.Radius)
 }

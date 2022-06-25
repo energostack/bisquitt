@@ -12,41 +12,41 @@ type Pingreq struct {
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewPingreq(clientID []byte) *Pingreq {
-	m := &Pingreq{
+	p := &Pingreq{
 		Header:   *NewHeader(PINGREQ, 0),
 		ClientID: clientID,
 	}
-	m.computeLength()
-	return m
+	p.computeLength()
+	return p
 }
 
-func (m *Pingreq) computeLength() {
-	length := len(m.ClientID)
-	m.Header.SetVarPartLength(uint16(length))
+func (p *Pingreq) computeLength() {
+	length := len(p.ClientID)
+	p.Header.SetVarPartLength(uint16(length))
 }
 
-func (m *Pingreq) Write(w io.Writer) error {
-	m.computeLength()
+func (p *Pingreq) Write(w io.Writer) error {
+	p.computeLength()
 
-	buf := m.Header.pack()
-	if len(m.ClientID) > 0 {
-		buf.Write(m.ClientID)
+	buf := p.Header.pack()
+	if len(p.ClientID) > 0 {
+		buf.Write(p.ClientID)
 	}
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *Pingreq) Unpack(r io.Reader) (err error) {
-	if m.VarPartLength() > 0 {
-		m.ClientID = make([]byte, m.VarPartLength())
-		_, err = io.ReadFull(r, m.ClientID)
+func (p *Pingreq) Unpack(r io.Reader) (err error) {
+	if p.VarPartLength() > 0 {
+		p.ClientID = make([]byte, p.VarPartLength())
+		_, err = io.ReadFull(r, p.ClientID)
 	} else {
-		m.ClientID = nil
+		p.ClientID = nil
 	}
 	return
 }
 
-func (m Pingreq) String() string {
-	return fmt.Sprintf("PINGREQ(ClientID=%#v)", string(m.ClientID))
+func (p Pingreq) String() string {
+	return fmt.Sprintf("PINGREQ(ClientID=%#v)", string(p.ClientID))
 }

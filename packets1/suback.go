@@ -24,49 +24,49 @@ func NewSuback(topicID uint16, qos uint8, returnCode ReturnCode) *Suback {
 	}
 }
 
-func (m *Suback) encodeFlags() byte {
+func (p *Suback) encodeFlags() byte {
 	var b byte
-	b |= (m.QOS << 5) & flagsQOSBits
+	b |= (p.QOS << 5) & flagsQOSBits
 	return b
 }
 
-func (m *Suback) decodeFlags(b byte) {
-	m.QOS = (b & flagsQOSBits) >> 5
+func (p *Suback) decodeFlags(b byte) {
+	p.QOS = (b & flagsQOSBits) >> 5
 }
 
-func (m *Suback) Write(w io.Writer) error {
-	buf := m.Header.pack()
-	buf.WriteByte(m.encodeFlags())
-	buf.Write(encodeUint16(m.TopicID))
-	buf.Write(encodeUint16(m.messageID))
-	buf.WriteByte(byte(m.ReturnCode))
+func (p *Suback) Write(w io.Writer) error {
+	buf := p.Header.pack()
+	buf.WriteByte(p.encodeFlags())
+	buf.Write(encodeUint16(p.TopicID))
+	buf.Write(encodeUint16(p.messageID))
+	buf.WriteByte(byte(p.ReturnCode))
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *Suback) Unpack(r io.Reader) (err error) {
+func (p *Suback) Unpack(r io.Reader) (err error) {
 	var flagsByte uint8
 	if flagsByte, err = readByte(r); err != nil {
 		return
 	}
-	m.decodeFlags(flagsByte)
+	p.decodeFlags(flagsByte)
 
-	if m.TopicID, err = readUint16(r); err != nil {
+	if p.TopicID, err = readUint16(r); err != nil {
 		return
 	}
 
-	if m.messageID, err = readUint16(r); err != nil {
+	if p.messageID, err = readUint16(r); err != nil {
 		return
 	}
 
 	var returnCodeByte uint8
 	returnCodeByte, err = readByte(r)
-	m.ReturnCode = ReturnCode(returnCodeByte)
+	p.ReturnCode = ReturnCode(returnCodeByte)
 	return
 }
 
-func (m Suback) String() string {
-	return fmt.Sprintf("SUBACK(TopicID=%d, MessageID=%d, ReturnCode=%d, QOS=%d)", m.TopicID,
-		m.messageID, m.ReturnCode, m.QOS)
+func (p Suback) String() string {
+	return fmt.Sprintf("SUBACK(TopicID=%d, MessageID=%d, ReturnCode=%d, QOS=%d)", p.TopicID,
+		p.messageID, p.ReturnCode, p.QOS)
 }

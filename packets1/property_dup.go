@@ -4,12 +4,12 @@ type DUPProperty struct {
 	dup bool
 }
 
-func (m *DUPProperty) SetDUP(dup bool) {
-	m.dup = dup
+func (p *DUPProperty) SetDUP(dup bool) {
+	p.dup = dup
 }
 
-func (m *DUPProperty) DUP() bool {
-	return m.dup
+func (p *DUPProperty) DUP() bool {
+	return p.dup
 }
 
 // PacketWithDUP is an interface for all packets which include DUP property.

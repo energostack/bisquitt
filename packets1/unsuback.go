@@ -18,19 +18,19 @@ func NewUnsuback() *Unsuback {
 	}
 }
 
-func (m *Unsuback) Write(w io.Writer) error {
-	buf := m.Header.pack()
-	buf.Write(encodeUint16(m.messageID))
+func (p *Unsuback) Write(w io.Writer) error {
+	buf := p.Header.pack()
+	buf.Write(encodeUint16(p.messageID))
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *Unsuback) Unpack(r io.Reader) (err error) {
-	m.messageID, err = readUint16(r)
+func (p *Unsuback) Unpack(r io.Reader) (err error) {
+	p.messageID, err = readUint16(r)
 	return
 }
 
-func (m Unsuback) String() string {
-	return fmt.Sprintf("UNSUBACK(MessageID=%d)", m.messageID)
+func (p Unsuback) String() string {
+	return fmt.Sprintf("UNSUBACK(MessageID=%d)", p.messageID)
 }

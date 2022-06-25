@@ -15,46 +15,46 @@ type GwInfo struct {
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewGwInfo(gatewayID uint8, gatewayAddress []byte) *GwInfo {
-	m := &GwInfo{
+	p := &GwInfo{
 		Header:         *NewHeader(GWINFO, 0),
 		GatewayID:      gatewayID,
 		GatewayAddress: gatewayAddress,
 	}
-	m.computeLength()
-	return m
+	p.computeLength()
+	return p
 }
 
-func (m *GwInfo) computeLength() {
-	addrLength := uint16(len(m.GatewayAddress))
-	m.Header.SetVarPartLength(gwInfoHeaderLength + addrLength)
+func (p *GwInfo) computeLength() {
+	addrLength := uint16(len(p.GatewayAddress))
+	p.Header.SetVarPartLength(gwInfoHeaderLength + addrLength)
 }
 
-func (m *GwInfo) Write(w io.Writer) error {
-	m.computeLength()
+func (p *GwInfo) Write(w io.Writer) error {
+	p.computeLength()
 
-	buf := m.Header.pack()
-	buf.WriteByte(m.GatewayID)
-	buf.Write(m.GatewayAddress)
+	buf := p.Header.pack()
+	buf.WriteByte(p.GatewayID)
+	buf.Write(p.GatewayAddress)
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *GwInfo) Unpack(r io.Reader) (err error) {
-	if m.GatewayID, err = readByte(r); err != nil {
+func (p *GwInfo) Unpack(r io.Reader) (err error) {
+	if p.GatewayID, err = readByte(r); err != nil {
 		return
 	}
 
-	if m.VarPartLength() > gwInfoHeaderLength {
-		m.GatewayAddress = make([]byte, m.VarPartLength()-gwInfoHeaderLength)
-		_, err = io.ReadFull(r, m.GatewayAddress)
+	if p.VarPartLength() > gwInfoHeaderLength {
+		p.GatewayAddress = make([]byte, p.VarPartLength()-gwInfoHeaderLength)
+		_, err = io.ReadFull(r, p.GatewayAddress)
 	} else {
-		m.GatewayAddress = nil
+		p.GatewayAddress = nil
 	}
 	return
 }
 
-func (m GwInfo) String() string {
+func (p GwInfo) String() string {
 	return fmt.Sprintf("GWINFO(GatewayID=%d,GatewayAddress=%#v)",
-		m.GatewayID, string(m.GatewayAddress))
+		p.GatewayID, string(p.GatewayAddress))
 }

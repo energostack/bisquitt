@@ -4,16 +4,16 @@ type MessageIDProperty struct {
 	messageID uint16
 }
 
-func (m *MessageIDProperty) CopyMessageID(m2 PacketWithID) {
-	m.messageID = m2.MessageID()
+func (p *MessageIDProperty) CopyMessageID(m2 PacketWithID) {
+	p.messageID = m2.MessageID()
 }
 
-func (m *MessageIDProperty) SetMessageID(msgID uint16) {
-	m.messageID = msgID
+func (p *MessageIDProperty) SetMessageID(msgID uint16) {
+	p.messageID = msgID
 }
 
-func (m *MessageIDProperty) MessageID() uint16 {
-	return m.messageID
+func (p *MessageIDProperty) MessageID() uint16 {
+	return p.messageID
 }
 
 // PacketWithID is an interface for all packets which include MessageID property.

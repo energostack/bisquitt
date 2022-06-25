@@ -17,80 +17,80 @@ type Unsubscribe struct {
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewUnsubscribe(topicID uint16, topicIDType uint8, topicName []byte) *Unsubscribe {
-	m := &Unsubscribe{
+	p := &Unsubscribe{
 		Header:      *NewHeader(UNSUBSCRIBE, 0),
 		TopicIDType: topicIDType,
 		TopicID:     topicID,
 		TopicName:   topicName,
 	}
-	m.computeLength()
-	return m
+	p.computeLength()
+	return p
 }
 
-func (m *Unsubscribe) computeLength() {
+func (p *Unsubscribe) computeLength() {
 	var topicLength uint16
-	switch m.TopicIDType {
+	switch p.TopicIDType {
 	case TIT_STRING:
-		topicLength = uint16(len(m.TopicName))
+		topicLength = uint16(len(p.TopicName))
 	case TIT_PREDEFINED, TIT_SHORT:
 		topicLength = 2
 	}
-	m.Header.SetVarPartLength(unsubscribeHeaderLength + topicLength)
+	p.Header.SetVarPartLength(unsubscribeHeaderLength + topicLength)
 }
 
-func (m *Unsubscribe) encodeFlags() byte {
+func (p *Unsubscribe) encodeFlags() byte {
 	var b byte
-	b |= m.TopicIDType & flagsTopicIDTypeBits
+	b |= p.TopicIDType & flagsTopicIDTypeBits
 	return b
 }
 
-func (m *Unsubscribe) decodeFlags(b byte) {
-	m.TopicIDType = b & flagsTopicIDTypeBits
+func (p *Unsubscribe) decodeFlags(b byte) {
+	p.TopicIDType = b & flagsTopicIDTypeBits
 }
 
-func (m *Unsubscribe) Write(w io.Writer) error {
-	m.computeLength()
+func (p *Unsubscribe) Write(w io.Writer) error {
+	p.computeLength()
 
-	buf := m.Header.pack()
-	buf.WriteByte(m.encodeFlags())
-	buf.Write(encodeUint16(m.messageID))
-	switch m.TopicIDType {
+	buf := p.Header.pack()
+	buf.WriteByte(p.encodeFlags())
+	buf.Write(encodeUint16(p.messageID))
+	switch p.TopicIDType {
 	case TIT_STRING:
-		buf.Write(m.TopicName)
+		buf.Write(p.TopicName)
 	case TIT_PREDEFINED, TIT_SHORT:
-		buf.Write(encodeUint16(m.TopicID))
+		buf.Write(encodeUint16(p.TopicID))
 	}
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *Unsubscribe) Unpack(r io.Reader) (err error) {
+func (p *Unsubscribe) Unpack(r io.Reader) (err error) {
 	var flagsByte uint8
 	if flagsByte, err = readByte(r); err != nil {
 		return
 	}
-	m.decodeFlags(flagsByte)
+	p.decodeFlags(flagsByte)
 
-	if m.messageID, err = readUint16(r); err != nil {
+	if p.messageID, err = readUint16(r); err != nil {
 		return
 	}
 
-	switch m.TopicIDType {
+	switch p.TopicIDType {
 	case TIT_STRING:
-		m.TopicID = 0
-		m.TopicName = make([]byte, m.VarPartLength()-unsubscribeHeaderLength)
-		_, err = io.ReadFull(r, m.TopicName)
+		p.TopicID = 0
+		p.TopicName = make([]byte, p.VarPartLength()-unsubscribeHeaderLength)
+		_, err = io.ReadFull(r, p.TopicName)
 	case TIT_PREDEFINED, TIT_SHORT:
-		m.TopicName = nil
-		m.TopicID, err = readUint16(r)
+		p.TopicName = nil
+		p.TopicID, err = readUint16(r)
 	default:
-		err = fmt.Errorf("invalid TopicIDType: %d", m.TopicIDType)
+		err = fmt.Errorf("invalid TopicIDType: %d", p.TopicIDType)
 	}
 	return
 }
 
-func (m Unsubscribe) String() string {
+func (p Unsubscribe) String() string {
 	return fmt.Sprintf("UNSUBSCRIBE(TopicName=%#v, TopicID=%d, TopicIDType=%d, MessageID=%d)",
-		string(m.TopicName), m.TopicID, m.TopicIDType, m.messageID)
+		string(p.TopicName), p.TopicID, p.TopicIDType, p.messageID)
 }

@@ -58,19 +58,19 @@ func DecodePlain(auth *Auth) (string, []byte, error) {
 	return string(dataParts[1]), dataParts[2], nil
 }
 
-func (m *Auth) Write(w io.Writer) error {
-	buf := m.Header.pack()
-	buf.WriteByte(m.Reason)
-	buf.WriteByte(byte(len(m.Method)))
-	buf.Write([]byte(m.Method))
-	buf.Write([]byte(m.Data))
+func (p *Auth) Write(w io.Writer) error {
+	buf := p.Header.pack()
+	buf.WriteByte(p.Reason)
+	buf.WriteByte(byte(len(p.Method)))
+	buf.Write([]byte(p.Method))
+	buf.Write([]byte(p.Data))
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *Auth) Unpack(r io.Reader) (err error) {
-	if m.Reason, err = readByte(r); err != nil {
+func (p *Auth) Unpack(r io.Reader) (err error) {
+	if p.Reason, err = readByte(r); err != nil {
 		return
 	}
 
@@ -82,14 +82,14 @@ func (m *Auth) Unpack(r io.Reader) (err error) {
 	if _, err = io.ReadFull(r, method); err != nil {
 		return
 	}
-	m.Method = string(method)
+	p.Method = string(method)
 
-	m.Data = make([]byte, m.VarPartLength()-2-uint16(methodLen))
-	_, err = io.ReadFull(r, m.Data)
+	p.Data = make([]byte, p.VarPartLength()-2-uint16(methodLen))
+	_, err = io.ReadFull(r, p.Data)
 	return
 }
 
-func (m Auth) String() string {
+func (p Auth) String() string {
 	// We intentionally do not print Data because it contains sensitive data.
-	return fmt.Sprintf("AUTH(Reason=%d, Method=%#v)", m.Reason, m.Method)
+	return fmt.Sprintf("AUTH(Reason=%d, Method=%#v)", p.Reason, p.Method)
 }

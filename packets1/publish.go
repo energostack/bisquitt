@@ -21,7 +21,7 @@ type Publish struct {
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewPublish(topicID uint16, topicIDType uint8, payload []byte, qos uint8,
 	retain bool, dup bool) *Publish {
-	m := &Publish{
+	p := &Publish{
 		Header:      *NewHeader(PUBLISH, 0),
 		DUPProperty: DUPProperty{dup},
 		TopicID:     topicID,
@@ -30,71 +30,71 @@ func NewPublish(topicID uint16, topicIDType uint8, payload []byte, qos uint8,
 		QOS:         qos,
 		Retain:      retain,
 	}
-	m.computeLength()
-	return m
+	p.computeLength()
+	return p
 }
 
-func (m *Publish) computeLength() {
-	payloadLen := uint16(len(m.Data))
-	m.Header.SetVarPartLength(publishHeaderLength + payloadLen)
+func (p *Publish) computeLength() {
+	payloadLen := uint16(len(p.Data))
+	p.Header.SetVarPartLength(publishHeaderLength + payloadLen)
 }
 
-func (m *Publish) encodeFlags() byte {
+func (p *Publish) encodeFlags() byte {
 	var b byte
-	if m.dup {
+	if p.dup {
 		b |= flagsDUPBit
 	}
-	b |= (m.QOS << 5) & flagsQOSBits
-	if m.Retain {
+	b |= (p.QOS << 5) & flagsQOSBits
+	if p.Retain {
 		b |= flagsRetainBit
 	}
-	b |= m.TopicIDType & flagsTopicIDTypeBits
+	b |= p.TopicIDType & flagsTopicIDTypeBits
 	return b
 }
 
-func (m *Publish) decodeFlags(b byte) {
-	m.dup = (b & flagsDUPBit) == flagsDUPBit
-	m.QOS = (b & flagsQOSBits) >> 5
-	m.Retain = (b & flagsRetainBit) == flagsRetainBit
-	m.TopicIDType = b & flagsTopicIDTypeBits
+func (p *Publish) decodeFlags(b byte) {
+	p.dup = (b & flagsDUPBit) == flagsDUPBit
+	p.QOS = (b & flagsQOSBits) >> 5
+	p.Retain = (b & flagsRetainBit) == flagsRetainBit
+	p.TopicIDType = b & flagsTopicIDTypeBits
 }
 
-func (m *Publish) Write(w io.Writer) error {
-	m.computeLength()
+func (p *Publish) Write(w io.Writer) error {
+	p.computeLength()
 
-	buf := m.Header.pack()
-	buf.WriteByte(m.encodeFlags())
-	buf.Write(encodeUint16(m.TopicID))
-	buf.Write(encodeUint16(m.messageID))
-	buf.Write(m.Data)
+	buf := p.Header.pack()
+	buf.WriteByte(p.encodeFlags())
+	buf.Write(encodeUint16(p.TopicID))
+	buf.Write(encodeUint16(p.messageID))
+	buf.Write(p.Data)
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *Publish) Unpack(r io.Reader) (err error) {
+func (p *Publish) Unpack(r io.Reader) (err error) {
 	var flagsByte uint8
 	if flagsByte, err = readByte(r); err != nil {
 		return
 	}
-	m.decodeFlags(flagsByte)
+	p.decodeFlags(flagsByte)
 
-	if m.TopicID, err = readUint16(r); err != nil {
+	if p.TopicID, err = readUint16(r); err != nil {
 		return
 	}
 
-	if m.messageID, err = readUint16(r); err != nil {
+	if p.messageID, err = readUint16(r); err != nil {
 		return
 	}
 
-	m.Data = make([]byte, m.VarPartLength()-publishHeaderLength)
-	_, err = io.ReadFull(r, m.Data)
+	p.Data = make([]byte, p.VarPartLength()-publishHeaderLength)
+	_, err = io.ReadFull(r, p.Data)
 	return
 }
 
-func (m Publish) String() string {
+func (p Publish) String() string {
 	var topicIDType string
-	switch m.TopicIDType {
+	switch p.TopicIDType {
 	case TIT_REGISTERED:
 		topicIDType = "r"
 	case TIT_PREDEFINED:
@@ -103,5 +103,5 @@ func (m Publish) String() string {
 		topicIDType = "s"
 	}
 	return fmt.Sprintf("PUBLISH(TopicID(%s)=%d, Data=%#v, QOS=%d, Retain=%t, MessageID=%d, Dup=%t)",
-		topicIDType, m.TopicID, string(m.Data), m.QOS, m.Retain, m.messageID, m.dup)
+		topicIDType, p.TopicID, string(p.Data), p.QOS, p.Retain, p.messageID, p.dup)
 }

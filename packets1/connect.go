@@ -18,7 +18,7 @@ type Connect struct {
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewConnect(clientID []byte, cleanSession bool, will bool, duration uint16) *Connect {
-	m := &Connect{
+	p := &Connect{
 		Header:       *NewHeader(CONNECT, 0),
 		Will:         will,
 		CleanSession: cleanSession,
@@ -26,68 +26,68 @@ func NewConnect(clientID []byte, cleanSession bool, will bool, duration uint16) 
 		Duration:     duration,
 		ClientID:     clientID,
 	}
-	m.computeLength()
-	return m
+	p.computeLength()
+	return p
 }
 
-func (m *Connect) computeLength() {
-	clientIDLength := uint16(len(m.ClientID))
-	m.Header.SetVarPartLength(connectHeaderLength + clientIDLength)
+func (p *Connect) computeLength() {
+	clientIDLength := uint16(len(p.ClientID))
+	p.Header.SetVarPartLength(connectHeaderLength + clientIDLength)
 }
 
-func (m *Connect) decodeFlags(b byte) {
-	m.Will = (b & flagsWillBit) == flagsWillBit
-	m.CleanSession = (b & flagsCleanSessionBit) == flagsCleanSessionBit
+func (p *Connect) decodeFlags(b byte) {
+	p.Will = (b & flagsWillBit) == flagsWillBit
+	p.CleanSession = (b & flagsCleanSessionBit) == flagsCleanSessionBit
 }
 
-func (m *Connect) encodeFlags() byte {
+func (p *Connect) encodeFlags() byte {
 	var b byte
-	if m.Will {
+	if p.Will {
 		b |= flagsWillBit
 	}
-	if m.CleanSession {
+	if p.CleanSession {
 		b |= flagsCleanSessionBit
 	}
 	return b
 }
 
-func (m *Connect) Write(w io.Writer) error {
-	m.computeLength()
+func (p *Connect) Write(w io.Writer) error {
+	p.computeLength()
 
-	buf := m.Header.pack()
-	buf.WriteByte(m.encodeFlags())
-	buf.WriteByte(m.ProtocolID)
-	buf.Write(encodeUint16(m.Duration))
-	buf.Write([]byte(m.ClientID))
+	buf := p.Header.pack()
+	buf.WriteByte(p.encodeFlags())
+	buf.WriteByte(p.ProtocolID)
+	buf.Write(encodeUint16(p.Duration))
+	buf.Write([]byte(p.ClientID))
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (m *Connect) Unpack(r io.Reader) (err error) {
+func (p *Connect) Unpack(r io.Reader) (err error) {
 	var flagsByte uint8
 	if flagsByte, err = readByte(r); err != nil {
 		return
 	}
-	m.decodeFlags(flagsByte)
+	p.decodeFlags(flagsByte)
 
-	if m.ProtocolID, err = readByte(r); err != nil {
+	if p.ProtocolID, err = readByte(r); err != nil {
 		return
 	}
 
-	if m.Duration, err = readUint16(r); err != nil {
+	if p.Duration, err = readUint16(r); err != nil {
 		return
 	}
 
-	m.ClientID = make([]byte, m.VarPartLength()-connectHeaderLength)
-	_, err = io.ReadFull(r, m.ClientID)
+	p.ClientID = make([]byte, p.VarPartLength()-connectHeaderLength)
+	_, err = io.ReadFull(r, p.ClientID)
 	return
 }
 
-func (m Connect) String() string {
+func (p Connect) String() string {
 	return fmt.Sprintf(
 		"CONNECT(ClientID=%#v, CleanSession=%t, Will=%t, Duration=%d)",
 
-		string(m.ClientID), m.CleanSession, m.Will, m.Duration,
+		string(p.ClientID), p.CleanSession, p.Will, p.Duration,
 	)
 }
