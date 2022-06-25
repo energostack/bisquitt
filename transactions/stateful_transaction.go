@@ -10,9 +10,9 @@ type StatefulTransaction interface {
 	//
 	// Example:
 	//
-	//   transaction.Proceed(awaitingPuback, publishMessage)
+	//   transaction.Proceed(awaitingPuback, publishPacket)
 	//
-	// The PUBLISH message was received and we are waiting for the
-	// corresponding PUBACK message.
+	// The PUBLISH packet was received and we are waiting for the
+	// corresponding PUBACK packet.
 	Proceed(state interface{}, data interface{})
 }
