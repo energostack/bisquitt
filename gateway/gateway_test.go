@@ -58,7 +58,7 @@ func TestRepeatedConnect(t *testing.T) {
 	assert.Equal(byte(4), mqttConnect.ProtocolVersion)
 	assert.Equal("MQTT", mqttConnect.ProtocolName)
 
-	transaction1, ok := stp.handler.transactions.GetByType(snPkts.CONNECT)
+	transaction1, ok := stp.handler.transactions.GetByType(uint8(snPkts.CONNECT))
 	assert.True(ok)
 
 	// Test transaction1 will be cancelled
@@ -86,7 +86,7 @@ func TestRepeatedConnect(t *testing.T) {
 	assert.Equal(byte(4), mqttConnect.ProtocolVersion)
 	assert.Equal("MQTT", mqttConnect.ProtocolName)
 
-	transaction2, ok := stp.handler.transactions.GetByType(snPkts.CONNECT)
+	transaction2, ok := stp.handler.transactions.GetByType(uint8(snPkts.CONNECT))
 	assert.True(ok)
 	assert.NotEqual(transaction1, transaction2)
 

@@ -36,7 +36,7 @@ func newConnectTransaction(ctx context.Context, h *handler, authEnabled bool, mq
 		TimedTransaction: transactions.NewTimedTransaction(
 			ctx, connectTransactionTimeout,
 			func() {
-				h.transactions.DeleteByType(snPkts.CONNECT)
+				h.transactions.DeleteByType(uint8(snPkts.CONNECT))
 				tLog.Debug("Deleted.")
 			},
 		),

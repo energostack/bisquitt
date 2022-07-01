@@ -366,7 +366,7 @@ func (h *handler) handleMqtt(ctx context.Context, pkt mqttPackets.ControlPacket)
 
 	// Client CONNECT transaction.
 	case *mqttPackets.ConnackPacket:
-		transactionx, _ := h.transactions.GetByType(snPkts.CONNECT)
+		transactionx, _ := h.transactions.GetByType(uint8(snPkts.CONNECT))
 		transaction, ok := transactionx.(*connectTransaction)
 		if !ok {
 			h.log.Error("Unexpected transaction type %T for packet: %v", transactionx, mqMsg)
@@ -568,11 +568,11 @@ func (h *handler) handleConnect(ctx context.Context, snConnect *snPkts.Connect) 
 	}
 
 	// Cancel previous transaction, if any.
-	if oldTransaction, ok := h.transactions.GetByType(snPkts.CONNECT); ok {
+	if oldTransaction, ok := h.transactions.GetByType(uint8(snPkts.CONNECT)); ok {
 		oldTransaction.Fail(Cancelled)
 	}
 	transaction := newConnectTransaction(ctx, h, h.cfg.AuthEnabled, mqConnect)
-	h.transactions.StoreByType(snPkts.CONNECT, transaction)
+	h.transactions.StoreByType(uint8(snPkts.CONNECT), transaction)
 	return transaction.Start(ctx)
 }
 
@@ -708,7 +708,7 @@ func (h *handler) handleMqttSn(ctx context.Context, pkt snPkts.Packet) error {
 
 	// Client CONNECT transaction.
 	case *snPkts.Auth:
-		transactionx, _ := h.transactions.GetByType(snPkts.CONNECT)
+		transactionx, _ := h.transactions.GetByType(uint8(snPkts.CONNECT))
 		if transaction, ok := transactionx.(*connectTransaction); ok {
 			return transaction.Auth(snMsg)
 		}
@@ -717,7 +717,7 @@ func (h *handler) handleMqttSn(ctx context.Context, pkt snPkts.Packet) error {
 
 	// Client CONNECT transaction.
 	case *snPkts.WillTopic:
-		transactionx, _ := h.transactions.GetByType(snPkts.CONNECT)
+		transactionx, _ := h.transactions.GetByType(uint8(snPkts.CONNECT))
 		if transaction, ok := transactionx.(*connectTransaction); ok {
 			return transaction.WillTopic(snMsg)
 		}
@@ -726,7 +726,7 @@ func (h *handler) handleMqttSn(ctx context.Context, pkt snPkts.Packet) error {
 
 	// Client CONNECT transaction.
 	case *snPkts.WillMsg:
-		transactionx, _ := h.transactions.GetByType(snPkts.CONNECT)
+		transactionx, _ := h.transactions.GetByType(uint8(snPkts.CONNECT))
 		if transaction, ok := transactionx.(*connectTransaction); ok {
 			return transaction.WillMsg(snMsg)
 		}
