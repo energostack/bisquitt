@@ -736,7 +736,7 @@ func (h *handler) handleMqttSn(ctx context.Context, pkt snPkts.Packet) error {
 	// Client REGISTER transaction.
 	case *snPkts.Register:
 		returnCode := snPkts.RC_ACCEPTED
-		topicID, err := h.registerTopic(string(snMsg.TopicName))
+		topicID, err := h.registerTopic(snMsg.TopicName)
 		if err != nil {
 			// The only reason registerTopic can return an error is when all
 			// the available TopicIDs are already used. The MQTT-SN specification
