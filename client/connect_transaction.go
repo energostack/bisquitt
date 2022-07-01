@@ -21,7 +21,7 @@ func newConnectTransaction(ctx context.Context, client *Client) *connectTransact
 		TimedTransaction: transactions.NewTimedTransaction(
 			ctx, client.cfg.ConnectTimeout,
 			func() {
-				client.transactions.DeleteByType(pkts.CONNECT)
+				client.transactions.DeleteByType(uint8(pkts.CONNECT))
 				tLog.Debug("Deleted.")
 			},
 		),

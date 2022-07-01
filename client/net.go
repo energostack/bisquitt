@@ -121,7 +121,7 @@ func (c *Client) topicForPublish(pkt *pkts.Publish) (string, error) {
 func (c *Client) handlePacket(pktx pkts.Packet) error {
 	switch pkt := pktx.(type) {
 	case *pkts.Connack:
-		transactionx, _ := c.transactions.GetByType(pkts.CONNECT)
+		transactionx, _ := c.transactions.GetByType(uint8(pkts.CONNECT))
 		transaction, ok := transactionx.(*connectTransaction)
 		if !ok {
 			c.log.Error("Unexpected transaction type %T for packet: %v", transactionx, pkt)
@@ -260,7 +260,7 @@ func (c *Client) handlePacket(pktx pkts.Packet) error {
 		return nil
 
 	case *pkts.Disconnect:
-		transactionx, ok := c.transactions.GetByType(pkts.DISCONNECT)
+		transactionx, ok := c.transactions.GetByType(uint8(pkts.DISCONNECT))
 		if !ok {
 			// Unsolicited DISCONNECT from broker.
 			c.setState(util.StateDisconnected)
@@ -287,10 +287,10 @@ func (c *Client) handlePacket(pktx pkts.Packet) error {
 		return c.send(willMsg)
 
 	case *pkts.Pingresp:
-		transactionx, ok := c.transactions.GetByType(pkts.PINGREQ)
+		transactionx, ok := c.transactions.GetByType(uint8(pkts.PINGREQ))
 		if !ok {
 			// Sleep transaction.
-			transactionx, _ = c.transactions.GetByType(pkts.DISCONNECT)
+			transactionx, _ = c.transactions.GetByType(uint8(pkts.DISCONNECT))
 		}
 		transaction, ok := transactionx.(transactionWithPingresp)
 		if !ok {

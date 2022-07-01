@@ -21,7 +21,7 @@ func newDisconnectTransaction(client *Client) *disconnectTransaction {
 					return client.send(lastMsg.(pkts.Packet))
 				},
 				func() {
-					client.transactions.DeleteByType(pkts.DISCONNECT)
+					client.transactions.DeleteByType(uint8(pkts.DISCONNECT))
 					tLog.Debug("Deleted.")
 				},
 			),

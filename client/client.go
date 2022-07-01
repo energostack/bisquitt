@@ -315,7 +315,7 @@ func (c *Client) Connect() error {
 
 	for i := uint(0); i < c.cfg.RetryCount+1; i++ {
 		transaction := newConnectTransaction(c.groupCtx, c)
-		c.transactions.StoreByType(pkts.CONNECT, transaction)
+		c.transactions.StoreByType(uint8(pkts.CONNECT), transaction)
 
 		if err := c.send(connect); err != nil {
 			return err
@@ -495,7 +495,7 @@ func (c *Client) PublishPredefined(topicID uint16, qos uint8, retain bool, paylo
 func (c *Client) Ping() error {
 	transaction := newPingTransaction(c)
 	ping := pkts.NewPingreq(nil)
-	c.transactions.StoreByType(pkts.PINGREQ, transaction)
+	c.transactions.StoreByType(uint8(pkts.PINGREQ), transaction)
 	transaction.Proceed(nil, ping)
 	if err := c.send(ping); err != nil {
 		transaction.Fail(err)
@@ -511,7 +511,7 @@ func (c *Client) Ping() error {
 // Sleep informs the MQTT-SN gateway that the client is going to sleep.
 func (c *Client) Sleep(duration time.Duration) error {
 	transaction := newSleepTransaction(c, duration)
-	c.transactions.StoreByType(pkts.DISCONNECT, transaction)
+	c.transactions.StoreByType(uint8(pkts.DISCONNECT), transaction)
 	if err := transaction.Sleep(); err != nil {
 		return err
 	}
@@ -536,7 +536,7 @@ func (c *Client) Disconnect() error {
 	}
 	transaction := newDisconnectTransaction(c)
 	disconnect := pkts.NewDisconnect(0)
-	c.transactions.StoreByType(pkts.DISCONNECT, transaction)
+	c.transactions.StoreByType(uint8(pkts.DISCONNECT), transaction)
 	transaction.Proceed(awaitingDisconnect, disconnect)
 	if err := c.send(disconnect); err != nil {
 		transaction.Fail(err)

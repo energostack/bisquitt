@@ -21,7 +21,7 @@ func newPingTransaction(client *Client) *pingTransaction {
 					return client.send(lastMsg.(pkts.Packet))
 				},
 				func() {
-					client.transactions.DeleteByType(pkts.PINGREQ)
+					client.transactions.DeleteByType(uint8(pkts.PINGREQ))
 					tLog.Debug("Deleted.")
 				},
 			),

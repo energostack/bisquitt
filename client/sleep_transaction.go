@@ -37,7 +37,7 @@ func newSleepTransaction(client *Client, sleepDuration time.Duration) *sleepTran
 	t.TransactionBase = transactions.NewTransactionBase(
 		func() {
 			t.stopTimer()
-			client.transactions.DeleteByType(pkts.DISCONNECT)
+			client.transactions.DeleteByType(uint8(pkts.DISCONNECT))
 			tLog.Debug("Deleted.")
 		})
 
