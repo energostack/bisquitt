@@ -268,13 +268,6 @@ func (c *Client) Close() error {
 	return c.conn.Close()
 }
 
-func (c *Client) error() error {
-	if err := c.groupCtx.Err(); err != nil {
-		return c.group.Wait()
-	}
-	return nil
-}
-
 func (c *Client) setState(new util.ClientState) {
 	old := c.state.Set(new)
 	if new == old {
