@@ -338,7 +338,7 @@ func (c *Client) Connect() error {
 				return err
 			}
 		case <-c.groupCtx.Done():
-			return context.Canceled
+			return c.group.Wait()
 		}
 	}
 
@@ -360,7 +360,7 @@ func (c *Client) Register(topic string) error {
 	case <-transaction.Done():
 		return transaction.Err()
 	case <-c.groupCtx.Done():
-		return context.Canceled
+		return c.group.Wait()
 	}
 }
 
@@ -378,7 +378,7 @@ func (c *Client) subscribe(topicName string, topicIDType uint8, topicID uint16, 
 	case <-transaction.Done():
 		return transaction.Err()
 	case <-c.groupCtx.Done():
-		return context.Canceled
+		return c.group.Wait()
 	}
 }
 
@@ -413,7 +413,7 @@ func (c *Client) unsubscribe(topicName string, topicIDType uint8, topicID uint16
 	case <-transaction.Done():
 		return transaction.Err()
 	case <-c.groupCtx.Done():
-		return context.Canceled
+		return c.group.Wait()
 	}
 }
 
@@ -462,7 +462,7 @@ func (c *Client) publish(topicIDType uint8, topicID uint16, qos uint8, retain bo
 	case <-transaction.Done():
 		return transaction.Err()
 	case <-c.groupCtx.Done():
-		return context.Canceled
+		return c.group.Wait()
 	}
 }
 
@@ -504,7 +504,7 @@ func (c *Client) Ping() error {
 	case <-transaction.Done():
 		return transaction.Err()
 	case <-c.groupCtx.Done():
-		return context.Canceled
+		return c.group.Wait()
 	}
 }
 
@@ -519,7 +519,7 @@ func (c *Client) Sleep(duration time.Duration) error {
 	case <-transaction.Done():
 		return transaction.Err()
 	case <-c.groupCtx.Done():
-		return context.Canceled
+		return c.group.Wait()
 	}
 }
 
@@ -557,6 +557,6 @@ func (c *Client) Disconnect() error {
 		c.cancel()
 		return nil
 	case <-c.groupCtx.Done():
-		return context.Canceled
+		return c.group.Wait()
 	}
 }
