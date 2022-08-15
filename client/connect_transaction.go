@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	pkts "github.com/energomonitor/bisquitt/packets1"
+	pkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
 )
@@ -21,7 +21,7 @@ func newConnectTransaction(ctx context.Context, client *Client) *connectTransact
 		TimedTransaction: transactions.NewTimedTransaction(
 			ctx, client.cfg.ConnectTimeout,
 			func() {
-				client.transactions.DeleteByType(pkts.CONNECT)
+				client.transactions.DeleteByType(pkts1.CONNECT)
 				tLog.Debug("Deleted.")
 			},
 		),
@@ -29,8 +29,8 @@ func newConnectTransaction(ctx context.Context, client *Client) *connectTransact
 	}
 }
 
-func (t *connectTransaction) Connack(connack *pkts.Connack) {
-	if connack.ReturnCode != pkts.RC_ACCEPTED {
+func (t *connectTransaction) Connack(connack *pkts1.Connack) {
+	if connack.ReturnCode != pkts1.RC_ACCEPTED {
 		t.Fail(fmt.Errorf("connection rejected: %s", connack.ReturnCode))
 		return
 	}

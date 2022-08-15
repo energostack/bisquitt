@@ -13,7 +13,7 @@ import (
 	"fmt"
 
 	mqttPackets "github.com/eclipse/paho.mqtt.golang/packets"
-	snPkts "github.com/energomonitor/bisquitt/packets1"
+	snPkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
 )
@@ -36,7 +36,7 @@ func newConnectTransaction(ctx context.Context, h *handler, authEnabled bool, mq
 		TimedTransaction: transactions.NewTimedTransaction(
 			ctx, connectTransactionTimeout,
 			func() {
-				h.transactions.DeleteByType(snPkts.CONNECT)
+				h.transactions.DeleteByType(snPkts1.CONNECT)
 				tLog.Debug("Deleted.")
 			},
 		),
@@ -72,16 +72,16 @@ func (t *connectTransaction) Start(ctx context.Context) error {
 
 	if t.mqConnect.WillFlag {
 		// Continue with WILLTOPICREQ.
-		return t.handler.snSend(snPkts.NewWillTopicReq())
+		return t.handler.snSend(snPkts1.NewWillTopicReq())
 	}
 
 	return t.handler.mqttSend(t.mqConnect)
 }
 
-func (t *connectTransaction) Auth(snMsg *snPkts.Auth) error {
+func (t *connectTransaction) Auth(snMsg *snPkts1.Auth) error {
 	// Extract username and password from PLAIN data.
-	if snMsg.Method == snPkts.AUTH_PLAIN {
-		user, password, err := snPkts.DecodePlain(snMsg)
+	if snMsg.Method == snPkts1.AUTH_PLAIN {
+		user, password, err := snPkts1.DecodePlain(snMsg)
 		if err != nil {
 			t.Fail(err)
 			return err
@@ -91,7 +91,7 @@ func (t *connectTransaction) Auth(snMsg *snPkts.Auth) error {
 		t.mqConnect.PasswordFlag = true
 		t.mqConnect.Password = password
 	} else {
-		if err := t.SendConnack(snPkts.RC_NOT_SUPPORTED); err != nil {
+		if err := t.SendConnack(snPkts1.RC_NOT_SUPPORTED); err != nil {
 			return err
 		}
 		err := fmt.Errorf("unknown auth method: %#v", snMsg.Method)
@@ -101,23 +101,23 @@ func (t *connectTransaction) Auth(snMsg *snPkts.Auth) error {
 
 	if t.mqConnect.WillFlag {
 		// Continue with WILLTOPICREQ.
-		return t.handler.snSend(snPkts.NewWillTopicReq())
+		return t.handler.snSend(snPkts1.NewWillTopicReq())
 	}
 
 	// All information successfully gathered - send MQTT connect.
 	return t.handler.mqttSend(t.mqConnect)
 }
 
-func (t *connectTransaction) WillTopic(snWillTopic *snPkts.WillTopic) error {
+func (t *connectTransaction) WillTopic(snWillTopic *snPkts1.WillTopic) error {
 	t.mqConnect.WillQos = snWillTopic.QOS
 	t.mqConnect.WillRetain = snWillTopic.Retain
 	t.mqConnect.WillTopic = snWillTopic.WillTopic
 
 	// Continue with WILLMSGREQ.
-	return t.handler.snSend(snPkts.NewWillMsgReq())
+	return t.handler.snSend(snPkts1.NewWillMsgReq())
 }
 
-func (t *connectTransaction) WillMsg(snWillMsg *snPkts.WillMsg) error {
+func (t *connectTransaction) WillMsg(snWillMsg *snPkts1.WillMsg) error {
 	t.mqConnect.WillMessage = snWillMsg.WillMsg
 
 	// All information successfully gathered - send MQTT connect.
@@ -128,7 +128,7 @@ func (t *connectTransaction) Connack(mqConnack *mqttPackets.ConnackPacket) error
 	if mqConnack.ReturnCode != mqttPackets.Accepted {
 		// We misuse RC_CONGESTION here because MQTT-SN spec v. 1.2 does not define
 		// any suitable return code.
-		if err := t.SendConnack(snPkts.RC_CONGESTION); err != nil {
+		if err := t.SendConnack(snPkts1.RC_CONGESTION); err != nil {
 			return err
 		}
 		returnCodeStr, ok := mqttPackets.ConnackReturnCodes[mqConnack.ReturnCode]
@@ -144,7 +144,7 @@ func (t *connectTransaction) Connack(mqConnack *mqttPackets.ConnackPacket) error
 
 	// Must be set before snSend to avoid race condition in tests.
 	t.handler.setState(util.StateActive)
-	if err := t.SendConnack(snPkts.RC_ACCEPTED); err != nil {
+	if err := t.SendConnack(snPkts1.RC_ACCEPTED); err != nil {
 		t.Fail(err)
 		return err
 	}
@@ -153,8 +153,8 @@ func (t *connectTransaction) Connack(mqConnack *mqttPackets.ConnackPacket) error
 }
 
 // Inform client that the CONNECT request was refused.
-func (t *connectTransaction) SendConnack(code snPkts.ReturnCode) error {
-	snConnack := snPkts.NewConnack(code)
+func (t *connectTransaction) SendConnack(code snPkts1.ReturnCode) error {
+	snConnack := snPkts1.NewConnack(code)
 	if err := t.handler.snSend(snConnack); err != nil {
 		t.Fail(err)
 		return err

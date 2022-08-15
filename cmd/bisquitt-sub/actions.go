@@ -16,7 +16,7 @@ import (
 	"time"
 
 	snClient "github.com/energomonitor/bisquitt/client"
-	pkts "github.com/energomonitor/bisquitt/packets1"
+	pkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/topics"
 	"github.com/energomonitor/bisquitt/util"
 	cryptoutils "github.com/energomonitor/bisquitt/util/crypto"
@@ -201,7 +201,7 @@ func handleAction() cli.ActionFunc {
 			return err
 		}
 
-		handler := func(client *snClient.Client, topic string, msg *pkts.Publish) {
+		handler := func(client *snClient.Client, topic string, msg *pkts1.Publish) {
 			var flags []string
 			if msg.Retain {
 				flags = append(flags, "retained")

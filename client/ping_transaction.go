@@ -1,7 +1,7 @@
 package client
 
 import (
-	pkts "github.com/energomonitor/bisquitt/packets1"
+	pkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
 
@@ -18,10 +18,10 @@ func newPingTransaction(client *Client) *pingTransaction {
 				client.groupCtx, client.cfg.RetryDelay, client.cfg.RetryCount,
 				func(lastMsg interface{}) error {
 					tLog.Debug("Resend.")
-					return client.send(lastMsg.(pkts.Packet))
+					return client.send(lastMsg.(pkts1.Packet))
 				},
 				func() {
-					client.transactions.DeleteByType(pkts.PINGREQ)
+					client.transactions.DeleteByType(pkts1.PINGREQ)
 					tLog.Debug("Deleted.")
 				},
 			),
@@ -31,6 +31,6 @@ func newPingTransaction(client *Client) *pingTransaction {
 	}
 }
 
-func (t *pingTransaction) Pingresp(pingresp *pkts.Pingresp) {
+func (t *pingTransaction) Pingresp(pingresp *pkts1.Pingresp) {
 	t.Success()
 }
