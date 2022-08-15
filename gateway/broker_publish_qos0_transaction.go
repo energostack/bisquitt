@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	snPkts "github.com/energomonitor/bisquitt/packets1"
+	snPkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
 
@@ -31,6 +31,6 @@ func newBrokerPublishQOS0Transaction(ctx context.Context, h *handler, msgID uint
 	return t
 }
 
-func (t *brokerPublishQOS0Transaction) Regack(snRegack *snPkts.Regack) error {
+func (t *brokerPublishQOS0Transaction) Regack(snRegack *snPkts1.Regack) error {
 	return t.regack(snRegack, transactionDone)
 }

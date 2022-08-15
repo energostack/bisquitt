@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	mqttPackets "github.com/eclipse/paho.mqtt.golang/packets"
-	snPkts "github.com/energomonitor/bisquitt/packets1"
+	snPkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
 
@@ -32,16 +32,16 @@ func newBrokerPublishQOS1Transaction(ctx context.Context, h *handler, msgID uint
 	return t
 }
 
-func (t *brokerPublishQOS1Transaction) Regack(snRegack *snPkts.Regack) error {
+func (t *brokerPublishQOS1Transaction) Regack(snRegack *snPkts1.Regack) error {
 	return t.regack(snRegack, awaitingPuback)
 }
 
-func (t *brokerPublishQOS1Transaction) Puback(snPuback *snPkts.Puback) error {
+func (t *brokerPublishQOS1Transaction) Puback(snPuback *snPkts1.Puback) error {
 	if t.State != awaitingPuback {
 		t.log.Debug("Unexpected packet in %d: %v", t.State, snPuback)
 		return nil
 	}
-	if snPuback.ReturnCode != snPkts.RC_ACCEPTED {
+	if snPuback.ReturnCode != snPkts1.RC_ACCEPTED {
 		t.Fail(fmt.Errorf("PUBACK return code: %d", snPuback.ReturnCode))
 		return nil
 	}

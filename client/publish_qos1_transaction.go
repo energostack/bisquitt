@@ -3,7 +3,7 @@ package client
 import (
 	"fmt"
 
-	pkts "github.com/energomonitor/bisquitt/packets1"
+	pkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
 
@@ -20,7 +20,7 @@ func newPublishQOS1Transaction(client *Client, msgID uint16) *publishQOS1Transac
 				client.groupCtx, client.cfg.RetryDelay, client.cfg.RetryCount,
 				func(lastMsg interface{}) error {
 					tLog.Debug("Resend.")
-					return client.send(lastMsg.(pkts.Packet))
+					return client.send(lastMsg.(pkts1.Packet))
 				},
 				func() {
 					client.transactions.Delete(msgID)
@@ -33,7 +33,7 @@ func newPublishQOS1Transaction(client *Client, msgID uint16) *publishQOS1Transac
 	}
 }
 
-func (t *publishQOS1Transaction) Puback(puback *pkts.Puback) {
+func (t *publishQOS1Transaction) Puback(puback *pkts1.Puback) {
 	if t.State != awaitingPuback {
 		t.log.Debug("Unexpected packet in %d: %v", t.State, puback)
 		return

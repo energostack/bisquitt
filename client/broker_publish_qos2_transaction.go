@@ -12,14 +12,14 @@ package client
 import (
 	"fmt"
 
-	pkts "github.com/energomonitor/bisquitt/packets1"
+	pkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
 
 type brokerPublishQOS2Transaction struct {
 	*transactions.TransactionBase
 	client  *Client
-	publish *pkts.Publish
+	publish *pkts1.Publish
 }
 
 func newBrokerPublishQOS2Transaction(client *Client, msgID uint16) *brokerPublishQOS2Transaction {
@@ -36,15 +36,15 @@ func newBrokerPublishQOS2Transaction(client *Client, msgID uint16) *brokerPublis
 	}
 }
 
-func (t *brokerPublishQOS2Transaction) Publish(publish *pkts.Publish) error {
+func (t *brokerPublishQOS2Transaction) Publish(publish *pkts1.Publish) error {
 	t.publish = publish
-	pubrec := pkts.NewPubrec()
+	pubrec := pkts1.NewPubrec()
 	pubrec.CopyMessageID(publish)
 	return t.client.send(pubrec)
 }
 
-func (t *brokerPublishQOS2Transaction) Pubrel(pubrel *pkts.Pubrel) error {
-	pubcomp := pkts.NewPubcomp()
+func (t *brokerPublishQOS2Transaction) Pubrel(pubrel *pkts1.Pubrel) error {
+	pubcomp := pkts1.NewPubcomp()
 	pubcomp.CopyMessageID(pubrel)
 	topic, err := t.client.topicForPublish(t.publish)
 	if err != nil {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	pkts "github.com/energomonitor/bisquitt/packets1"
+	pkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
 
@@ -22,9 +22,9 @@ func newSubscribeTransaction(client *Client, msgID uint16, callback MessageHandl
 				client.groupCtx, client.cfg.RetryDelay, client.cfg.RetryCount,
 				func(lastMsg interface{}) error {
 					tLog.Debug("Resend.")
-					dupMsg := lastMsg.(pkts.PacketWithDUP)
+					dupMsg := lastMsg.(pkts1.PacketWithDUP)
 					dupMsg.SetDUP(true)
-					return client.send(lastMsg.(pkts.Packet))
+					return client.send(lastMsg.(pkts1.Packet))
 				},
 				func() {
 					tLog.Debug("Deleted.")
@@ -38,17 +38,17 @@ func newSubscribeTransaction(client *Client, msgID uint16, callback MessageHandl
 	}
 }
 
-func (t *subscribeTransaction) Suback(suback *pkts.Suback) {
-	if suback.ReturnCode != pkts.RC_ACCEPTED {
+func (t *subscribeTransaction) Suback(suback *pkts1.Suback) {
+	if suback.ReturnCode != pkts1.RC_ACCEPTED {
 		t.Fail(fmt.Errorf("subscription rejected with code %d", suback.ReturnCode))
 		return
 	}
 
 	var topicName string
-	subscribe := t.Data.(*pkts.Subscribe)
+	subscribe := t.Data.(*pkts1.Subscribe)
 
 	switch subscribe.TopicIDType {
-	case pkts.TIT_STRING:
+	case pkts1.TIT_STRING:
 		topicName = string(subscribe.TopicName)
 
 		// When subscribing to a wildcard topic, gateway returns TopicID == 0x0000.
@@ -65,7 +65,7 @@ func (t *subscribeTransaction) Suback(suback *pkts.Suback) {
 		t.client.registeredTopics[topicName] = suback.TopicID
 		t.client.registeredTopicsLock.Unlock()
 
-	case pkts.TIT_PREDEFINED:
+	case pkts1.TIT_PREDEFINED:
 		var ok bool
 		topicName, ok = t.client.cfg.PredefinedTopics.GetTopicName(t.client.cfg.ClientID, subscribe.TopicID)
 		if !ok {
@@ -73,8 +73,8 @@ func (t *subscribeTransaction) Suback(suback *pkts.Suback) {
 			return
 		}
 
-	case pkts.TIT_SHORT:
-		topicName = pkts.DecodeShortTopic(subscribe.TopicID)
+	case pkts1.TIT_SHORT:
+		topicName = pkts1.DecodeShortTopic(subscribe.TopicID)
 		break
 
 	default:
