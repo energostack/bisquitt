@@ -100,19 +100,19 @@ func (c *Client) topicForPublish(pkt *pkts.Publish) (string, error) {
 		topic, ok = findTopic(pkt.TopicID, c.registeredTopics)
 		c.registeredTopicsLock.RUnlock()
 		if !ok {
-			return "", fmt.Errorf("Invalid topic ID: %d", pkt.TopicID)
+			return "", fmt.Errorf("invalid topic ID: %d", pkt.TopicID)
 		}
 	case pkts.TIT_PREDEFINED:
 		var ok bool
 		topic, ok = c.cfg.PredefinedTopics.GetTopicName(c.cfg.ClientID, pkt.TopicID)
 		if !ok {
-			return "", fmt.Errorf("Invalid predefined topic ID: %d", pkt.TopicID)
+			return "", fmt.Errorf("invalid predefined topic ID: %d", pkt.TopicID)
 		}
 	case pkts.TIT_SHORT:
 		topic = pkts.DecodeShortTopic(pkt.TopicID)
 
 	default:
-		return "", fmt.Errorf("Invalid Topic ID Type: %d", pkt.TopicIDType)
+		return "", fmt.Errorf("invalid Topic ID Type: %d", pkt.TopicIDType)
 	}
 
 	return topic, nil
@@ -301,6 +301,6 @@ func (c *Client) handlePacket(pktx pkts.Packet) error {
 		return nil
 
 	default:
-		return fmt.Errorf("Unhandled MQTT-SN packet: %v", pktx)
+		return fmt.Errorf("unhandled MQTT-SN packet: %v", pktx)
 	}
 }

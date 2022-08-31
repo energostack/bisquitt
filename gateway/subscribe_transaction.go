@@ -39,7 +39,7 @@ func newSubscribeTransaction(ctx context.Context, h *handler, msgID uint16, topi
 
 func (t *subscribeTransaction) Suback(mqSuback *mqttPackets.SubackPacket) error {
 	if len(mqSuback.ReturnCodes) != 1 {
-		err := fmt.Errorf("Unexpected ReturnCodes length in MQTT/SUBACK: %d", len(mqSuback.ReturnCodes))
+		err := fmt.Errorf("unexpected ReturnCodes length in MQTT/SUBACK: %d", len(mqSuback.ReturnCodes))
 		t.Fail(err)
 		return err
 	}

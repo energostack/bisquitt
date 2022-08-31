@@ -152,14 +152,14 @@ func handleAction() cli.ActionFunc {
 		if c.IsSet(WillTopicFlag) {
 			willTopic := c.String(WillTopicFlag)
 			if willTopic == "" {
-				return errors.New("Will topic must not be empty if set")
+				return errors.New("will topic must not be empty if set")
 			}
 			clientCfg.WillTopic = willTopic
 			clientCfg.WillPayload = []byte(c.String(WillMessageFlag))
 
 			qos := c.Uint(WillQOSFlag)
 			if qos > 2 {
-				return fmt.Errorf("Will QOS must be 0-2, got %d", qos)
+				return fmt.Errorf("will QOS must be 0-2, got %d", qos)
 			}
 			clientCfg.WillQOS = uint8(qos)
 			clientCfg.WillRetained = c.Bool(WillRetainFlag)
