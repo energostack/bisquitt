@@ -240,14 +240,14 @@ func (h *handler) handleClientPublish(ctx context.Context, snPublish *snPkts.Pub
 	case snPkts.TIT_REGISTERED:
 		topicx, ok := h.registeredTopics.Load(snPublish.TopicID)
 		if !ok {
-			return fmt.Errorf("Unknown topic id %d", snPublish.TopicID)
+			return fmt.Errorf("unknown topic id %d", snPublish.TopicID)
 		}
 		topic = topicx.(string)
 	case snPkts.TIT_PREDEFINED:
 		var ok bool
 		topic, ok = h.predefinedTopics.GetTopicName(h.clientID, snPublish.TopicID)
 		if !ok {
-			return fmt.Errorf("Unknown topic id %d", snPublish.TopicID)
+			return fmt.Errorf("unknown topic id %d", snPublish.TopicID)
 		}
 	case snPkts.TIT_SHORT:
 		topic = snPkts.DecodeShortTopic(snPublish.TopicID)
@@ -327,7 +327,7 @@ func (h *handler) handleBrokerPublish(ctx context.Context, mqPublish *mqttPacket
 	case 2:
 		transaction = newBrokerPublishQOS2Transaction(ctx, h, msgID)
 	default:
-		return fmt.Errorf("Invalid QoS in %v", mqPublish)
+		return fmt.Errorf("invalid QoS in %v", mqPublish)
 	}
 
 	var snMsg snPkts.Packet
@@ -435,7 +435,7 @@ func (h *handler) handleMqtt(ctx context.Context, pkt mqttPackets.ControlPacket)
 		return transaction.Pubrel(mqMsg)
 
 	default:
-		return fmt.Errorf("Unsupported MQTT packet type: %v", pkt)
+		return fmt.Errorf("unsupported MQTT packet type: %v", pkt)
 	}
 }
 
@@ -609,7 +609,7 @@ func (h *handler) handleSubscribe(ctx context.Context, snSubscribe *snPkts.Subsc
 		var ok bool
 		topic, ok = h.predefinedTopics.GetTopicName(h.clientID, snSubscribe.TopicID)
 		if !ok {
-			return fmt.Errorf("Unknown topic id %d", snSubscribe.TopicID)
+			return fmt.Errorf("unknown topic id %d", snSubscribe.TopicID)
 		}
 		topicID = snSubscribe.TopicID
 	case snPkts.TIT_SHORT:
@@ -638,7 +638,7 @@ func (h *handler) handleUnsubscribe(_ context.Context, snUnsubscribe *snPkts.Uns
 		var ok bool
 		topic, ok = h.predefinedTopics.GetTopicName(h.clientID, snUnsubscribe.TopicID)
 		if !ok {
-			return fmt.Errorf("Unknown topic id %d", snUnsubscribe.TopicID)
+			return fmt.Errorf("unknown topic id %d", snUnsubscribe.TopicID)
 		}
 	case snPkts.TIT_SHORT:
 		topic = snPkts.DecodeShortTopic(snUnsubscribe.TopicID)
@@ -858,7 +858,7 @@ func (h *handler) handleMqttSn(ctx context.Context, pkt snPkts.Packet) error {
 		return nil
 
 	default:
-		return fmt.Errorf("Unsupported MQTT-SN packet type: %v", pkt)
+		return fmt.Errorf("unsupported MQTT-SN packet type: %v", pkt)
 	}
 }
 
@@ -912,7 +912,7 @@ func (h *handler) snReceive() (snPkts.Packet, error) {
 	pktBuf := buffer[:n]
 
 	if len(pktBuf) < 2 {
-		return nil, errors.New("Illegal packet: too short")
+		return nil, errors.New("illegal packet: too short")
 	}
 
 	pktReader := bytes.NewReader(pktBuf)

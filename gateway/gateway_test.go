@@ -1374,7 +1374,7 @@ func testRead(connID string, conn net.Conn, timeout time.Duration) ([]byte, erro
 	buff := make([]byte, maxTestPktLength)
 	err := conn.SetReadDeadline(time.Now().Add(timeout))
 	if err != nil {
-		return nil, fmt.Errorf("Can't set read deadline on %s connection: %s", connID, err)
+		return nil, fmt.Errorf("can't set read deadline on %s connection: %s", connID, err)
 	}
 
 	n, err := conn.Read(buff)

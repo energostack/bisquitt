@@ -94,7 +94,7 @@ func (t *connectTransaction) Auth(snMsg *snPkts.Auth) error {
 		if err := t.SendConnack(snPkts.RC_NOT_SUPPORTED); err != nil {
 			return err
 		}
-		err := fmt.Errorf("Unknown auth method: %#v.", snMsg.Method)
+		err := fmt.Errorf("unknown auth method: %#v", snMsg.Method)
 		t.Fail(err)
 		return err
 	}

@@ -46,7 +46,7 @@ func (t *unsubscribeTransaction) Unsuback(_ *pkts.Unsuback) {
 		var ok bool
 		topicName, ok = t.client.cfg.PredefinedTopics.GetTopicName(t.client.cfg.ClientID, unsubscribe.TopicID)
 		if !ok {
-			t.Fail(fmt.Errorf("Invalid predefined topic ID: %d", unsubscribe.TopicID))
+			t.Fail(fmt.Errorf("invalid predefined topic ID: %d", unsubscribe.TopicID))
 			return
 		}
 
@@ -54,7 +54,7 @@ func (t *unsubscribeTransaction) Unsuback(_ *pkts.Unsuback) {
 		topicName = pkts.DecodeShortTopic(unsubscribe.TopicID)
 
 	default:
-		t.Fail(fmt.Errorf("Invalid Topic ID Type: %d", unsubscribe.TopicIDType))
+		t.Fail(fmt.Errorf("invalid Topic ID Type: %d", unsubscribe.TopicIDType))
 		return
 	}
 

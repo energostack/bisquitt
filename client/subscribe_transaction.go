@@ -69,7 +69,7 @@ func (t *subscribeTransaction) Suback(suback *pkts.Suback) {
 		var ok bool
 		topicName, ok = t.client.cfg.PredefinedTopics.GetTopicName(t.client.cfg.ClientID, subscribe.TopicID)
 		if !ok {
-			t.Fail(fmt.Errorf("Invalid predefined topic ID: %d", subscribe.TopicID))
+			t.Fail(fmt.Errorf("invalid predefined topic ID: %d", subscribe.TopicID))
 			return
 		}
 
@@ -78,7 +78,7 @@ func (t *subscribeTransaction) Suback(suback *pkts.Suback) {
 		break
 
 	default:
-		t.Fail(fmt.Errorf("Invalid Topic ID Type: %d", subscribe.TopicIDType))
+		t.Fail(fmt.Errorf("invalid Topic ID Type: %d", subscribe.TopicIDType))
 		return
 	}
 

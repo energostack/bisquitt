@@ -52,7 +52,7 @@ func NewAuthPlain(user string, password []byte) *Auth {
 func DecodePlain(auth *Auth) (string, []byte, error) {
 	dataParts := bytes.Split(auth.Data, []byte{0})
 	if len(dataParts) != 3 {
-		return "", nil, fmt.Errorf("Invalid PLAIN auth data format: %v.", auth.Data)
+		return "", nil, fmt.Errorf("invalid PLAIN auth data format: %v.", auth.Data)
 	}
 	// NOTE: PLAIN first part (authorization identity) not used.
 	return string(dataParts[1]), dataParts[2], nil

@@ -1896,7 +1896,7 @@ func testRead(conn net.Conn, timeout time.Duration) ([]byte, error) {
 	buff := make([]byte, maxTestPktLength)
 	err := conn.SetReadDeadline(time.Now().Add(timeout))
 	if err != nil {
-		return nil, fmt.Errorf("Can't set read deadline on MQTT-SN connection: %s", err)
+		return nil, fmt.Errorf("can't set read deadline on MQTT-SN connection: %s", err)
 	}
 
 	n, err := conn.Read(buff)
