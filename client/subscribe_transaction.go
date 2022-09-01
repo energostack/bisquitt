@@ -75,7 +75,7 @@ func (t *subscribeTransaction) Suback(suback *pkts1.Suback) {
 		}
 
 	case pkts1.TIT_SHORT:
-		topicName = pkts1.DecodeShortTopic(subscribe.TopicID)
+		topicName = pkts.DecodeShortTopic(subscribe.TopicID)
 		break
 
 	default:

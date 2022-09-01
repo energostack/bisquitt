@@ -381,7 +381,7 @@ func TestPublishQOS0Short(t *testing.T) {
 	topic := "ab"
 	qos := uint8(0)
 	retain := true
-	topicID := pkts1.EncodeShortTopic(topic)
+	topicID := pkts.EncodeShortTopic(topic)
 
 	stp := newTestSetup(t, clientID)
 	defer stp.cancel()
@@ -577,7 +577,7 @@ func TestPublishQOS1Short(t *testing.T) {
 	topic := "ab"
 	qos := uint8(1)
 	retain := true
-	topicID := pkts1.EncodeShortTopic(topic)
+	topicID := pkts.EncodeShortTopic(topic)
 
 	stp := newTestSetup(t, clientID)
 	defer stp.cancel()
@@ -809,7 +809,7 @@ func TestPublishQOS2Short(t *testing.T) {
 	topic := "ab"
 	qos := uint8(2)
 	retain := true
-	topicID := pkts1.EncodeShortTopic(topic)
+	topicID := pkts.EncodeShortTopic(topic)
 
 	stp := newTestSetup(t, clientID)
 	defer stp.cancel()
@@ -1238,7 +1238,7 @@ func TestSubscribeShort(t *testing.T) {
 
 		stp.connect(clientID)
 
-		encodedTopic := pkts1.EncodeShortTopic(topic)
+		encodedTopic := pkts.EncodeShortTopic(topic)
 
 		// client --SUBSCRIBE--> GW
 		subscribe := stp.recv().(*pkts1.Subscribe)
@@ -1435,7 +1435,7 @@ func TestUnsubscribeShort(t *testing.T) {
 
 		stp.connect(clientID)
 
-		encodedTopic := pkts1.EncodeShortTopic(topic)
+		encodedTopic := pkts.EncodeShortTopic(topic)
 
 		// client --SUBSCRIBE--> GW
 		subscribe := stp.recv().(*pkts1.Subscribe)
@@ -1634,7 +1634,7 @@ func TestSleep(t *testing.T) {
 			assert.Equal(util.StateAwake, stp.client.state.Get())
 
 			// client <--PUBLISH-- GW
-			encodedTopic := pkts1.EncodeShortTopic(topic)
+			encodedTopic := pkts.EncodeShortTopic(topic)
 			publish := pkts1.NewPublish(encodedTopic,
 				pkts1.TIT_SHORT, []byte(""), 0, false, false)
 			stp.send(publish)

@@ -247,7 +247,7 @@ func (h *handler1) handleClientPublish(ctx context.Context, snPublish *snPkts1.P
 			return fmt.Errorf("unknown topic id %d", snPublish.TopicID)
 		}
 	case snPkts1.TIT_SHORT:
-		topic = snPkts1.DecodeShortTopic(snPublish.TopicID)
+		topic = snPkts.DecodeShortTopic(snPublish.TopicID)
 	}
 	if snPublish.QOS == 1 {
 		h.transactions.Store(msgID, newClientPublishQOS1Transaction(ctx, h, msgID, snPublish.TopicID))
@@ -265,8 +265,8 @@ func (h *handler1) handleBrokerPublish(ctx context.Context, mqPublish *mqPkts.Pu
 	var needsRegister bool
 	var topicID uint16
 	var topicIDType uint8
-	if snPkts1.IsShortTopic(mqPublish.TopicName) {
-		topicID = snPkts1.EncodeShortTopic(mqPublish.TopicName)
+	if snPkts.IsShortTopic(mqPublish.TopicName) {
+		topicID = snPkts.EncodeShortTopic(mqPublish.TopicName)
 		topicIDType = snPkts1.TIT_SHORT
 		needsRegister = false
 	} else {
@@ -610,7 +610,7 @@ func (h *handler1) handleSubscribe(ctx context.Context, snSubscribe *snPkts1.Sub
 		}
 		topicID = snSubscribe.TopicID
 	case snPkts1.TIT_SHORT:
-		topic = snPkts1.DecodeShortTopic(snSubscribe.TopicID)
+		topic = snPkts.DecodeShortTopic(snSubscribe.TopicID)
 		// topicID remains zero.
 	}
 
@@ -638,7 +638,7 @@ func (h *handler1) handleUnsubscribe(snUnsubscribe *snPkts1.Unsubscribe) error {
 			return fmt.Errorf("unknown topic id %d", snUnsubscribe.TopicID)
 		}
 	case snPkts1.TIT_SHORT:
-		topic = snPkts1.DecodeShortTopic(snUnsubscribe.TopicID)
+		topic = snPkts.DecodeShortTopic(snUnsubscribe.TopicID)
 	}
 
 	mqUnsubscribe := mqPkts.NewControlPacket(mqPkts.Unsubscribe).(*mqPkts.UnsubscribePacket)

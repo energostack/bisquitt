@@ -151,37 +151,6 @@ func NewPacketWithHeader(h pkts.Header) (pkt pkts.Packet) {
 	return
 }
 
-// IsShortTopic determines if the given topic is a short topic.
-//
-// See MQTT-SN specification v. 1.2, chapter 3 MQTT-SN vs MQTT.
-func IsShortTopic(topic string) bool {
-	return len(topic) == 2
-}
-
-// EncodeShortTopic encodes a short string topic into TopicID (uint16).
-//
-// See MQTT-SN specification v. 1.2, chapter 3 MQTT-SN vs MQTT.
-func EncodeShortTopic(topic string) uint16 {
-	var result uint16
-
-	bytes := []byte(topic)
-	if len(bytes) > 0 {
-		result |= (uint16(bytes[0]) << 8)
-	}
-	if len(bytes) > 1 {
-		result |= uint16(bytes[1])
-	}
-
-	return result
-}
-
-// DecodeShortTopic decodes a short string topic from TopicID (uint16).
-//
-// See MQTT-SN specification v. 1.2, chapter 3 MQTT-SN vs MQTT.
-func DecodeShortTopic(topicID uint16) string {
-	return string(pkts.EncodeUint16(topicID))
-}
-
 // Flags bit mask constants.
 const (
 	flagsTopicIDTypeBits = 0x03

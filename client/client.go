@@ -381,8 +381,8 @@ func (c *Client) subscribe(topicName string, topicIDType uint8, topicID uint16, 
 // long, it's treated as a short topic. The received packets are passed to the
 // provided callback.
 func (c *Client) Subscribe(topic string, qos uint8, callback MessageHandlerFunc) error {
-	if pkts1.IsShortTopic(topic) {
-		return c.subscribe("", pkts1.TIT_SHORT, pkts1.EncodeShortTopic(topic), qos, callback)
+	if pkts.IsShortTopic(topic) {
+		return c.subscribe("", pkts1.TIT_SHORT, pkts.EncodeShortTopic(topic), qos, callback)
 	} else {
 		return c.subscribe(topic, pkts1.TIT_STRING, 0, qos, callback)
 	}
@@ -415,8 +415,8 @@ func (c *Client) unsubscribe(topicName string, topicIDType uint8, topicID uint16
 // Unsubscribe unsubscribes from a topic. If the topic is 2 characters long,
 // it's treated as a short topic.
 func (c *Client) Unsubscribe(topic string) error {
-	if pkts1.IsShortTopic(topic) {
-		return c.unsubscribe("", pkts1.TIT_SHORT, pkts1.EncodeShortTopic(topic))
+	if pkts.IsShortTopic(topic) {
+		return c.unsubscribe("", pkts1.TIT_SHORT, pkts.EncodeShortTopic(topic))
 	} else {
 		return c.unsubscribe(topic, pkts1.TIT_STRING, 0)
 	}
@@ -465,9 +465,9 @@ func (c *Client) publish(topicIDType uint8, topicID uint16, qos uint8, retain bo
 func (c *Client) Publish(topic string, qos uint8, retain bool, payload []byte) error {
 	var topicIDType uint8
 	var topicID uint16
-	if pkts1.IsShortTopic(topic) {
+	if pkts.IsShortTopic(topic) {
 		topicIDType = pkts1.TIT_SHORT
-		topicID = pkts1.EncodeShortTopic(topic)
+		topicID = pkts.EncodeShortTopic(topic)
 	} else {
 		topicIDType = pkts1.TIT_REGISTERED
 		var ok bool
