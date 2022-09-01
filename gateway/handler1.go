@@ -104,7 +104,7 @@ func newHandler(cfg *handlerConfig, predefinedTopics topics.PredefinedTopics,
 		log:              logger,
 		state:            &state,
 		predefinedTopics: predefinedTopics,
-		topicID:          util.NewIDSequence(snPkts1.MinTopicID, snPkts1.MaxTopicID),
+		topicID:          util.NewIDSequence(snPkts.MinTopicAlias, snPkts.MaxTopicAlias),
 		transactions:     transactions.NewTransactionStore(),
 	}
 

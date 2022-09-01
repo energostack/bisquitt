@@ -1525,8 +1525,8 @@ func (stp *testSetup) subscribe(topic string, qos uint8) uint16 {
 	if hasWildcard(topic) {
 		assert.Equal(uint16(0), snSuback.TopicID)
 	} else {
-		assert.GreaterOrEqual(snSuback.TopicID, snPkts1.MinTopicID)
-		assert.LessOrEqual(snSuback.TopicID, snPkts1.MaxTopicID)
+		assert.GreaterOrEqual(snSuback.TopicID, snPkts.MinTopicAlias)
+		assert.LessOrEqual(snSuback.TopicID, snPkts.MaxTopicAlias)
 	}
 
 	return snSuback.TopicID

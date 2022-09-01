@@ -29,3 +29,12 @@ const (
 	MinPacketID uint16 = 1
 	MaxPacketID uint16 = 0xFFFF
 )
+
+// Topic Alias range.
+// The values `0x0000` and `0xFFFF` are reserved and therefore should not be used.
+//
+// See MQTT-SN specification v. 1.2, chapter 5.3.11.
+const (
+	MinTopicAlias uint16 = 1
+	MaxTopicAlias uint16 = 0xFFFF - 1
+)
