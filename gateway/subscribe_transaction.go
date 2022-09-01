@@ -16,12 +16,12 @@ import (
 
 type subscribeTransaction struct {
 	*transactions.TimedTransaction
-	handler *handler
+	handler *handler1
 	log     util.Logger
 	topicID uint16
 }
 
-func newSubscribeTransaction(ctx context.Context, h *handler, msgID uint16, topicID uint16) *subscribeTransaction {
+func newSubscribeTransaction(ctx context.Context, h *handler1, msgID uint16, topicID uint16) *subscribeTransaction {
 	tLog := h.log.WithTag(fmt.Sprintf("REGISTERc(%d)", msgID))
 	tLog.Debug("Created.")
 	return &subscribeTransaction{
