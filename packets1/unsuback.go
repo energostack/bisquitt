@@ -1,6 +1,7 @@
 package packets1
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
 
@@ -28,9 +29,15 @@ func (p *Unsuback) Write(w io.Writer) error {
 	return err
 }
 
-func (p *Unsuback) Unpack(r io.Reader) (err error) {
-	p.messageID, err = pkts.ReadUint16(r)
-	return
+func (p *Unsuback) Unpack(buf []byte) error {
+	if len(buf) != int(unsubackVarPartLength) {
+		return fmt.Errorf("bad UNSUBACK packet length: expected %d, got %d",
+			unsubackVarPartLength, len(buf))
+	}
+
+	p.messageID = binary.BigEndian.Uint16(buf)
+
+	return nil
 }
 
 func (p Unsuback) String() string {

@@ -1,6 +1,7 @@
 package packets1
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
 
@@ -34,17 +35,17 @@ func (p *Regack) Write(w io.Writer) error {
 	return err
 }
 
-func (p *Regack) Unpack(r io.Reader) (err error) {
-	if p.TopicID, err = pkts.ReadUint16(r); err != nil {
-		return
+func (p *Regack) Unpack(buf []byte) error {
+	if len(buf) != int(regackVarPartLength) {
+		return fmt.Errorf("bad REGACK packet length: expected %d, got %d",
+			regackVarPartLength, len(buf))
 	}
-	if p.messageID, err = pkts.ReadUint16(r); err != nil {
-		return
-	}
-	var returnCodeByte uint8
-	returnCodeByte, err = pkts.ReadByte(r)
-	p.ReturnCode = ReturnCode(returnCodeByte)
-	return
+
+	p.TopicID = binary.BigEndian.Uint16(buf[0:2])
+	p.messageID = binary.BigEndian.Uint16(buf[2:4])
+	p.ReturnCode = ReturnCode(buf[4])
+
+	return nil
 }
 
 func (p Regack) String() string {

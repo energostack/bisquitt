@@ -37,10 +37,9 @@ func (p *WillMsgUpdate) Write(w io.Writer) error {
 	return err
 }
 
-func (p *WillMsgUpdate) Unpack(r io.Reader) (err error) {
-	p.WillMsg = make([]byte, p.VarPartLength())
-	_, err = io.ReadFull(r, p.WillMsg)
-	return
+func (p *WillMsgUpdate) Unpack(buf []byte) error {
+	p.WillMsg = buf
+	return nil
 }
 
 func (p WillMsgUpdate) String() string {

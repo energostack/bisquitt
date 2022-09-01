@@ -71,24 +71,22 @@ func (p *Auth) Write(w io.Writer) error {
 	return err
 }
 
-func (p *Auth) Unpack(r io.Reader) (err error) {
-	if p.Reason, err = pkts.ReadByte(r); err != nil {
-		return
+func (p *Auth) Unpack(buf []byte) error {
+	if len(buf) < 2 {
+		return fmt.Errorf("bad AUTH packet length: expected >2, got %d", len(buf))
 	}
 
-	var methodLen uint8
-	if methodLen, err = pkts.ReadByte(r); err != nil {
-		return
-	}
-	method := make([]byte, methodLen)
-	if _, err = io.ReadFull(r, method); err != nil {
-		return
-	}
-	p.Method = string(method)
+	p.Reason = buf[0]
+	methodLen := buf[1]
 
-	p.Data = make([]byte, p.VarPartLength()-2-uint16(methodLen))
-	_, err = io.ReadFull(r, p.Data)
-	return
+	if len(buf) < int(2+methodLen) {
+		return fmt.Errorf("bad AUTH packet length: expected >=%d, got %d", 2+methodLen, len(buf))
+	}
+
+	p.Method = string(buf[2 : 2+methodLen])
+	p.Data = buf[2+methodLen:]
+
+	return nil
 }
 
 func (p Auth) String() string {

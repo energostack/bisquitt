@@ -1,6 +1,7 @@
 package packets1
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
 
@@ -32,13 +33,16 @@ func (p *Advertise) Write(w io.Writer) error {
 	return err
 }
 
-func (p *Advertise) Unpack(r io.Reader) (err error) {
-	if p.GatewayID, err = pkts.ReadByte(r); err != nil {
-		return
+func (p *Advertise) Unpack(buf []byte) error {
+	if len(buf) != int(advertiseVarPartLength) {
+		return fmt.Errorf("bad ADVERTISE packet length: expected %d, got %d",
+			advertiseVarPartLength, len(buf))
 	}
 
-	p.Duration, err = pkts.ReadUint16(r)
-	return
+	p.GatewayID = buf[0]
+	p.Duration = binary.BigEndian.Uint16(buf[1:3])
+
+	return nil
 }
 
 func (p Advertise) String() string {

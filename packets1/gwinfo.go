@@ -42,18 +42,16 @@ func (p *GwInfo) Write(w io.Writer) error {
 	return err
 }
 
-func (p *GwInfo) Unpack(r io.Reader) (err error) {
-	if p.GatewayID, err = pkts.ReadByte(r); err != nil {
-		return
+func (p *GwInfo) Unpack(buf []byte) error {
+	if len(buf) < int(gwInfoHeaderLength) {
+		return fmt.Errorf("bad GWINFO packet length: expected >=%d, got %d",
+			gwInfoHeaderLength, len(buf))
 	}
 
-	if p.VarPartLength() > gwInfoHeaderLength {
-		p.GatewayAddress = make([]byte, p.VarPartLength()-gwInfoHeaderLength)
-		_, err = io.ReadFull(r, p.GatewayAddress)
-	} else {
-		p.GatewayAddress = nil
-	}
-	return
+	p.GatewayID = buf[0]
+	p.GatewayAddress = buf[1:]
+
+	return nil
 }
 
 func (p GwInfo) String() string {

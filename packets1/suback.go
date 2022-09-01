@@ -1,6 +1,7 @@
 package packets1
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
 
@@ -47,25 +48,19 @@ func (p *Suback) Write(w io.Writer) error {
 	return err
 }
 
-func (p *Suback) Unpack(r io.Reader) (err error) {
-	var flagsByte uint8
-	if flagsByte, err = pkts.ReadByte(r); err != nil {
-		return
-	}
-	p.decodeFlags(flagsByte)
-
-	if p.TopicID, err = pkts.ReadUint16(r); err != nil {
-		return
+func (p *Suback) Unpack(buf []byte) error {
+	if len(buf) != int(subackVarPartLength) {
+		return fmt.Errorf("bad SUBACK packet length: expected %d, got %d",
+			subackVarPartLength, len(buf))
 	}
 
-	if p.messageID, err = pkts.ReadUint16(r); err != nil {
-		return
-	}
+	p.decodeFlags(buf[0])
 
-	var returnCodeByte uint8
-	returnCodeByte, err = pkts.ReadByte(r)
-	p.ReturnCode = ReturnCode(returnCodeByte)
-	return
+	p.TopicID = binary.BigEndian.Uint16(buf[1:3])
+	p.messageID = binary.BigEndian.Uint16(buf[3:5])
+	p.ReturnCode = ReturnCode(buf[5])
+
+	return nil
 }
 
 func (p Suback) String() string {

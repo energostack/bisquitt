@@ -1,6 +1,7 @@
 package packets1
 
 import (
+	"fmt"
 	"io"
 
 	pkts "github.com/energomonitor/bisquitt/packets"
@@ -25,7 +26,12 @@ func (p *WillMsgReq) Write(w io.Writer) error {
 	return err
 }
 
-func (p *WillMsgReq) Unpack(r io.Reader) error {
+func (p *WillMsgReq) Unpack(buf []byte) error {
+	if len(buf) <= int(willMsgReqVarPartLength) {
+		return fmt.Errorf("bad WILLMSGREQ packet length: expected %d, got %d",
+			willMsgReqVarPartLength, len(buf))
+	}
+
 	return nil
 }
 

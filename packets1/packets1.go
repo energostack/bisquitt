@@ -2,7 +2,6 @@
 package packets1
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -70,20 +69,24 @@ func (c ReturnCode) String() string {
 }
 
 // ReadPacket reads an MQTT-SN packet from the given io.Reader.
+// BEWARE: The reader must be a "packet reader" - i.e. it must return one whole
+// packet per every Read() call.
 func ReadPacket(r io.Reader) (pkt pkts.Packet, err error) {
 	var h pkts.Header
+
 	packet := make([]byte, MaxPacketLen)
 	n, err := r.Read(packet)
 	if err != nil {
 		return nil, err
 	}
-	packetBuf := bytes.NewBuffer(packet[:n])
-	h.Unpack(packetBuf)
+	packet = packet[:n]
+	h.Unpack(packet)
 	pkt = NewPacketWithHeader(h)
 	if pkt == nil {
 		return nil, errors.New("invalid MQTT-SN packet")
 	}
-	pkt.Unpack(packetBuf)
+	pkt.Unpack(packet[h.HeaderLength():])
+
 	return pkt, nil
 }
 

@@ -29,11 +29,15 @@ func (p *WillMsgResp) Write(w io.Writer) error {
 	return err
 }
 
-func (p *WillMsgResp) Unpack(r io.Reader) (err error) {
-	var returnCodeByte uint8
-	returnCodeByte, err = pkts.ReadByte(r)
-	p.ReturnCode = ReturnCode(returnCodeByte)
-	return
+func (p *WillMsgResp) Unpack(buf []byte) error {
+	if len(buf) != int(willMsgRespVarPartLength) {
+		return fmt.Errorf("bad WILLMSGRESP packet length: expected %d, got %d",
+			willMsgRespVarPartLength, len(buf))
+	}
+
+	p.ReturnCode = ReturnCode(buf[0])
+
+	return nil
 }
 
 func (p WillMsgResp) String() string {

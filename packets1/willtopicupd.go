@@ -58,16 +58,16 @@ func (p *WillTopicUpdate) Write(w io.Writer) error {
 	return err
 }
 
-func (p *WillTopicUpdate) Unpack(r io.Reader) (err error) {
-	var flagsByte uint8
-	if flagsByte, err = pkts.ReadByte(r); err != nil {
-		return
+func (p *WillTopicUpdate) Unpack(buf []byte) error {
+	if len(buf) <= int(willTopicUpdateHeaderLength) {
+		return fmt.Errorf("bad WILLTOPICUPDATE packet length: expected >%d, got %d",
+			willTopicUpdateHeaderLength, len(buf))
 	}
-	p.decodeFlags(flagsByte)
 
-	p.WillTopic = make([]byte, p.VarPartLength()-willTopicUpdateHeaderLength)
-	_, err = io.ReadFull(r, p.WillTopic)
-	return
+	p.decodeFlags(buf[0])
+	p.WillTopic = buf[1:]
+
+	return nil
 }
 
 func (p WillTopicUpdate) String() string {

@@ -29,11 +29,15 @@ func (p *Connack) Write(w io.Writer) error {
 	return err
 }
 
-func (p *Connack) Unpack(r io.Reader) (err error) {
-	var returnCodeByte uint8
-	returnCodeByte, err = pkts.ReadByte(r)
-	p.ReturnCode = ReturnCode(returnCodeByte)
-	return
+func (p *Connack) Unpack(buf []byte) error {
+	if len(buf) != int(connackVarPartLength) {
+		return fmt.Errorf("bad CONNACK packet length: expected %d, got %d",
+			connackVarPartLength, len(buf))
+	}
+
+	p.ReturnCode = ReturnCode(buf[0])
+
+	return nil
 }
 
 func (p Connack) String() string {
