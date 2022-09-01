@@ -536,8 +536,8 @@ func TestSubscribeQOS0Wildcard(t *testing.T) {
 	// client <--REGISTER-- GW
 	snRegister := stp.snRecv().(*snPkts1.Register)
 	assert.Equal(topic, snRegister.TopicName)
-	assert.GreaterOrEqual(snRegister.MessageID(), snPkts1.MinMessageID)
-	assert.LessOrEqual(snRegister.MessageID(), snPkts1.MaxMessageID)
+	assert.GreaterOrEqual(snRegister.MessageID(), snPkts.MinPacketID)
+	assert.LessOrEqual(snRegister.MessageID(), snPkts.MaxPacketID)
 	topicID := snRegister.TopicID
 
 	// client --REGACK--> GW

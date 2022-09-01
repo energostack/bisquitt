@@ -69,16 +69,6 @@ func (c ReturnCode) String() string {
 	}
 }
 
-// Message ID range.
-// We intentionally do not use msgID=0. The MQTT-SN specification does
-// not forbid it but uses 0 as an "empty, not used" value.
-// I suppose, it's better to not use it to be very explicit about that
-// the value really _is_ important if it's non-zero.
-const (
-	MinMessageID uint16 = 1
-	MaxMessageID uint16 = 0xFFFF
-)
-
 // Topic ID range.
 // The values `0x0000` and `0xFFFF` are reserved and therefore should not be used.
 //

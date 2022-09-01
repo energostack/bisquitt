@@ -139,7 +139,7 @@ func NewClient(log util.Logger, cfg *ClientConfig) *Client {
 		state:            &state,
 		stateChangeCh:    make(chan util.ClientState, 1),
 		log:              log,
-		msgID:            util.NewIDSequence(pkts1.MinMessageID, pkts1.MaxMessageID),
+		msgID:            util.NewIDSequence(pkts.MinPacketID, pkts.MaxPacketID),
 	}
 }
 

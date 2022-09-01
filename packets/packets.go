@@ -19,3 +19,13 @@ type Packet interface {
 	//  disappears.
 	SetVarPartLength(uint16)
 }
+
+// Packet ID range.
+// We intentionally do not use pktID=0. The MQTT-SN specification does
+// not forbid it but uses 0 as an "empty, not used" value.
+// I suppose, it's better to not use it to be very explicit about that
+// the value really _is_ important if it's non-zero.
+const (
+	MinPacketID uint16 = 1
+	MaxPacketID uint16 = 0xFFFF
+)

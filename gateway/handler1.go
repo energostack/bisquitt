@@ -303,7 +303,7 @@ func (h *handler1) handleBrokerPublish(ctx context.Context, mqPublish *mqPkts.Pu
 		// its MsgID is 0. We use a very dirty hack here to choose
 		// an "almost surely available" MsgID :(
 		found := false
-		for i := snPkts1.MaxMessageID; i >= snPkts1.MinMessageID; i-- {
+		for i := snPkts.MaxPacketID; i >= snPkts.MinPacketID; i-- {
 			if _, ok := h.transactions.Get(i); !ok {
 				msgID = i
 				found = true
