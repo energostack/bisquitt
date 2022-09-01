@@ -39,14 +39,9 @@ func (p *Pingreq) Write(w io.Writer) error {
 	return err
 }
 
-func (p *Pingreq) Unpack(r io.Reader) (err error) {
-	if p.VarPartLength() > 0 {
-		p.ClientID = make([]byte, p.VarPartLength())
-		_, err = io.ReadFull(r, p.ClientID)
-	} else {
-		p.ClientID = nil
-	}
-	return
+func (p *Pingreq) Unpack(buf []byte) error {
+	p.ClientID = buf
+	return nil
 }
 
 func (p Pingreq) String() string {

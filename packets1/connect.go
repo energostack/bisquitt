@@ -1,6 +1,7 @@
 package packets1
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
 
@@ -66,24 +67,16 @@ func (p *Connect) Write(w io.Writer) error {
 	return err
 }
 
-func (p *Connect) Unpack(r io.Reader) (err error) {
-	var flagsByte uint8
-	if flagsByte, err = pkts.ReadByte(r); err != nil {
-		return
+func (p *Connect) Unpack(buf []byte) error {
+	if len(buf) < int(connectHeaderLength+1) {
+		return fmt.Errorf("bad CONNECT packet length: expected >=%d, got %d", connectHeaderLength+1, len(buf))
 	}
-	p.decodeFlags(flagsByte)
+	p.decodeFlags(buf[0])
+	p.ProtocolID = buf[1]
+	p.Duration = binary.BigEndian.Uint16(buf[2:4])
+	p.ClientID = buf[connectHeaderLength:]
 
-	if p.ProtocolID, err = pkts.ReadByte(r); err != nil {
-		return
-	}
-
-	if p.Duration, err = pkts.ReadUint16(r); err != nil {
-		return
-	}
-
-	p.ClientID = make([]byte, p.VarPartLength()-connectHeaderLength)
-	_, err = io.ReadFull(r, p.ClientID)
-	return
+	return nil
 }
 
 func (p Connect) String() string {

@@ -1,7 +1,6 @@
 package client
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -1876,21 +1875,21 @@ func (stp *testSetup) send(pkt pkts.Packet) {
 }
 
 func (stp *testSetup) recv() pkts.Packet {
-	buff := make([]byte, maxTestPktLength)
-	n, err := stp.conn.Read(buff)
+	rawPacket := make([]byte, maxTestPktLength)
+	n, err := stp.conn.Read(rawPacket)
 	if err != nil {
 		if err != io.EOF {
 			stp.t.Fatal(err)
 		}
 	}
+	rawPacket = rawPacket[:n]
 
-	pktReader := bytes.NewReader(buff[:n])
-	header := &pkts.Header{}
-	header.Unpack(pktReader)
-	pkt := pkts1.NewPacketWithHeader(*header)
-	pkt.Unpack(pktReader)
+	var h pkts.Header
+	h.Unpack(rawPacket)
+	p := pkts1.NewPacketWithHeader(h)
+	p.Unpack(rawPacket[h.HeaderLength():])
 
-	return pkt
+	return p
 }
 
 func testRead(conn net.Conn, timeout time.Duration) ([]byte, error) {

@@ -1,6 +1,7 @@
 package packets1
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
 
@@ -67,29 +68,31 @@ func (p *Unsubscribe) Write(w io.Writer) error {
 	return err
 }
 
-func (p *Unsubscribe) Unpack(r io.Reader) (err error) {
-	var flagsByte uint8
-	if flagsByte, err = pkts.ReadByte(r); err != nil {
-		return
+func (p *Unsubscribe) Unpack(buf []byte) error {
+	if len(buf) <= int(unsubscribeHeaderLength) {
+		return fmt.Errorf("bad UNSUBSCRIBE packet length: expected >%d, got %d",
+			unsubscribeHeaderLength, len(buf))
 	}
-	p.decodeFlags(flagsByte)
 
-	if p.messageID, err = pkts.ReadUint16(r); err != nil {
-		return
-	}
+	p.decodeFlags(buf[0])
+	p.messageID = binary.BigEndian.Uint16(buf[1:3])
 
 	switch p.TopicIDType {
 	case TIT_STRING:
 		p.TopicID = 0
-		p.TopicName = make([]byte, p.VarPartLength()-unsubscribeHeaderLength)
-		_, err = io.ReadFull(r, p.TopicName)
+		p.TopicName = buf[3:]
 	case TIT_PREDEFINED, TIT_SHORT:
+		if len(buf) != int(unsubscribeHeaderLength+2) {
+			return fmt.Errorf("bad UNSUBSCRIBE packet length: expected %d, got %d",
+				unsubscribeHeaderLength+2, len(buf))
+		}
 		p.TopicName = nil
-		p.TopicID, err = pkts.ReadUint16(r)
+		p.TopicID = binary.BigEndian.Uint16(buf[3:5])
 	default:
-		err = fmt.Errorf("invalid TopicIDType: %d", p.TopicIDType)
+		return fmt.Errorf("invalid TopicIDType: %d", p.TopicIDType)
 	}
-	return
+
+	return nil
 }
 
 func (p Unsubscribe) String() string {

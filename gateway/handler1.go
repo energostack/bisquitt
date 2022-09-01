@@ -440,7 +440,7 @@ func (h *handler1) snReceiveLoop(ctx context.Context) error {
 	h.log.Debug("MQTT-SN receiver starts.")
 	defer h.log.Debug("MQTT-SN receiver quits.")
 	for {
-		pkt, err := h.snReceive()
+		pkt, err := snPkts1.ReadPacket(h.snConn)
 		if err != nil {
 			if err == context.Canceled {
 				return nil
@@ -893,33 +893,6 @@ func (h *handler1) snSend(pkt snPkts.Packet) error {
 	}
 
 	return nil
-}
-
-func (h *handler1) snReceive() (snPkts.Packet, error) {
-	// TODO: make static...
-	buffer := make([]byte, snPkts1.MaxPacketLen)
-
-	// TODO: Here, we rely on the assumption that we always read precissely one
-	// whole packet. This is not guaranteed in the pion/dtls API documentation.
-	n, err := h.snConn.Read(buffer)
-	if err != nil {
-		return nil, err
-	}
-
-	pktBuf := buffer[:n]
-
-	if len(pktBuf) < 2 {
-		return nil, errors.New("illegal packet: too short")
-	}
-
-	pktReader := bytes.NewReader(pktBuf)
-	header := &snPkts.Header{}
-	header.Unpack(pktReader)
-	pkt := snPkts1.NewPacketWithHeader(*header)
-	pkt.Unpack(pktReader)
-
-	h.log.Debug("-> %v", pkt)
-	return pkt, nil
 }
 
 func (h *handler1) mqttSend(pkt mqPkts.ControlPacket) error {

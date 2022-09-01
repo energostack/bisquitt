@@ -1,17 +1,17 @@
 package packets1
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
 
-	"github.com/energomonitor/bisquitt/packets"
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 const registerHeaderLength uint16 = 4
 
 type Register struct {
-	packets.Header
+	pkts.Header
 	MessageIDProperty
 	TopicID   uint16
 	TopicName string
@@ -45,21 +45,17 @@ func (p *Register) Write(w io.Writer) error {
 	return err
 }
 
-func (p *Register) Unpack(r io.Reader) (err error) {
-	if p.TopicID, err = pkts.ReadUint16(r); err != nil {
-		return
+func (p *Register) Unpack(buf []byte) error {
+	if len(buf) <= int(registerHeaderLength) {
+		return fmt.Errorf("bad REGISTER packet length: expected >%d, got %d",
+			registerHeaderLength, len(buf))
 	}
 
-	if p.messageID, err = pkts.ReadUint16(r); err != nil {
-		return
-	}
+	p.TopicID = binary.BigEndian.Uint16(buf[0:2])
+	p.messageID = binary.BigEndian.Uint16(buf[2:4])
+	p.TopicName = string(buf[4:])
 
-	topic := make([]byte, p.VarPartLength()-registerHeaderLength)
-	if _, err = io.ReadFull(r, topic); err != nil {
-		return
-	}
-	p.TopicName = string(topic)
-	return
+	return nil
 }
 
 func (p Register) String() string {

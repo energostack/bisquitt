@@ -68,23 +68,19 @@ func (p *WillTopic) Write(w io.Writer) error {
 	return err
 }
 
-func (p *WillTopic) Unpack(r io.Reader) (err error) {
-	if p.VarPartLength() > 0 {
-		var flagsByte uint8
-		if flagsByte, err = pkts.ReadByte(r); err != nil {
-			return
-		}
-		p.decodeFlags(flagsByte)
-
-		buff := make([]byte, p.VarPartLength()-willTopicFlagsLength)
-		if _, err = io.ReadFull(r, buff); err != nil {
-			return
-		}
-		p.WillTopic = string(buff)
-	} else {
+func (p *WillTopic) Unpack(buf []byte) error {
+	switch len(buf) {
+	case 0:
 		p.WillTopic = ""
+	case 1:
+		return fmt.Errorf("bad WILLTOPIC packet length: expected 0 or >=2, got %d",
+			len(buf))
+	default:
+		p.decodeFlags(buf[0])
+		p.WillTopic = string(buf[1:])
 	}
-	return
+
+	return nil
 }
 
 func (p WillTopic) String() string {

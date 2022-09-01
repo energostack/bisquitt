@@ -3,6 +3,7 @@ package packets
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"io"
 )
 
@@ -71,27 +72,24 @@ func (h *Header) HeaderLength() uint16 {
 	}
 }
 
-// Unpack reads a packet header from the given io.Reader.
-func (h *Header) Unpack(b io.Reader) error {
-	lengthByte, err := ReadByte(b)
-	if err != nil {
-		return err
+// Unpack reads a packet header from the given buffer.
+func (h *Header) Unpack(buf []byte) error {
+	if len(buf) < 2 {
+		return fmt.Errorf("bad packet length: expected >=2, got %d", len(buf))
 	}
 
+	lengthByte := buf[0]
 	if lengthByte == longPacketFlag {
 		// Long packet (>255B)
-		if h.pktLength, err = ReadUint16(b); err != nil {
-			return err
-		}
+		h.pktLength = binary.BigEndian.Uint16(buf[1:3])
+		h.pktType = PacketType(buf[3])
 	} else {
 		// Short packet (<=255B)
 		h.pktLength = uint16(lengthByte)
+		h.pktType = PacketType(buf[1])
 	}
 
-	var msgTypeByte uint8
-	msgTypeByte, err = ReadByte(b)
-	h.pktType = PacketType(msgTypeByte)
-	return err
+	return nil
 }
 
 func (h *Header) Pack() bytes.Buffer {

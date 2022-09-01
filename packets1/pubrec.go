@@ -1,6 +1,7 @@
 package packets1
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
 
@@ -28,9 +29,15 @@ func (p *Pubrec) Write(w io.Writer) error {
 	return err
 }
 
-func (p *Pubrec) Unpack(r io.Reader) (err error) {
-	p.messageID, err = pkts.ReadUint16(r)
-	return
+func (p *Pubrec) Unpack(buf []byte) error {
+	if len(buf) != int(pubrecVarPartLength) {
+		return fmt.Errorf("bad PUBREC packet length: expected %d, got %d",
+			pubrecVarPartLength, len(buf))
+	}
+
+	p.messageID = binary.BigEndian.Uint16(buf)
+
+	return nil
 }
 
 func (p Pubrec) String() string {

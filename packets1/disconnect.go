@@ -1,6 +1,7 @@
 package packets1
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
 
@@ -48,13 +49,18 @@ func (p *Disconnect) Write(w io.Writer) error {
 	return err
 }
 
-func (p *Disconnect) Unpack(r io.Reader) (err error) {
-	if p.VarPartLength() == disconnectDurationLength {
-		p.Duration, err = pkts.ReadUint16(r)
-	} else {
+func (p *Disconnect) Unpack(buf []byte) error {
+	switch len(buf) {
+	case int(disconnectDurationLength):
+		p.Duration = binary.BigEndian.Uint16(buf)
+	case 0:
 		p.Duration = 0
+	default:
+		return fmt.Errorf("bad DISCONNECT packet length: expected 0 or 2, got %d",
+			len(buf))
 	}
-	return
+
+	return nil
 }
 
 func (p Disconnect) String() string {

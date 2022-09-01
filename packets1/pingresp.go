@@ -25,7 +25,7 @@ func (p *Pingresp) Write(w io.Writer) error {
 	return err
 }
 
-func (p *Pingresp) Unpack(r io.Reader) error {
+func (p *Pingresp) Unpack(buf []byte) error {
 	return nil
 }
 

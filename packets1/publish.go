@@ -1,6 +1,7 @@
 package packets1
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
 
@@ -74,24 +75,18 @@ func (p *Publish) Write(w io.Writer) error {
 	return err
 }
 
-func (p *Publish) Unpack(r io.Reader) (err error) {
-	var flagsByte uint8
-	if flagsByte, err = pkts.ReadByte(r); err != nil {
-		return
-	}
-	p.decodeFlags(flagsByte)
-
-	if p.TopicID, err = pkts.ReadUint16(r); err != nil {
-		return
+func (p *Publish) Unpack(buf []byte) error {
+	if len(buf) < int(publishHeaderLength) {
+		return fmt.Errorf("bad PUBLISH packet length: expected >=%d, got %d",
+			publishHeaderLength, len(buf))
 	}
 
-	if p.messageID, err = pkts.ReadUint16(r); err != nil {
-		return
-	}
+	p.decodeFlags(buf[0])
+	p.TopicID = binary.BigEndian.Uint16(buf[1:3])
+	p.messageID = binary.BigEndian.Uint16(buf[3:5])
+	p.Data = buf[5:]
 
-	p.Data = make([]byte, p.VarPartLength()-publishHeaderLength)
-	_, err = io.ReadFull(r, p.Data)
-	return
+	return nil
 }
 
 func (p Publish) String() string {

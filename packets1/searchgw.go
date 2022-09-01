@@ -29,9 +29,15 @@ func (p *SearchGw) Write(w io.Writer) error {
 	return err
 }
 
-func (p *SearchGw) Unpack(r io.Reader) (err error) {
-	p.Radius, err = pkts.ReadByte(r)
-	return
+func (p *SearchGw) Unpack(buf []byte) error {
+	if len(buf) != int(searchGwVarPartLength) {
+		return fmt.Errorf("bad SEARCHGW packet length: expected %d, got %d",
+			searchGwVarPartLength, len(buf))
+	}
+
+	p.Radius = buf[0]
+
+	return nil
 }
 
 func (p SearchGw) String() string {

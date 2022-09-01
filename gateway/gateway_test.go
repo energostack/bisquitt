@@ -1,7 +1,6 @@
 package gateway
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -1329,21 +1328,21 @@ func (stp *testSetup) snSend(pkt snPkts.Packet, setMsgID bool) {
 }
 
 func (stp *testSetup) snRecv() snPkts.Packet {
-	buff := make([]byte, maxTestPktLength)
-	n, err := stp.snConn.Read(buff)
+	rawPacket := make([]byte, maxTestPktLength)
+	n, err := stp.snConn.Read(rawPacket)
 	if err != nil {
 		if err != io.EOF {
 			stp.t.Fatal(err)
 		}
 	}
+	rawPacket = rawPacket[:n]
 
-	pktReader := bytes.NewReader(buff[:n])
-	header := &snPkts.Header{}
-	header.Unpack(pktReader)
-	pkt := snPkts1.NewPacketWithHeader(*header)
-	pkt.Unpack(pktReader)
+	var h snPkts.Header
+	h.Unpack(rawPacket)
+	p := snPkts1.NewPacketWithHeader(h)
+	p.Unpack(rawPacket[h.HeaderLength():])
 
-	return pkt
+	return p
 }
 
 func (stp *testSetup) mqttSend(pkt mqPkts.ControlPacket, setMsgID bool) {
