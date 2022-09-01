@@ -11,18 +11,6 @@ import (
 	"github.com/energomonitor/bisquitt/util"
 )
 
-// Transactions states constants
-type transactionState int
-
-const (
-	transactionDone transactionState = iota
-	awaitingRegack
-	awaitingPuback
-	awaitingPubrec
-	awaitingPubrel
-	awaitingPubcomp
-)
-
 type transactionWithRegack interface {
 	Regack(snRegack *snPkts1.Regack) error
 }
