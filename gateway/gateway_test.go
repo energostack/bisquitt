@@ -1226,7 +1226,7 @@ type testSetup struct {
 	mqttNextMsgID uint16
 	ctx           context.Context
 	cancel        context.CancelFunc
-	handler       *handler
+	handler       *handler1
 	handlerDone   chan struct{}
 }
 
@@ -1256,7 +1256,7 @@ func (stp *testSetup) newHandler(auth bool, predefinedTopics topics.PredefinedTo
 	snListener, stp.snConn = stp.createSocketPair("unixpacket")
 	mqttListener, stp.mqttConn = stp.createSocketPair("unix")
 
-	handlerChan := make(chan *handler)
+	handlerChan := make(chan *handler1)
 	go func() {
 		defer close(stp.handlerDone)
 

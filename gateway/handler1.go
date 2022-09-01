@@ -36,7 +36,7 @@ import (
 	"github.com/energomonitor/bisquitt/util"
 )
 
-type handler struct {
+type handler1 struct {
 	cfg              *handlerConfig
 	id               string
 	log              util.Logger
@@ -96,9 +96,9 @@ type handlerConfig struct {
 }
 
 func newHandler(cfg *handlerConfig, predefinedTopics topics.PredefinedTopics,
-	logger util.Logger) *handler {
+	logger util.Logger) *handler1 {
 	state := util.StateDisconnected
-	h := &handler{
+	h := &handler1{
 		cfg:              cfg,
 		log:              logger,
 		state:            &state,
@@ -110,7 +110,7 @@ func newHandler(cfg *handlerConfig, predefinedTopics topics.PredefinedTopics,
 	return h
 }
 
-func (h *handler) run(ctx context.Context, snConn net.Conn) error {
+func (h *handler1) run(ctx context.Context, snConn net.Conn) error {
 	h.log.Debug("Handler starts.")
 	defer h.log.Debug("Handler quits.")
 
@@ -191,14 +191,14 @@ func (h *handler) run(ctx context.Context, snConn net.Conn) error {
 	return err
 }
 
-func (h *handler) setState(new util.ClientState) {
+func (h *handler1) setState(new util.ClientState) {
 	old := h.state.Set(new)
 	if new != old {
 		h.log.Debug("State changed to %q.", new)
 	}
 }
 
-func (h *handler) findRegisteredTopicID(topic string) (topicID uint16, found bool) {
+func (h *handler1) findRegisteredTopicID(topic string) (topicID uint16, found bool) {
 	h.registeredTopics.Range(func(key, value interface{}) bool {
 		if value.(string) == topic {
 			topicID = key.(uint16)
@@ -210,7 +210,7 @@ func (h *handler) findRegisteredTopicID(topic string) (topicID uint16, found boo
 	return topicID, found
 }
 
-func (h *handler) findTopicID(topic string) (uint16, uint8, bool) {
+func (h *handler1) findTopicID(topic string) (uint16, uint8, bool) {
 	topicID, ok := h.findRegisteredTopicID(topic)
 	if ok {
 		return topicID, snPkts1.TIT_REGISTERED, true
@@ -223,7 +223,7 @@ func (h *handler) findTopicID(topic string) (uint16, uint8, bool) {
 	return 0, 0, false
 }
 
-func (h *handler) handleClientPublish(ctx context.Context, snPublish *snPkts1.Publish) error {
+func (h *handler1) handleClientPublish(ctx context.Context, snPublish *snPkts1.Publish) error {
 	msgID := snPublish.MessageID()
 
 	mqPublish := mqPkts.NewControlPacket(mqPkts.Publish).(*mqPkts.PublishPacket)
@@ -261,7 +261,7 @@ func (h *handler) handleClientPublish(ctx context.Context, snPublish *snPkts1.Pu
 	return h.mqttSend(mqPublish)
 }
 
-func (h *handler) handleBrokerPublish(ctx context.Context, mqPublish *mqPkts.PublishPacket) error {
+func (h *handler1) handleBrokerPublish(ctx context.Context, mqPublish *mqPkts.PublishPacket) error {
 	msgID := mqPublish.MessageID
 
 	// Get TopicID
@@ -360,7 +360,7 @@ func (h *handler) handleBrokerPublish(ctx context.Context, mqPublish *mqPkts.Pub
 	return transaction.ProceedSN(nextState, snMsg)
 }
 
-func (h *handler) handleMqtt(ctx context.Context, pkt mqPkts.ControlPacket) error {
+func (h *handler1) handleMqtt(ctx context.Context, pkt mqPkts.ControlPacket) error {
 	h.log.Debug("=> %v", pkt)
 	switch mqMsg := pkt.(type) {
 
@@ -439,7 +439,7 @@ func (h *handler) handleMqtt(ctx context.Context, pkt mqPkts.ControlPacket) erro
 	}
 }
 
-func (h *handler) snReceiveLoop(ctx context.Context) error {
+func (h *handler1) snReceiveLoop(ctx context.Context) error {
 	h.log.Debug("MQTT-SN receiver starts.")
 	defer h.log.Debug("MQTT-SN receiver quits.")
 	for {
@@ -458,7 +458,7 @@ func (h *handler) snReceiveLoop(ctx context.Context) error {
 	}
 }
 
-func (h *handler) mqttReceiveLoop(ctx context.Context) error {
+func (h *handler1) mqttReceiveLoop(ctx context.Context) error {
 	h.log.Debug("MQTT receiver starts.")
 	defer h.log.Debug("MQTT receiver quits.")
 	for {
@@ -484,7 +484,7 @@ func (h *handler) mqttReceiveLoop(ctx context.Context) error {
 	}
 }
 
-func (h *handler) newTopicID() (uint16, error) {
+func (h *handler1) newTopicID() (uint16, error) {
 	topicID, overflow := h.topicID.Next()
 	if overflow {
 		return 0, ErrTopicIDsExhausted
@@ -500,7 +500,7 @@ func (h *handler) newTopicID() (uint16, error) {
 	return topicID, nil
 }
 
-func (h *handler) registerTopic(topic string) (uint16, error) {
+func (h *handler1) registerTopic(topic string) (uint16, error) {
 	// If already registered, return existing TopicID.
 	if topicID, ok := h.findRegisteredTopicID(topic); ok {
 		return topicID, nil
@@ -514,7 +514,7 @@ func (h *handler) registerTopic(topic string) (uint16, error) {
 	return topicID, nil
 }
 
-func (h *handler) handleConnect(ctx context.Context, snConnect *snPkts1.Connect) error {
+func (h *handler1) handleConnect(ctx context.Context, snConnect *snPkts1.Connect) error {
 	// The ProtocolId [...] is coded 0x01. All other values are reserved.
 	// MQTT-SN specification v. 1.2, chapter 5.3.8
 	if snConnect.ProtocolID != 0x01 {
@@ -576,7 +576,7 @@ func (h *handler) handleConnect(ctx context.Context, snConnect *snPkts1.Connect)
 	return transaction.Start(ctx)
 }
 
-func (h *handler) handleSubscribe(ctx context.Context, snSubscribe *snPkts1.Subscribe) error {
+func (h *handler1) handleSubscribe(ctx context.Context, snSubscribe *snPkts1.Subscribe) error {
 	var topic string
 	// From MQTT-SN specification v. 1.2, chapter 5.4.16 SUBACK:
 	// 	TopicID [...] [is] not relevant in case of subscriptions to a short topic name or to a topic name which
@@ -629,7 +629,7 @@ func (h *handler) handleSubscribe(ctx context.Context, snSubscribe *snPkts1.Subs
 	return h.mqttSend(mqSubscribe)
 }
 
-func (h *handler) handleUnsubscribe(_ context.Context, snUnsubscribe *snPkts1.Unsubscribe) error {
+func (h *handler1) handleUnsubscribe(_ context.Context, snUnsubscribe *snPkts1.Unsubscribe) error {
 	var topic string
 	switch snUnsubscribe.TopicIDType {
 	case snPkts1.TIT_STRING:
@@ -659,7 +659,7 @@ func (h *handler) handleUnsubscribe(_ context.Context, snUnsubscribe *snPkts1.Un
 //    transactions. Also unexpected packets can be caused by delayed UDP
 //    packets etc. therefore we do not want to close the connection
 //    when such packet appears.
-func (h *handler) checkPacketLegal(pkt snPkts1.Packet) error {
+func (h *handler1) checkPacketLegal(pkt snPkts1.Packet) error {
 	state := h.state.Get()
 	if state != util.StateDisconnected {
 		return nil
@@ -695,7 +695,7 @@ func (h *handler) checkPacketLegal(pkt snPkts1.Packet) error {
 	return ErrIllegalPacketWhenDisconnected
 }
 
-func (h *handler) handleMqttSn(ctx context.Context, pkt snPkts1.Packet) error {
+func (h *handler1) handleMqttSn(ctx context.Context, pkt snPkts1.Packet) error {
 	if err := h.checkPacketLegal(pkt); err != nil {
 		return err
 	}
@@ -862,7 +862,7 @@ func (h *handler) handleMqttSn(ctx context.Context, pkt snPkts1.Packet) error {
 	}
 }
 
-func (h *handler) startSleepPinger(ctx context.Context) context.CancelFunc {
+func (h *handler1) startSleepPinger(ctx context.Context) context.CancelFunc {
 	ctx2, cancel := context.WithCancel(ctx)
 	h.group.Go(func() error {
 		h.log.Debug("Sleep pinger starts.")
@@ -882,7 +882,7 @@ func (h *handler) startSleepPinger(ctx context.Context) context.CancelFunc {
 	return cancel
 }
 
-func (h *handler) snSend(pkt snPkts1.Packet) error {
+func (h *handler1) snSend(pkt snPkts1.Packet) error {
 	if h.state.Get() == util.StateAsleep {
 		h.log.Debug("Queued %v", pkt)
 		h.pktBuffer = append(h.pktBuffer, pkt)
@@ -898,7 +898,7 @@ func (h *handler) snSend(pkt snPkts1.Packet) error {
 	return nil
 }
 
-func (h *handler) snReceive() (snPkts1.Packet, error) {
+func (h *handler1) snReceive() (snPkts1.Packet, error) {
 	// TODO: make static...
 	buffer := make([]byte, snPkts1.MaxPacketLen)
 
@@ -925,7 +925,7 @@ func (h *handler) snReceive() (snPkts1.Packet, error) {
 	return pkt, nil
 }
 
-func (h *handler) mqttSend(pkt mqPkts.ControlPacket) error {
+func (h *handler1) mqttSend(pkt mqPkts.ControlPacket) error {
 	h.log.Debug("<= %v", pkt)
 	buff := &bytes.Buffer{}
 	err := pkt.Write(buff)

@@ -12,7 +12,7 @@ type brokerPublishQOS0Transaction struct {
 	brokerPublishTransactionBase
 }
 
-func newBrokerPublishQOS0Transaction(ctx context.Context, h *handler, msgID uint16) *brokerPublishQOS0Transaction {
+func newBrokerPublishQOS0Transaction(ctx context.Context, h *handler1, msgID uint16) *brokerPublishQOS0Transaction {
 	tLog := h.log.WithTag(fmt.Sprintf("PUBLISH0(%d)", msgID))
 	tLog.Debug("Created.")
 	t := &brokerPublishQOS0Transaction{

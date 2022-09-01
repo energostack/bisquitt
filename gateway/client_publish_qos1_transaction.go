@@ -30,12 +30,12 @@ import (
 
 type clientPublishQOS1Transaction struct {
 	*transactions.TimedTransaction
-	handler *handler
+	handler *handler1
 	log     util.Logger
 	topicID uint16
 }
 
-func newClientPublishQOS1Transaction(ctx context.Context, h *handler, msgID uint16, topicID uint16) *clientPublishQOS1Transaction {
+func newClientPublishQOS1Transaction(ctx context.Context, h *handler1, msgID uint16, topicID uint16) *clientPublishQOS1Transaction {
 	tLog := h.log.WithTag(fmt.Sprintf("PUBLISH1c(%d)", msgID))
 	tLog.Debug("Created.")
 	return &clientPublishQOS1Transaction{

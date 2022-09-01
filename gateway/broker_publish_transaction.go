@@ -37,7 +37,7 @@ type brokerPublishTransactionBase struct {
 	*transactions.RetryTransaction
 	log       util.Logger
 	snPublish *snPkts1.Publish
-	handler   *handler
+	handler   *handler1
 }
 
 func (t *brokerPublishTransactionBase) SetSNPublish(snPublish *snPkts1.Publish) {

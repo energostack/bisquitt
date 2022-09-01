@@ -23,14 +23,14 @@ var Cancelled = errors.New("transaction cancelled")
 
 type connectTransaction struct {
 	*transactions.TimedTransaction
-	handler       *handler
+	handler       *handler1
 	log           util.Logger
 	authEnabled   bool
 	mqConnect     *mqPkts.ConnectPacket
 	authenticated bool
 }
 
-func newConnectTransaction(ctx context.Context, h *handler, authEnabled bool, mqConnect *mqPkts.ConnectPacket) *connectTransaction {
+func newConnectTransaction(ctx context.Context, h *handler1, authEnabled bool, mqConnect *mqPkts.ConnectPacket) *connectTransaction {
 	tLog := h.log.WithTag("CONNECT")
 	tLog.Debug("Created.")
 	return &connectTransaction{
