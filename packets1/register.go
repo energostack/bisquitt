@@ -3,12 +3,15 @@ package packets1
 import (
 	"fmt"
 	"io"
+
+	"github.com/energomonitor/bisquitt/packets"
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 const registerHeaderLength uint16 = 4
 
 type Register struct {
-	Header
+	packets.Header
 	MessageIDProperty
 	TopicID   uint16
 	TopicName string
@@ -17,7 +20,7 @@ type Register struct {
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewRegister(topicID uint16, topicName string) *Register {
 	p := &Register{
-		Header:    *NewHeader(REGISTER, 0),
+		Header:    *pkts.NewHeader(pkts.REGISTER, 0),
 		TopicID:   topicID,
 		TopicName: topicName,
 	}
@@ -33,9 +36,9 @@ func (p *Register) computeLength() {
 func (p *Register) Write(w io.Writer) error {
 	p.computeLength()
 
-	buf := p.Header.pack()
-	buf.Write(encodeUint16(p.TopicID))
-	buf.Write(encodeUint16(p.messageID))
+	buf := p.Header.Pack()
+	buf.Write(pkts.EncodeUint16(p.TopicID))
+	buf.Write(pkts.EncodeUint16(p.messageID))
 	buf.Write([]byte(p.TopicName))
 
 	_, err := buf.WriteTo(w)
@@ -43,11 +46,11 @@ func (p *Register) Write(w io.Writer) error {
 }
 
 func (p *Register) Unpack(r io.Reader) (err error) {
-	if p.TopicID, err = readUint16(r); err != nil {
+	if p.TopicID, err = pkts.ReadUint16(r); err != nil {
 		return
 	}
 
-	if p.messageID, err = readUint16(r); err != nil {
+	if p.messageID, err = pkts.ReadUint16(r); err != nil {
 		return
 	}
 

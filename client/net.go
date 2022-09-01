@@ -8,6 +8,7 @@ import (
 
 	dtlsProtocol "github.com/pion/dtls/v2/pkg/protocol"
 
+	pkts "github.com/energomonitor/bisquitt/packets"
 	pkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/util"
 )
@@ -121,7 +122,7 @@ func (c *Client) topicForPublish(pkt *pkts1.Publish) (string, error) {
 func (c *Client) handlePacket(pktx pkts1.Packet) error {
 	switch pkt := pktx.(type) {
 	case *pkts1.Connack:
-		transactionx, _ := c.transactions.GetByType(pkts1.CONNECT)
+		transactionx, _ := c.transactions.GetByType(pkts.CONNECT)
 		transaction, ok := transactionx.(*connectTransaction)
 		if !ok {
 			c.log.Error("Unexpected transaction type %T for packet: %v", transactionx, pkt)
@@ -260,7 +261,7 @@ func (c *Client) handlePacket(pktx pkts1.Packet) error {
 		return nil
 
 	case *pkts1.Disconnect:
-		transactionx, ok := c.transactions.GetByType(pkts1.DISCONNECT)
+		transactionx, ok := c.transactions.GetByType(pkts.DISCONNECT)
 		if !ok {
 			// Unsolicited DISCONNECT from broker.
 			c.setState(util.StateDisconnected)
@@ -287,10 +288,10 @@ func (c *Client) handlePacket(pktx pkts1.Packet) error {
 		return c.send(willMsg)
 
 	case *pkts1.Pingresp:
-		transactionx, ok := c.transactions.GetByType(pkts1.PINGREQ)
+		transactionx, ok := c.transactions.GetByType(pkts.PINGREQ)
 		if !ok {
 			// Sleep transaction.
-			transactionx, _ = c.transactions.GetByType(pkts1.DISCONNECT)
+			transactionx, _ = c.transactions.GetByType(pkts.DISCONNECT)
 		}
 		transaction, ok := transactionx.(transactionWithPingresp)
 		if !ok {

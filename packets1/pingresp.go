@@ -2,22 +2,24 @@ package packets1
 
 import (
 	"io"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 const pingrespVarPartLength uint16 = 0
 
 type Pingresp struct {
-	Header
+	pkts.Header
 }
 
 func NewPingresp() *Pingresp {
 	return &Pingresp{
-		Header: *NewHeader(PINGRESP, pingrespVarPartLength),
+		Header: *pkts.NewHeader(pkts.PINGRESP, pingrespVarPartLength),
 	}
 }
 
 func (p *Pingresp) Write(w io.Writer) error {
-	buf := p.Header.pack()
+	buf := p.Header.Pack()
 
 	_, err := buf.WriteTo(w)
 	return err

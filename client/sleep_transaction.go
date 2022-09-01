@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	pkts "github.com/energomonitor/bisquitt/packets"
 	pkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
@@ -37,7 +38,7 @@ func newSleepTransaction(client *Client, sleepDuration time.Duration) *sleepTran
 	t.TransactionBase = transactions.NewTransactionBase(
 		func() {
 			t.stopTimer()
-			client.transactions.DeleteByType(pkts1.DISCONNECT)
+			client.transactions.DeleteByType(pkts.DISCONNECT)
 			tLog.Debug("Deleted.")
 		})
 

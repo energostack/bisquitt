@@ -1,6 +1,7 @@
 package client
 
 import (
+	pkts "github.com/energomonitor/bisquitt/packets"
 	pkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
@@ -21,7 +22,7 @@ func newPingTransaction(client *Client) *pingTransaction {
 					return client.send(lastPkt.(pkts1.Packet))
 				},
 				func() {
-					client.transactions.DeleteByType(pkts1.PINGREQ)
+					client.transactions.DeleteByType(pkts.PINGREQ)
 					tLog.Debug("Deleted.")
 				},
 			),

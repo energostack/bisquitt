@@ -3,12 +3,14 @@ package packets1
 import (
 	"fmt"
 	"io"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 const gwInfoHeaderLength uint16 = 1
 
 type GwInfo struct {
-	Header
+	pkts.Header
 	GatewayID      uint8
 	GatewayAddress []byte
 }
@@ -16,7 +18,7 @@ type GwInfo struct {
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewGwInfo(gatewayID uint8, gatewayAddress []byte) *GwInfo {
 	p := &GwInfo{
-		Header:         *NewHeader(GWINFO, 0),
+		Header:         *pkts.NewHeader(pkts.GWINFO, 0),
 		GatewayID:      gatewayID,
 		GatewayAddress: gatewayAddress,
 	}
@@ -32,7 +34,7 @@ func (p *GwInfo) computeLength() {
 func (p *GwInfo) Write(w io.Writer) error {
 	p.computeLength()
 
-	buf := p.Header.pack()
+	buf := p.Header.Pack()
 	buf.WriteByte(p.GatewayID)
 	buf.Write(p.GatewayAddress)
 
@@ -41,7 +43,7 @@ func (p *GwInfo) Write(w io.Writer) error {
 }
 
 func (p *GwInfo) Unpack(r io.Reader) (err error) {
-	if p.GatewayID, err = readByte(r); err != nil {
+	if p.GatewayID, err = pkts.ReadByte(r); err != nil {
 		return
 	}
 

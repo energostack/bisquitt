@@ -3,19 +3,21 @@ package packets1
 import (
 	"fmt"
 	"io"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 const disconnectDurationLength uint16 = 2
 
 type Disconnect struct {
-	Header
+	pkts.Header
 	Duration uint16
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewDisconnect(duration uint16) *Disconnect {
 	p := &Disconnect{
-		Header:   *NewHeader(DISCONNECT, 0),
+		Header:   *pkts.NewHeader(pkts.DISCONNECT, 0),
 		Duration: duration,
 	}
 	p.computeLength()
@@ -37,9 +39,9 @@ func (p *Disconnect) computeLength() {
 func (p *Disconnect) Write(w io.Writer) error {
 	p.computeLength()
 
-	buf := p.Header.pack()
+	buf := p.Header.Pack()
 	if p.VarPartLength() > 0 {
-		buf.Write(encodeUint16(p.Duration))
+		buf.Write(pkts.EncodeUint16(p.Duration))
 	}
 
 	_, err := buf.WriteTo(w)
@@ -48,7 +50,7 @@ func (p *Disconnect) Write(w io.Writer) error {
 
 func (p *Disconnect) Unpack(r io.Reader) (err error) {
 	if p.VarPartLength() == disconnectDurationLength {
-		p.Duration, err = readUint16(r)
+		p.Duration, err = pkts.ReadUint16(r)
 	} else {
 		p.Duration = 0
 	}

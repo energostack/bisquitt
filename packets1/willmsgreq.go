@@ -2,22 +2,24 @@ package packets1
 
 import (
 	"io"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 const willMsgReqVarPartLength uint16 = 0
 
 type WillMsgReq struct {
-	Header
+	pkts.Header
 }
 
 func NewWillMsgReq() *WillMsgReq {
 	return &WillMsgReq{
-		Header: *NewHeader(WILLMSGREQ, willMsgReqVarPartLength),
+		Header: *pkts.NewHeader(pkts.WILLMSGREQ, willMsgReqVarPartLength),
 	}
 }
 
 func (p *WillMsgReq) Write(w io.Writer) error {
-	buf := p.Header.pack()
+	buf := p.Header.Pack()
 
 	_, err := buf.WriteTo(w)
 	return err

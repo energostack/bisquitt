@@ -3,12 +3,14 @@ package packets1
 import (
 	"fmt"
 	"io"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 const publishHeaderLength uint16 = 5
 
 type Publish struct {
-	Header
+	pkts.Header
 	MessageIDProperty
 	DUPProperty
 	Retain      bool
@@ -22,8 +24,8 @@ type Publish struct {
 func NewPublish(topicID uint16, topicIDType uint8, payload []byte, qos uint8,
 	retain bool, dup bool) *Publish {
 	p := &Publish{
-		Header:      *NewHeader(PUBLISH, 0),
 		DUPProperty: DUPProperty{dup},
+		Header:      *pkts.NewHeader(pkts.PUBLISH, 0),
 		TopicID:     topicID,
 		TopicIDType: topicIDType,
 		Data:        payload,
@@ -62,10 +64,10 @@ func (p *Publish) decodeFlags(b byte) {
 func (p *Publish) Write(w io.Writer) error {
 	p.computeLength()
 
-	buf := p.Header.pack()
+	buf := p.Header.Pack()
 	buf.WriteByte(p.encodeFlags())
-	buf.Write(encodeUint16(p.TopicID))
-	buf.Write(encodeUint16(p.messageID))
+	buf.Write(pkts.EncodeUint16(p.TopicID))
+	buf.Write(pkts.EncodeUint16(p.messageID))
 	buf.Write(p.Data)
 
 	_, err := buf.WriteTo(w)
@@ -74,16 +76,16 @@ func (p *Publish) Write(w io.Writer) error {
 
 func (p *Publish) Unpack(r io.Reader) (err error) {
 	var flagsByte uint8
-	if flagsByte, err = readByte(r); err != nil {
+	if flagsByte, err = pkts.ReadByte(r); err != nil {
 		return
 	}
 	p.decodeFlags(flagsByte)
 
-	if p.TopicID, err = readUint16(r); err != nil {
+	if p.TopicID, err = pkts.ReadUint16(r); err != nil {
 		return
 	}
 
-	if p.messageID, err = readUint16(r); err != nil {
+	if p.messageID, err = pkts.ReadUint16(r); err != nil {
 		return
 	}
 

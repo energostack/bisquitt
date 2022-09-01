@@ -30,6 +30,7 @@ import (
 	mqPkts "github.com/eclipse/paho.mqtt.golang/packets"
 	"golang.org/x/sync/errgroup"
 
+	snPkts "github.com/energomonitor/bisquitt/packets"
 	snPkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/topics"
 	"github.com/energomonitor/bisquitt/transactions"
@@ -362,7 +363,7 @@ func (h *handler1) handleMqtt(ctx context.Context, pkt mqPkts.ControlPacket) err
 
 	// Client CONNECT transaction.
 	case *mqPkts.ConnackPacket:
-		transactionx, _ := h.transactions.GetByType(snPkts1.CONNECT)
+		transactionx, _ := h.transactions.GetByType(snPkts.CONNECT)
 		transaction, ok := transactionx.(*connectTransaction)
 		if !ok {
 			h.log.Error("Unexpected transaction type %T for packet: %v", transactionx, mqPkt)
@@ -564,11 +565,11 @@ func (h *handler1) handleConnect(ctx context.Context, snConnect *snPkts1.Connect
 	}
 
 	// Cancel previous transaction, if any.
-	if oldTransaction, ok := h.transactions.GetByType(snPkts1.CONNECT); ok {
+	if oldTransaction, ok := h.transactions.GetByType(snPkts.CONNECT); ok {
 		oldTransaction.Fail(Cancelled)
 	}
 	transaction := newConnectTransaction(ctx, h, h.cfg.AuthEnabled, mqConnect)
-	h.transactions.StoreByType(snPkts1.CONNECT, transaction)
+	h.transactions.StoreByType(snPkts.CONNECT, transaction)
 	return transaction.Start(ctx)
 }
 
@@ -704,7 +705,7 @@ func (h *handler1) handleMqttSn(ctx context.Context, pkt snPkts1.Packet) error {
 
 	// Client CONNECT transaction.
 	case *snPkts1.Auth:
-		transactionx, _ := h.transactions.GetByType(snPkts1.CONNECT)
+		transactionx, _ := h.transactions.GetByType(snPkts.CONNECT)
 		if transaction, ok := transactionx.(*connectTransaction); ok {
 			return transaction.Auth(snPkt)
 		}
@@ -713,7 +714,7 @@ func (h *handler1) handleMqttSn(ctx context.Context, pkt snPkts1.Packet) error {
 
 	// Client CONNECT transaction.
 	case *snPkts1.WillTopic:
-		transactionx, _ := h.transactions.GetByType(snPkts1.CONNECT)
+		transactionx, _ := h.transactions.GetByType(snPkts.CONNECT)
 		if transaction, ok := transactionx.(*connectTransaction); ok {
 			return transaction.WillTopic(snPkt)
 		}
@@ -722,7 +723,7 @@ func (h *handler1) handleMqttSn(ctx context.Context, pkt snPkts1.Packet) error {
 
 	// Client CONNECT transaction.
 	case *snPkts1.WillMsg:
-		transactionx, _ := h.transactions.GetByType(snPkts1.CONNECT)
+		transactionx, _ := h.transactions.GetByType(snPkts.CONNECT)
 		if transaction, ok := transactionx.(*connectTransaction); ok {
 			return transaction.WillMsg(snPkt)
 		}
@@ -912,7 +913,7 @@ func (h *handler1) snReceive() (snPkts1.Packet, error) {
 	}
 
 	pktReader := bytes.NewReader(pktBuf)
-	header := &snPkts1.Header{}
+	header := &snPkts.Header{}
 	header.Unpack(pktReader)
 	pkt := snPkts1.NewPacketWithHeader(*header)
 	pkt.Unpack(pktReader)

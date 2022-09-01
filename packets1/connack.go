@@ -3,24 +3,26 @@ package packets1
 import (
 	"fmt"
 	"io"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 const connackVarPartLength uint16 = 1
 
 type Connack struct {
-	Header
+	pkts.Header
 	ReturnCode ReturnCode
 }
 
 func NewConnack(returnCode ReturnCode) *Connack {
 	return &Connack{
-		Header:     *NewHeader(CONNACK, connackVarPartLength),
+		Header:     *pkts.NewHeader(pkts.CONNACK, connackVarPartLength),
 		ReturnCode: returnCode,
 	}
 }
 
 func (p *Connack) Write(w io.Writer) error {
-	buf := p.Header.pack()
+	buf := p.Header.Pack()
 	buf.WriteByte(byte(p.ReturnCode))
 
 	_, err := buf.WriteTo(w)
@@ -29,7 +31,7 @@ func (p *Connack) Write(w io.Writer) error {
 
 func (p *Connack) Unpack(r io.Reader) (err error) {
 	var returnCodeByte uint8
-	returnCodeByte, err = readByte(r)
+	returnCodeByte, err = pkts.ReadByte(r)
 	p.ReturnCode = ReturnCode(returnCodeByte)
 	return
 }

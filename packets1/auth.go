@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 // Authentication reason constants.
@@ -25,7 +27,7 @@ const (
 //
 // SASL PLAIN method specification: https://datatracker.ietf.org/doc/html/rfc4616
 type Auth struct {
-	Header
+	pkts.Header
 	Reason uint8
 	Method string
 	Data   []byte
@@ -34,7 +36,7 @@ type Auth struct {
 // NewAuthPlain creates a new Auth with "PLAIN" method encoded
 // authentication data.
 func NewAuthPlain(user string, password []byte) *Auth {
-	auth := &Auth{Header: *NewHeader(AUTH, 0)}
+	auth := &Auth{Header: *pkts.NewHeader(pkts.AUTH, 0)}
 	auth.Method = "PLAIN"
 	var b bytes.Buffer
 	b.Write([]byte{0})
@@ -59,7 +61,7 @@ func DecodePlain(auth *Auth) (string, []byte, error) {
 }
 
 func (p *Auth) Write(w io.Writer) error {
-	buf := p.Header.pack()
+	buf := p.Header.Pack()
 	buf.WriteByte(p.Reason)
 	buf.WriteByte(byte(len(p.Method)))
 	buf.Write([]byte(p.Method))
@@ -70,12 +72,12 @@ func (p *Auth) Write(w io.Writer) error {
 }
 
 func (p *Auth) Unpack(r io.Reader) (err error) {
-	if p.Reason, err = readByte(r); err != nil {
+	if p.Reason, err = pkts.ReadByte(r); err != nil {
 		return
 	}
 
 	var methodLen uint8
-	if methodLen, err = readByte(r); err != nil {
+	if methodLen, err = pkts.ReadByte(r); err != nil {
 		return
 	}
 	method := make([]byte, methodLen)

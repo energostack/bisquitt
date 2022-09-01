@@ -3,17 +3,19 @@ package packets1
 import (
 	"fmt"
 	"io"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 type Pingreq struct {
-	Header
+	pkts.Header
 	ClientID []byte
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewPingreq(clientID []byte) *Pingreq {
 	p := &Pingreq{
-		Header:   *NewHeader(PINGREQ, 0),
+		Header:   *pkts.NewHeader(pkts.PINGREQ, 0),
 		ClientID: clientID,
 	}
 	p.computeLength()
@@ -28,7 +30,7 @@ func (p *Pingreq) computeLength() {
 func (p *Pingreq) Write(w io.Writer) error {
 	p.computeLength()
 
-	buf := p.Header.pack()
+	buf := p.Header.Pack()
 	if len(p.ClientID) > 0 {
 		buf.Write(p.ClientID)
 	}

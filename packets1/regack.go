@@ -3,12 +3,14 @@ package packets1
 import (
 	"fmt"
 	"io"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 const regackVarPartLength uint16 = 5
 
 type Regack struct {
-	Header
+	pkts.Header
 	MessageIDProperty
 	TopicID    uint16
 	ReturnCode ReturnCode
@@ -16,16 +18,16 @@ type Regack struct {
 
 func NewRegack(topicID uint16, returnCode ReturnCode) *Regack {
 	return &Regack{
-		Header:     *NewHeader(REGACK, regackVarPartLength),
+		Header:     *pkts.NewHeader(pkts.REGACK, regackVarPartLength),
 		TopicID:    topicID,
 		ReturnCode: returnCode,
 	}
 }
 
 func (p *Regack) Write(w io.Writer) error {
-	buf := p.Header.pack()
-	buf.Write(encodeUint16(p.TopicID))
-	buf.Write(encodeUint16(p.messageID))
+	buf := p.Header.Pack()
+	buf.Write(pkts.EncodeUint16(p.TopicID))
+	buf.Write(pkts.EncodeUint16(p.messageID))
 	buf.WriteByte(byte(p.ReturnCode))
 
 	_, err := buf.WriteTo(w)
@@ -33,14 +35,14 @@ func (p *Regack) Write(w io.Writer) error {
 }
 
 func (p *Regack) Unpack(r io.Reader) (err error) {
-	if p.TopicID, err = readUint16(r); err != nil {
+	if p.TopicID, err = pkts.ReadUint16(r); err != nil {
 		return
 	}
-	if p.messageID, err = readUint16(r); err != nil {
+	if p.messageID, err = pkts.ReadUint16(r); err != nil {
 		return
 	}
 	var returnCodeByte uint8
-	returnCodeByte, err = readByte(r)
+	returnCodeByte, err = pkts.ReadByte(r)
 	p.ReturnCode = ReturnCode(returnCodeByte)
 	return
 }

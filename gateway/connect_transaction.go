@@ -14,6 +14,7 @@ import (
 
 	mqPkts "github.com/eclipse/paho.mqtt.golang/packets"
 
+	snPkts "github.com/energomonitor/bisquitt/packets"
 	snPkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
@@ -37,7 +38,7 @@ func newConnectTransaction(ctx context.Context, h *handler1, authEnabled bool, m
 		TimedTransaction: transactions.NewTimedTransaction(
 			ctx, connectTransactionTimeout,
 			func() {
-				h.transactions.DeleteByType(snPkts1.CONNECT)
+				h.transactions.DeleteByType(snPkts.CONNECT)
 				tLog.Debug("Deleted.")
 			},
 		),

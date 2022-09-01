@@ -3,31 +3,33 @@ package packets1
 import (
 	"fmt"
 	"io"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 const pubcompVarPartLength uint16 = 2
 
 type Pubcomp struct {
-	Header
+	pkts.Header
 	MessageIDProperty
 }
 
 func NewPubcomp() *Pubcomp {
 	return &Pubcomp{
-		Header: *NewHeader(PUBCOMP, pubcompVarPartLength),
+		Header: *pkts.NewHeader(pkts.PUBCOMP, pubcompVarPartLength),
 	}
 }
 
 func (p *Pubcomp) Write(w io.Writer) error {
-	buf := p.Header.pack()
-	buf.Write(encodeUint16(p.messageID))
+	buf := p.Header.Pack()
+	buf.Write(pkts.EncodeUint16(p.messageID))
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
 func (p *Pubcomp) Unpack(r io.Reader) (err error) {
-	p.messageID, err = readUint16(r)
+	p.messageID, err = pkts.ReadUint16(r)
 	return
 }
 

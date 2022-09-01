@@ -15,6 +15,7 @@ import (
 	mqPkts "github.com/eclipse/paho.mqtt.golang/packets"
 	"github.com/stretchr/testify/assert"
 
+	snPkts "github.com/energomonitor/bisquitt/packets"
 	snPkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/topics"
 	"github.com/energomonitor/bisquitt/util"
@@ -59,7 +60,7 @@ func TestRepeatedConnect(t *testing.T) {
 	assert.Equal(byte(4), mqttConnect.ProtocolVersion)
 	assert.Equal("MQTT", mqttConnect.ProtocolName)
 
-	transaction1, ok := stp.handler.transactions.GetByType(snPkts1.CONNECT)
+	transaction1, ok := stp.handler.transactions.GetByType(snPkts.CONNECT)
 	assert.True(ok)
 
 	// Test transaction1 will be cancelled
@@ -87,7 +88,7 @@ func TestRepeatedConnect(t *testing.T) {
 	assert.Equal(byte(4), mqttConnect.ProtocolVersion)
 	assert.Equal("MQTT", mqttConnect.ProtocolName)
 
-	transaction2, ok := stp.handler.transactions.GetByType(snPkts1.CONNECT)
+	transaction2, ok := stp.handler.transactions.GetByType(snPkts.CONNECT)
 	assert.True(ok)
 	assert.NotEqual(transaction1, transaction2)
 
@@ -1337,7 +1338,7 @@ func (stp *testSetup) snRecv() snPkts1.Packet {
 	}
 
 	pktReader := bytes.NewReader(buff[:n])
-	header := &snPkts1.Header{}
+	header := &snPkts.Header{}
 	header.Unpack(pktReader)
 	pkt := snPkts1.NewPacketWithHeader(*header)
 	pkt.Unpack(pktReader)

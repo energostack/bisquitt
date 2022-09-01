@@ -3,10 +3,11 @@ package packets1
 
 import (
 	"bytes"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 // MQTT-SN specification version 1.2, section 5.2.1 defines maximal packet size
@@ -96,7 +97,7 @@ const (
 
 // ReadPacket reads an MQTT-SN packet from the given io.Reader.
 func ReadPacket(r io.Reader) (pkt Packet, err error) {
-	var h Header
+	var h pkts.Header
 	packet := make([]byte, MaxPacketLen)
 	n, err := r.Read(packet)
 	if err != nil {
@@ -114,88 +115,66 @@ func ReadPacket(r io.Reader) (pkt Packet, err error) {
 
 // NewPacketWithHeader returns a particular packet struct with a given header.
 // The struct type is determined by h.msgType.
-func NewPacketWithHeader(h Header) (pkt Packet) {
-	switch h.msgType {
-	case ADVERTISE:
+func NewPacketWithHeader(h pkts.Header) (pkt Packet) {
+	switch h.PacketType() {
+	case pkts.ADVERTISE:
 		pkt = &Advertise{Header: h}
-	case SEARCHGW:
+	case pkts.SEARCHGW:
 		pkt = &SearchGw{Header: h}
-	case GWINFO:
+	case pkts.GWINFO:
 		pkt = &GwInfo{Header: h}
-	case AUTH:
+	case pkts.AUTH:
 		pkt = &Auth{Header: h}
-	case CONNECT:
+	case pkts.CONNECT:
 		pkt = &Connect{Header: h}
-	case CONNACK:
+	case pkts.CONNACK:
 		pkt = &Connack{Header: h}
-	case WILLTOPICREQ:
+	case pkts.WILLTOPICREQ:
 		pkt = &WillTopicReq{Header: h}
-	case WILLTOPIC:
+	case pkts.WILLTOPIC:
 		pkt = &WillTopic{Header: h}
-	case WILLMSGREQ:
+	case pkts.WILLMSGREQ:
 		pkt = &WillMsgReq{Header: h}
-	case WILLMSG:
+	case pkts.WILLMSG:
 		pkt = &WillMsg{Header: h}
-	case REGISTER:
+	case pkts.REGISTER:
 		pkt = &Register{Header: h}
-	case REGACK:
+	case pkts.REGACK:
 		pkt = &Regack{Header: h}
-	case PUBLISH:
+	case pkts.PUBLISH:
 		pkt = &Publish{Header: h}
-	case PUBACK:
+	case pkts.PUBACK:
 		pkt = &Puback{Header: h}
-	case PUBCOMP:
+	case pkts.PUBCOMP:
 		pkt = &Pubcomp{Header: h}
-	case PUBREC:
+	case pkts.PUBREC:
 		pkt = &Pubrec{Header: h}
-	case PUBREL:
+	case pkts.PUBREL:
 		pkt = &Pubrel{Header: h}
-	case SUBSCRIBE:
+	case pkts.SUBSCRIBE:
 		pkt = &Subscribe{Header: h}
-	case SUBACK:
+	case pkts.SUBACK:
 		pkt = &Suback{Header: h}
-	case UNSUBSCRIBE:
+	case pkts.UNSUBSCRIBE:
 		pkt = &Unsubscribe{Header: h}
-	case UNSUBACK:
+	case pkts.UNSUBACK:
 		pkt = &Unsuback{Header: h}
-	case PINGREQ:
+	case pkts.PINGREQ:
 		pkt = &Pingreq{Header: h}
-	case PINGRESP:
+	case pkts.PINGRESP:
 		pkt = &Pingresp{Header: h}
-	case DISCONNECT:
+	case pkts.DISCONNECT:
 		pkt = &Disconnect{Header: h}
-	case WILLTOPICUPD:
+	case pkts.WILLTOPICUPD:
 		pkt = &WillTopicUpdate{Header: h}
-	case WILLTOPICRESP:
+	case pkts.WILLTOPICRESP:
 		pkt = &WillTopicResp{Header: h}
-	case WILLMSGUPD:
+	case pkts.WILLMSGUPD:
 		pkt = &WillMsgUpdate{Header: h}
-	case WILLMSGRESP:
+	case pkts.WILLMSGRESP:
 		pkt = &WillMsgResp{Header: h}
 	}
 	return
-}
-
-func readByte(r io.Reader) (byte, error) {
-	buf := make([]byte, 1)
-	if _, err := io.ReadFull(r, buf); err != nil {
-		return 0, err
-	}
-	return buf[0], nil
-}
-
-func readUint16(r io.Reader) (uint16, error) {
-	buf := make([]byte, 2)
-	if _, err := io.ReadFull(r, buf); err != nil {
-		return 0, err
-	}
-	return binary.BigEndian.Uint16(buf), nil
-}
-
-func encodeUint16(num uint16) []byte {
-	bytes := make([]byte, 2)
-	binary.BigEndian.PutUint16(bytes, num)
-	return bytes
 }
 
 // IsShortTopic determines if the given topic is a short topic.
@@ -226,7 +205,7 @@ func EncodeShortTopic(topic string) uint16 {
 //
 // See MQTT-SN specification v. 1.2, chapter 3 MQTT-SN vs MQTT.
 func DecodeShortTopic(topicID uint16) string {
-	return string(encodeUint16(topicID))
+	return string(pkts.EncodeUint16(topicID))
 }
 
 // Flags bit mask constants.
@@ -238,106 +217,3 @@ const (
 	flagsQOSBits         = 0x60
 	flagsDUPBit          = 0x80
 )
-
-// MessageType constants.
-type MessageType uint8
-
-const (
-	ADVERTISE     MessageType = 0x00
-	SEARCHGW      MessageType = 0x01
-	GWINFO        MessageType = 0x02
-	AUTH          MessageType = 0x03
-	CONNECT       MessageType = 0x04
-	CONNACK       MessageType = 0x05
-	WILLTOPICREQ  MessageType = 0x06
-	WILLTOPIC     MessageType = 0x07
-	WILLMSGREQ    MessageType = 0x08
-	WILLMSG       MessageType = 0x09
-	REGISTER      MessageType = 0x0A
-	REGACK        MessageType = 0x0B
-	PUBLISH       MessageType = 0x0C
-	PUBACK        MessageType = 0x0D
-	PUBCOMP       MessageType = 0x0E
-	PUBREC        MessageType = 0x0F
-	PUBREL        MessageType = 0x10
-	SUBSCRIBE     MessageType = 0x12
-	SUBACK        MessageType = 0x13
-	UNSUBSCRIBE   MessageType = 0x14
-	UNSUBACK      MessageType = 0x15
-	PINGREQ       MessageType = 0x16
-	PINGRESP      MessageType = 0x17
-	DISCONNECT    MessageType = 0x18
-	WILLTOPICUPD  MessageType = 0x1A
-	WILLTOPICRESP MessageType = 0x1B
-	WILLMSGUPD    MessageType = 0x1C
-	WILLMSGRESP   MessageType = 0x1D
-	// 0x03 is reserved
-	// 0x11 is reserved
-	// 0x19 is reserved
-	// 0x1E - 0xFD is reserved
-	// 0xFE - Encapsulated message
-	// 0xFF is reserved
-)
-
-func (t MessageType) String() string {
-	switch t {
-	case ADVERTISE:
-		return "ADVERTISE"
-	case SEARCHGW:
-		return "SEARCHGW"
-	case GWINFO:
-		return "GWINFO"
-	case AUTH:
-		return "AUTH"
-	case CONNECT:
-		return "CONNECT"
-	case CONNACK:
-		return "CONNACK"
-	case WILLTOPICREQ:
-		return "WILLTOPICREQ"
-	case WILLTOPIC:
-		return "WILLTOPIC"
-	case WILLMSGREQ:
-		return "WILLMSGREQ"
-	case WILLMSG:
-		return "WILLMSG"
-	case REGISTER:
-		return "REGISTER"
-	case REGACK:
-		return "REGACK"
-	case PUBLISH:
-		return "PUBLISH"
-	case PUBACK:
-		return "PUBACK"
-	case PUBCOMP:
-		return "PUBCOMP"
-	case PUBREC:
-		return "PUBREC"
-	case PUBREL:
-		return "PUBREL"
-	case SUBSCRIBE:
-		return "SUBSCRIBE"
-	case SUBACK:
-		return "SUBACK"
-	case UNSUBSCRIBE:
-		return "UNSUBSCRIBE"
-	case UNSUBACK:
-		return "UNSUBACK"
-	case PINGREQ:
-		return "PINGREQ"
-	case PINGRESP:
-		return "PINGRESP"
-	case DISCONNECT:
-		return "DISCONNECT"
-	case WILLTOPICUPD:
-		return "WILLTOPICUPD"
-	case WILLTOPICRESP:
-		return "WILLTOPICRESP"
-	case WILLMSGUPD:
-		return "WILLMSGUPD"
-	case WILLMSGRESP:
-		return "WILLMSGRESP"
-	default:
-		return fmt.Sprintf("unknown (%d)", t)
-	}
-}

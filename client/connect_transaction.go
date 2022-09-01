@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	pkts "github.com/energomonitor/bisquitt/packets"
 	pkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
@@ -21,7 +22,7 @@ func newConnectTransaction(ctx context.Context, client *Client) *connectTransact
 		TimedTransaction: transactions.NewTimedTransaction(
 			ctx, client.cfg.ConnectTimeout,
 			func() {
-				client.transactions.DeleteByType(pkts1.CONNECT)
+				client.transactions.DeleteByType(pkts.CONNECT)
 				tLog.Debug("Deleted.")
 			},
 		),

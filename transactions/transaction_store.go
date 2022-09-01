@@ -3,25 +3,25 @@ package transactions
 import (
 	"sync"
 
-	pkts1 "github.com/energomonitor/bisquitt/packets1"
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
-// TransactionStore stores transactions by MessageID or MessageType
+// TransactionStore stores transactions by MessageID or PacketType
 // (for packets types without MessageID). The typical usage is to store
 // transactions in progress.
 //
 // It's safe for concurrent use.
 type TransactionStore struct {
 	sync.RWMutex
-	byPktID   map[uint16]Transaction
-	byPktType map[pkts1.MessageType]Transaction
+	bypktID   map[uint16]Transaction
+	bypktType map[pkts.PacketType]Transaction
 }
 
 // NewTransactionStore creates a new transaction store.
 func NewTransactionStore() *TransactionStore {
 	return &TransactionStore{
-		byPktID:   make(map[uint16]Transaction),
-		byPktType: make(map[pkts1.MessageType]Transaction),
+		bypktID:   make(map[uint16]Transaction),
+		bypktType: make(map[pkts.PacketType]Transaction),
 	}
 }
 
@@ -29,29 +29,29 @@ func NewTransactionStore() *TransactionStore {
 func (ts *TransactionStore) Store(pktID uint16, transaction Transaction) {
 	ts.Lock()
 	defer ts.Unlock()
-	ts.byPktID[pktID] = transaction
+	ts.bypktID[pktID] = transaction
 }
 
-// StoreByType inserts a new transaction to the store by the MessageType.
-func (ts *TransactionStore) StoreByType(pktType pkts1.MessageType, transaction Transaction) {
+// StoreByType inserts a new transaction to the store by the PacketType.
+func (ts *TransactionStore) StoreByType(pktType pkts.PacketType, transaction Transaction) {
 	ts.Lock()
 	defer ts.Unlock()
-	ts.byPktType[pktType] = transaction
+	ts.bypktType[pktType] = transaction
 }
 
 // Get retrieves a transaction from the store by the MessageID.
 func (ts *TransactionStore) Get(pktID uint16) (Transaction, bool) {
 	ts.RLock()
 	defer ts.RUnlock()
-	transaction, ok := ts.byPktID[pktID]
+	transaction, ok := ts.bypktID[pktID]
 	return transaction, ok
 }
 
-// GetByType retrieves a transaction from the store by the MessageType.
-func (ts *TransactionStore) GetByType(pktType pkts1.MessageType) (Transaction, bool) {
+// GetByType retrieves a transaction from the store by the PacketType.
+func (ts *TransactionStore) GetByType(pktType pkts.PacketType) (Transaction, bool) {
 	ts.Lock()
 	defer ts.Unlock()
-	transaction, ok := ts.byPktType[pktType]
+	transaction, ok := ts.bypktType[pktType]
 	return transaction, ok
 }
 
@@ -59,12 +59,12 @@ func (ts *TransactionStore) GetByType(pktType pkts1.MessageType) (Transaction, b
 func (ts *TransactionStore) Delete(pktID uint16) {
 	ts.Lock()
 	defer ts.Unlock()
-	delete(ts.byPktID, pktID)
+	delete(ts.bypktID, pktID)
 }
 
-// DeleteByType removes a transaction from the store by the MessageType.
-func (ts *TransactionStore) DeleteByType(pktType pkts1.MessageType) {
+// DeleteByType removes a transaction from the store by the PacketType.
+func (ts *TransactionStore) DeleteByType(pktType pkts.PacketType) {
 	ts.Lock()
 	defer ts.Unlock()
-	delete(ts.byPktType, pktType)
+	delete(ts.bypktType, pktType)
 }

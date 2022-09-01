@@ -15,6 +15,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	pkts "github.com/energomonitor/bisquitt/packets"
 	pkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/topics"
 	"github.com/energomonitor/bisquitt/transactions"
@@ -1884,7 +1885,7 @@ func (stp *testSetup) recv() pkts1.Packet {
 	}
 
 	pktReader := bytes.NewReader(buff[:n])
-	header := &pkts1.Header{}
+	header := &pkts.Header{}
 	header.Unpack(pktReader)
 	pkt := pkts1.NewPacketWithHeader(*header)
 	pkt.Unpack(pktReader)
