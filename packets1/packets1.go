@@ -69,15 +69,6 @@ func (c ReturnCode) String() string {
 	}
 }
 
-// Topic ID range.
-// The values `0x0000` and `0xFFFF` are reserved and therefore should not be used.
-//
-// See MQTT-SN specification v. 1.2, chapter 5.3.11.
-const (
-	MinTopicID uint16 = 1
-	MaxTopicID uint16 = 0xFFFF - 1
-)
-
 // ReadPacket reads an MQTT-SN packet from the given io.Reader.
 func ReadPacket(r io.Reader) (pkt pkts.Packet, err error) {
 	var h pkts.Header
