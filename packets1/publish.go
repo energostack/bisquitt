@@ -12,7 +12,7 @@ const publishHeaderLength uint16 = 5
 type Publish struct {
 	pkts.Header
 	MessageIDProperty
-	DUPProperty
+	pkts.DUPProperty
 	Retain      bool
 	QOS         uint8
 	TopicIDType uint8
@@ -24,8 +24,8 @@ type Publish struct {
 func NewPublish(topicID uint16, topicIDType uint8, payload []byte, qos uint8,
 	retain bool, dup bool) *Publish {
 	p := &Publish{
-		DUPProperty: DUPProperty{dup},
 		Header:      *pkts.NewHeader(pkts.PUBLISH, 0),
+		DUPProperty: *pkts.NewDUPProperty(dup),
 		TopicID:     topicID,
 		TopicIDType: topicIDType,
 		Data:        payload,
@@ -43,7 +43,7 @@ func (p *Publish) computeLength() {
 
 func (p *Publish) encodeFlags() byte {
 	var b byte
-	if p.dup {
+	if p.DUP() {
 		b |= flagsDUPBit
 	}
 	b |= (p.QOS << 5) & flagsQOSBits
@@ -55,7 +55,7 @@ func (p *Publish) encodeFlags() byte {
 }
 
 func (p *Publish) decodeFlags(b byte) {
-	p.dup = (b & flagsDUPBit) == flagsDUPBit
+	p.SetDUP((b & flagsDUPBit) == flagsDUPBit)
 	p.QOS = (b & flagsQOSBits) >> 5
 	p.Retain = (b & flagsRetainBit) == flagsRetainBit
 	p.TopicIDType = b & flagsTopicIDTypeBits
@@ -105,5 +105,5 @@ func (p Publish) String() string {
 		topicIDType = "s"
 	}
 	return fmt.Sprintf("PUBLISH(TopicID(%s)=%d, Data=%#v, QOS=%d, Retain=%t, MessageID=%d, Dup=%t)",
-		topicIDType, p.TopicID, string(p.Data), p.QOS, p.Retain, p.messageID, p.dup)
+		topicIDType, p.TopicID, string(p.Data), p.QOS, p.Retain, p.messageID, p.DUP())
 }

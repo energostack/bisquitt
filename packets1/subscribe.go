@@ -10,8 +10,8 @@ import (
 const subscribeHeaderLength uint16 = 3
 
 type Subscribe struct {
-	DUPProperty
 	pkts.Header
+	pkts.DUPProperty
 	MessageIDProperty
 	QOS         uint8
 	TopicIDType uint8
@@ -22,8 +22,8 @@ type Subscribe struct {
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewSubscribe(topicID uint16, topicIDType uint8, topicName []byte, qos uint8, dup bool) *Subscribe {
 	p := &Subscribe{
-		DUPProperty: DUPProperty{dup},
 		Header:      *pkts.NewHeader(pkts.SUBSCRIBE, 0),
+		DUPProperty: *pkts.NewDUPProperty(dup),
 		QOS:         qos,
 		TopicIDType: topicIDType,
 		TopicID:     topicID,
@@ -46,7 +46,7 @@ func (p *Subscribe) computeLength() {
 
 func (p *Subscribe) encodeFlags() byte {
 	var b byte
-	if p.dup {
+	if p.DUP() {
 		b |= flagsDUPBit
 	}
 	b |= (p.QOS << 5) & flagsQOSBits
@@ -55,7 +55,7 @@ func (p *Subscribe) encodeFlags() byte {
 }
 
 func (p *Subscribe) decodeFlags(b byte) {
-	p.dup = (b & flagsDUPBit) == flagsDUPBit
+	p.SetDUP((b & flagsDUPBit) == flagsDUPBit)
 	p.QOS = (b & flagsQOSBits) >> 5
 	p.TopicIDType = b & flagsTopicIDTypeBits
 }
@@ -104,5 +104,5 @@ func (p *Subscribe) Unpack(r io.Reader) (err error) {
 
 func (p Subscribe) String() string {
 	return fmt.Sprintf("SUBSCRIBE(TopicName=%#v, QOS=%d, TopicID=%d, TopicIDType=%d, MessageID=%d, Dup=%t)",
-		string(p.TopicName), p.QOS, p.TopicID, p.TopicIDType, p.messageID, p.dup)
+		string(p.TopicName), p.QOS, p.TopicID, p.TopicIDType, p.messageID, p.DUP())
 }

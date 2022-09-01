@@ -23,7 +23,7 @@ func newSubscribeTransaction(client *Client, msgID uint16, callback MessageHandl
 				client.groupCtx, client.cfg.RetryDelay, client.cfg.RetryCount,
 				func(lastPkt interface{}) error {
 					tLog.Debug("Resend.")
-					dupPkt := lastPkt.(pkts1.PacketWithDUP)
+					dupPkt := lastPkt.(pkts.PacketWithDUP)
 					dupPkt.SetDUP(true)
 					return client.send(lastPkt.(pkts.Packet))
 				},
