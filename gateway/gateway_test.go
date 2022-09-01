@@ -294,7 +294,7 @@ func TestDisconnectedPublishQOS0(t *testing.T) {
 	defer stp.cancel()
 
 	snPublish := snPkts1.NewPublish(
-		snPkts1.EncodeShortTopic("ab"),
+		snPkts.EncodeShortTopic("ab"),
 		snPkts1.TIT_SHORT, []byte("test-payload"), 0, false, false,
 	)
 	stp.snSend(snPublish, true)
@@ -322,7 +322,7 @@ func TestDisconnectedAuthPublishQOS3Registered(t *testing.T) {
 	defer stp.cancel()
 
 	topic := "ab"
-	topicID := snPkts1.EncodeShortTopic(topic)
+	topicID := snPkts.EncodeShortTopic(topic)
 	payload := []byte("test-msg-0")
 	qos := uint8(3)
 
@@ -342,7 +342,7 @@ func TestDisconnectedPublishQOS3Short(t *testing.T) {
 	defer stp.cancel()
 
 	topic := "ab"
-	topicID := snPkts1.EncodeShortTopic(topic)
+	topicID := snPkts.EncodeShortTopic(topic)
 	payload := []byte("test-msg-0")
 	qos := uint8(3)
 
@@ -932,7 +932,7 @@ func TestUnsubscribeShort(t *testing.T) {
 	stp.subscribeShort(topic, 0)
 
 	// client --UNSUBSCRIBE--> GW
-	snUnsubscribe := snPkts1.NewUnsubscribe(snPkts1.EncodeShortTopic(topic), snPkts1.TIT_SHORT, []byte(""))
+	snUnsubscribe := snPkts1.NewUnsubscribe(snPkts.EncodeShortTopic(topic), snPkts1.TIT_SHORT, []byte(""))
 	stp.snSend(snUnsubscribe, true)
 
 	// GW --UNSUBSCRIBE--> MQTT broker
@@ -1535,10 +1535,10 @@ func (stp *testSetup) subscribe(topic string, qos uint8) uint16 {
 func (stp *testSetup) subscribeShort(topic string, qos uint8) {
 	assert := assert.New(stp.t)
 
-	assert.True(snPkts1.IsShortTopic(topic))
+	assert.True(snPkts.IsShortTopic(topic))
 
 	// client --SUBSCRIBE--> GW
-	topicID := snPkts1.EncodeShortTopic(topic)
+	topicID := snPkts.EncodeShortTopic(topic)
 	snSubscribe := snPkts1.NewSubscribe(topicID, snPkts1.TIT_SHORT, nil, qos, false)
 	stp.snSend(snSubscribe, true)
 

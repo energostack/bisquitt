@@ -1,6 +1,7 @@
 package packets
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
 )
@@ -38,3 +39,36 @@ const (
 	MinTopicAlias uint16 = 1
 	MaxTopicAlias uint16 = 0xFFFF - 1
 )
+
+// IsShortTopic determines if the given topic is a short topic.
+//
+// See MQTT-SN specification v. 1.2, chapter 3 MQTT-SN vs MQTT.
+func IsShortTopic(topic string) bool {
+	return len(topic) == 2
+}
+
+// EncodeShortTopic encodes a short string topic into TopicID (uint16).
+//
+// See MQTT-SN specification v. 1.2, chapter 3 MQTT-SN vs MQTT.
+func EncodeShortTopic(topic string) uint16 {
+	var result uint16
+
+	bytes := []byte(topic)
+	if len(bytes) > 0 {
+		result |= (uint16(bytes[0]) << 8)
+	}
+	if len(bytes) > 1 {
+		result |= uint16(bytes[1])
+	}
+
+	return result
+}
+
+// DecodeShortTopic decodes a short string topic from TopicID (uint16).
+//
+// See MQTT-SN specification v. 1.2, chapter 3 MQTT-SN vs MQTT.
+func DecodeShortTopic(topicAlias uint16) string {
+	bytes := make([]byte, 2)
+	binary.BigEndian.PutUint16(bytes, topicAlias)
+	return string(bytes)
+}

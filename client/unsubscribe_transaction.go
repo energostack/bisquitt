@@ -52,7 +52,7 @@ func (t *unsubscribeTransaction) Unsuback(_ *pkts1.Unsuback) {
 		}
 
 	case pkts1.TIT_SHORT:
-		topicName = pkts1.DecodeShortTopic(unsubscribe.TopicID)
+		topicName = pkts.DecodeShortTopic(unsubscribe.TopicID)
 
 	default:
 		t.Fail(fmt.Errorf("invalid Topic ID Type: %d", unsubscribe.TopicIDType))

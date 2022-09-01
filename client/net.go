@@ -110,7 +110,7 @@ func (c *Client) topicForPublish(pkt *pkts1.Publish) (string, error) {
 			return "", fmt.Errorf("invalid predefined topic ID: %d", pkt.TopicID)
 		}
 	case pkts1.TIT_SHORT:
-		topic = pkts1.DecodeShortTopic(pkt.TopicID)
+		topic = pkts.DecodeShortTopic(pkt.TopicID)
 
 	default:
 		return "", fmt.Errorf("invalid Topic ID Type: %d", pkt.TopicIDType)
