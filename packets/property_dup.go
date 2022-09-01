@@ -1,7 +1,13 @@
-package packets1
+package packets
 
 type DUPProperty struct {
 	dup bool
+}
+
+func NewDUPProperty(dup bool) *DUPProperty {
+	return &DUPProperty{
+		dup: dup,
+	}
 }
 
 func (p *DUPProperty) SetDUP(dup bool) {
