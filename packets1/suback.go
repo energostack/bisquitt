@@ -3,12 +3,14 @@ package packets1
 import (
 	"fmt"
 	"io"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 const subackVarPartLength uint16 = 6
 
 type Suback struct {
-	Header
+	pkts.Header
 	MessageIDProperty
 	QOS        uint8
 	ReturnCode ReturnCode
@@ -17,7 +19,7 @@ type Suback struct {
 
 func NewSuback(topicID uint16, qos uint8, returnCode ReturnCode) *Suback {
 	return &Suback{
-		Header:     *NewHeader(SUBACK, subackVarPartLength),
+		Header:     *pkts.NewHeader(pkts.SUBACK, subackVarPartLength),
 		QOS:        qos,
 		ReturnCode: returnCode,
 		TopicID:    topicID,
@@ -35,10 +37,10 @@ func (p *Suback) decodeFlags(b byte) {
 }
 
 func (p *Suback) Write(w io.Writer) error {
-	buf := p.Header.pack()
+	buf := p.Header.Pack()
 	buf.WriteByte(p.encodeFlags())
-	buf.Write(encodeUint16(p.TopicID))
-	buf.Write(encodeUint16(p.messageID))
+	buf.Write(pkts.EncodeUint16(p.TopicID))
+	buf.Write(pkts.EncodeUint16(p.messageID))
 	buf.WriteByte(byte(p.ReturnCode))
 
 	_, err := buf.WriteTo(w)
@@ -47,21 +49,21 @@ func (p *Suback) Write(w io.Writer) error {
 
 func (p *Suback) Unpack(r io.Reader) (err error) {
 	var flagsByte uint8
-	if flagsByte, err = readByte(r); err != nil {
+	if flagsByte, err = pkts.ReadByte(r); err != nil {
 		return
 	}
 	p.decodeFlags(flagsByte)
 
-	if p.TopicID, err = readUint16(r); err != nil {
+	if p.TopicID, err = pkts.ReadUint16(r); err != nil {
 		return
 	}
 
-	if p.messageID, err = readUint16(r); err != nil {
+	if p.messageID, err = pkts.ReadUint16(r); err != nil {
 		return
 	}
 
 	var returnCodeByte uint8
-	returnCodeByte, err = readByte(r)
+	returnCodeByte, err = pkts.ReadByte(r)
 	p.ReturnCode = ReturnCode(returnCodeByte)
 	return
 }

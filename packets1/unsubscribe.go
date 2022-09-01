@@ -3,12 +3,14 @@ package packets1
 import (
 	"fmt"
 	"io"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 const unsubscribeHeaderLength uint16 = 3
 
 type Unsubscribe struct {
-	Header
+	pkts.Header
 	MessageIDProperty
 	TopicIDType uint8
 	TopicID     uint16
@@ -18,7 +20,7 @@ type Unsubscribe struct {
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewUnsubscribe(topicID uint16, topicIDType uint8, topicName []byte) *Unsubscribe {
 	p := &Unsubscribe{
-		Header:      *NewHeader(UNSUBSCRIBE, 0),
+		Header:      *pkts.NewHeader(pkts.UNSUBSCRIBE, 0),
 		TopicIDType: topicIDType,
 		TopicID:     topicID,
 		TopicName:   topicName,
@@ -51,14 +53,14 @@ func (p *Unsubscribe) decodeFlags(b byte) {
 func (p *Unsubscribe) Write(w io.Writer) error {
 	p.computeLength()
 
-	buf := p.Header.pack()
+	buf := p.Header.Pack()
 	buf.WriteByte(p.encodeFlags())
-	buf.Write(encodeUint16(p.messageID))
+	buf.Write(pkts.EncodeUint16(p.messageID))
 	switch p.TopicIDType {
 	case TIT_STRING:
 		buf.Write(p.TopicName)
 	case TIT_PREDEFINED, TIT_SHORT:
-		buf.Write(encodeUint16(p.TopicID))
+		buf.Write(pkts.EncodeUint16(p.TopicID))
 	}
 
 	_, err := buf.WriteTo(w)
@@ -67,12 +69,12 @@ func (p *Unsubscribe) Write(w io.Writer) error {
 
 func (p *Unsubscribe) Unpack(r io.Reader) (err error) {
 	var flagsByte uint8
-	if flagsByte, err = readByte(r); err != nil {
+	if flagsByte, err = pkts.ReadByte(r); err != nil {
 		return
 	}
 	p.decodeFlags(flagsByte)
 
-	if p.messageID, err = readUint16(r); err != nil {
+	if p.messageID, err = pkts.ReadUint16(r); err != nil {
 		return
 	}
 
@@ -83,7 +85,7 @@ func (p *Unsubscribe) Unpack(r io.Reader) (err error) {
 		_, err = io.ReadFull(r, p.TopicName)
 	case TIT_PREDEFINED, TIT_SHORT:
 		p.TopicName = nil
-		p.TopicID, err = readUint16(r)
+		p.TopicID, err = pkts.ReadUint16(r)
 	default:
 		err = fmt.Errorf("invalid TopicIDType: %d", p.TopicIDType)
 	}

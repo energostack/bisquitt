@@ -3,13 +3,15 @@ package packets1
 import (
 	"fmt"
 	"io"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 const subscribeHeaderLength uint16 = 3
 
 type Subscribe struct {
-	Header
 	DUPProperty
+	pkts.Header
 	MessageIDProperty
 	QOS         uint8
 	TopicIDType uint8
@@ -20,8 +22,8 @@ type Subscribe struct {
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewSubscribe(topicID uint16, topicIDType uint8, topicName []byte, qos uint8, dup bool) *Subscribe {
 	p := &Subscribe{
-		Header:      *NewHeader(SUBSCRIBE, 0),
 		DUPProperty: DUPProperty{dup},
+		Header:      *pkts.NewHeader(pkts.SUBSCRIBE, 0),
 		QOS:         qos,
 		TopicIDType: topicIDType,
 		TopicID:     topicID,
@@ -61,14 +63,14 @@ func (p *Subscribe) decodeFlags(b byte) {
 func (p *Subscribe) Write(w io.Writer) error {
 	p.computeLength()
 
-	buf := p.Header.pack()
+	buf := p.Header.Pack()
 	buf.WriteByte(p.encodeFlags())
-	buf.Write(encodeUint16(p.messageID))
+	buf.Write(pkts.EncodeUint16(p.messageID))
 	switch p.TopicIDType {
 	case TIT_STRING:
 		buf.Write(p.TopicName)
 	case TIT_PREDEFINED, TIT_SHORT:
-		buf.Write(encodeUint16(p.TopicID))
+		buf.Write(pkts.EncodeUint16(p.TopicID))
 	}
 
 	_, err := buf.WriteTo(w)
@@ -77,12 +79,12 @@ func (p *Subscribe) Write(w io.Writer) error {
 
 func (p *Subscribe) Unpack(r io.Reader) (err error) {
 	var flagsByte uint8
-	if flagsByte, err = readByte(r); err != nil {
+	if flagsByte, err = pkts.ReadByte(r); err != nil {
 		return
 	}
 	p.decodeFlags(flagsByte)
 
-	if p.messageID, err = readUint16(r); err != nil {
+	if p.messageID, err = pkts.ReadUint16(r); err != nil {
 		return
 	}
 
@@ -93,7 +95,7 @@ func (p *Subscribe) Unpack(r io.Reader) (err error) {
 		_, err = io.ReadFull(r, p.TopicName)
 	case TIT_PREDEFINED, TIT_SHORT:
 		p.TopicName = nil
-		p.TopicID, err = readUint16(r)
+		p.TopicID, err = pkts.ReadUint16(r)
 	default:
 		err = fmt.Errorf("invalid TopicIDType: %d", p.TopicIDType)
 	}

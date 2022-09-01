@@ -3,12 +3,14 @@ package packets1
 import (
 	"fmt"
 	"io"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 const connectHeaderLength uint16 = 4
 
 type Connect struct {
-	Header
+	pkts.Header
 	CleanSession bool
 	ClientID     []byte
 	Duration     uint16
@@ -19,7 +21,7 @@ type Connect struct {
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewConnect(clientID []byte, cleanSession bool, will bool, duration uint16) *Connect {
 	p := &Connect{
-		Header:       *NewHeader(CONNECT, 0),
+		Header:       *pkts.NewHeader(pkts.CONNECT, 0),
 		Will:         will,
 		CleanSession: cleanSession,
 		ProtocolID:   0x01,
@@ -54,10 +56,10 @@ func (p *Connect) encodeFlags() byte {
 func (p *Connect) Write(w io.Writer) error {
 	p.computeLength()
 
-	buf := p.Header.pack()
+	buf := p.Header.Pack()
 	buf.WriteByte(p.encodeFlags())
 	buf.WriteByte(p.ProtocolID)
-	buf.Write(encodeUint16(p.Duration))
+	buf.Write(pkts.EncodeUint16(p.Duration))
 	buf.Write([]byte(p.ClientID))
 
 	_, err := buf.WriteTo(w)
@@ -66,16 +68,16 @@ func (p *Connect) Write(w io.Writer) error {
 
 func (p *Connect) Unpack(r io.Reader) (err error) {
 	var flagsByte uint8
-	if flagsByte, err = readByte(r); err != nil {
+	if flagsByte, err = pkts.ReadByte(r); err != nil {
 		return
 	}
 	p.decodeFlags(flagsByte)
 
-	if p.ProtocolID, err = readByte(r); err != nil {
+	if p.ProtocolID, err = pkts.ReadByte(r); err != nil {
 		return
 	}
 
-	if p.Duration, err = readUint16(r); err != nil {
+	if p.Duration, err = pkts.ReadUint16(r); err != nil {
 		return
 	}
 

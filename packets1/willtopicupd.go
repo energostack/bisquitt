@@ -3,12 +3,14 @@ package packets1
 import (
 	"fmt"
 	"io"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 const willTopicUpdateHeaderLength uint16 = 1
 
 type WillTopicUpdate struct {
-	Header
+	pkts.Header
 	QOS       uint8
 	Retain    bool
 	WillTopic []byte
@@ -17,7 +19,7 @@ type WillTopicUpdate struct {
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewWillTopicUpdate(willTopic []byte, qos uint8, retain bool) *WillTopicUpdate {
 	p := &WillTopicUpdate{
-		Header:    *NewHeader(WILLTOPICUPD, 0),
+		Header:    *pkts.NewHeader(pkts.WILLTOPICUPD, 0),
 		QOS:       qos,
 		Retain:    retain,
 		WillTopic: willTopic,
@@ -48,7 +50,7 @@ func (p *WillTopicUpdate) decodeFlags(b byte) {
 func (p *WillTopicUpdate) Write(w io.Writer) error {
 	p.computeLength()
 
-	buf := p.Header.pack()
+	buf := p.Header.Pack()
 	buf.WriteByte(p.encodeFlags())
 	buf.Write(p.WillTopic)
 
@@ -58,7 +60,7 @@ func (p *WillTopicUpdate) Write(w io.Writer) error {
 
 func (p *WillTopicUpdate) Unpack(r io.Reader) (err error) {
 	var flagsByte uint8
-	if flagsByte, err = readByte(r); err != nil {
+	if flagsByte, err = pkts.ReadByte(r); err != nil {
 		return
 	}
 	p.decodeFlags(flagsByte)

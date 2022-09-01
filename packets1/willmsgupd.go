@@ -3,17 +3,19 @@ package packets1
 import (
 	"fmt"
 	"io"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
 type WillMsgUpdate struct {
-	Header
+	pkts.Header
 	WillMsg []byte
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
 func NewWillMsgUpdate(willMsg []byte) *WillMsgUpdate {
 	p := &WillMsgUpdate{
-		Header:  *NewHeader(WILLMSGUPD, 0),
+		Header:  *pkts.NewHeader(pkts.WILLMSGUPD, 0),
 		WillMsg: willMsg,
 	}
 	p.computeLength()
@@ -28,7 +30,7 @@ func (p *WillMsgUpdate) computeLength() {
 func (p *WillMsgUpdate) Write(w io.Writer) error {
 	p.computeLength()
 
-	buf := p.Header.pack()
+	buf := p.Header.Pack()
 	buf.Write(p.WillMsg)
 
 	_, err := buf.WriteTo(w)
