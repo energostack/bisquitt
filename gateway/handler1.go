@@ -110,7 +110,7 @@ func newHandler(cfg *handlerConfig, predefinedTopics topics.PredefinedTopics,
 	return h
 }
 
-func (h *handler1) run(ctx context.Context, snConn net.Conn) error {
+func (h *handler1) run(ctx context.Context, snConn net.Conn) {
 	h.log.Debug("Handler starts.")
 	defer h.log.Debug("Handler quits.")
 
@@ -161,7 +161,7 @@ func (h *handler1) run(ctx context.Context, snConn net.Conn) error {
 			if err := h.snSend(snMsg); err != nil {
 				h.log.Error("Error sending CONNACK to a connection: %s", err)
 			}
-			return err
+			return
 		}
 	}
 	h.log.Debug("Connected to MQTT broker")
@@ -182,13 +182,9 @@ func (h *handler1) run(ctx context.Context, snConn net.Conn) error {
 	})
 
 	err := h.group.Wait()
-	if err == Shutdown {
-		return nil
-	}
-	if err != nil {
+	if err != nil && err != Shutdown {
 		h.log.Error("Handler quits with error: %v", err)
 	}
-	return err
 }
 
 func (h *handler1) setState(new util.ClientState) {
