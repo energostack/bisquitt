@@ -629,7 +629,7 @@ func (h *handler1) handleSubscribe(ctx context.Context, snSubscribe *snPkts1.Sub
 	return h.mqttSend(mqSubscribe)
 }
 
-func (h *handler1) handleUnsubscribe(_ context.Context, snUnsubscribe *snPkts1.Unsubscribe) error {
+func (h *handler1) handleUnsubscribe(snUnsubscribe *snPkts1.Unsubscribe) error {
 	var topic string
 	switch snUnsubscribe.TopicIDType {
 	case snPkts1.TIT_STRING:
@@ -770,7 +770,7 @@ func (h *handler1) handleMqttSn(ctx context.Context, pkt snPkts1.Packet) error {
 
 	// Client UNSUBSCRIBE transaction.
 	case *snPkts1.Unsubscribe:
-		return h.handleUnsubscribe(ctx, snMsg)
+		return h.handleUnsubscribe(snMsg)
 
 	// Client PING transaction (going AWAKE or just a keepalive).
 	case *snPkts1.Pingreq:
