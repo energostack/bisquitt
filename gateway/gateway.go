@@ -150,8 +150,6 @@ func (gw *Gateway) ListenAndServe(ctx context.Context, address string) error {
 				}
 			}()
 
-			// NOTE: Potentional error was already logged inside handler,
-			//       no need to take any further action here.
 			handler.run(ctx, clientConn)
 		}()
 	}
