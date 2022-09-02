@@ -19,9 +19,9 @@ func newUnsubscribeTransaction(client *Client, msgID uint16) *unsubscribeTransac
 		transaction: &transaction{
 			RetryTransaction: transactions.NewRetryTransaction(
 				client.groupCtx, client.cfg.RetryDelay, client.cfg.RetryCount,
-				func(lastMsg interface{}) error {
+				func(lastPkt interface{}) error {
 					tLog.Debug("Resend.")
-					return client.send(lastMsg.(pkts1.Packet))
+					return client.send(lastPkt.(pkts1.Packet))
 				},
 				func() {
 					tLog.Debug("Deleted.")

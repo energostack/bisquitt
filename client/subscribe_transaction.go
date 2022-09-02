@@ -20,11 +20,11 @@ func newSubscribeTransaction(client *Client, msgID uint16, callback MessageHandl
 		transaction: &transaction{
 			RetryTransaction: transactions.NewRetryTransaction(
 				client.groupCtx, client.cfg.RetryDelay, client.cfg.RetryCount,
-				func(lastMsg interface{}) error {
+				func(lastPkt interface{}) error {
 					tLog.Debug("Resend.")
-					dupMsg := lastMsg.(pkts1.PacketWithDUP)
-					dupMsg.SetDUP(true)
-					return client.send(lastMsg.(pkts1.Packet))
+					dupPkt := lastPkt.(pkts1.PacketWithDUP)
+					dupPkt.SetDUP(true)
+					return client.send(lastPkt.(pkts1.Packet))
 				},
 				func() {
 					tLog.Debug("Deleted.")

@@ -18,9 +18,9 @@ func newRegisterTransaction(client *Client, msgID uint16, topic string) *registe
 		transaction: &transaction{
 			RetryTransaction: transactions.NewRetryTransaction(
 				client.groupCtx, client.cfg.RetryDelay, client.cfg.RetryCount,
-				func(lastMsg interface{}) error {
+				func(lastPkt interface{}) error {
 					tLog.Debug("Resend.")
-					return client.send(lastMsg.(pkts1.Packet))
+					return client.send(lastPkt.(pkts1.Packet))
 				},
 				func() {
 					client.transactions.Delete(msgID)

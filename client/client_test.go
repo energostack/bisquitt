@@ -172,10 +172,10 @@ func TestConnectAuthWill(t *testing.T) {
 		stp.send(pkts1.NewWillTopicReq())
 
 		// client --WILLTOPIC--> GW
-		willTopicMsg := stp.recv().(*pkts1.WillTopic)
-		assert.Equal(willTopic, willTopicMsg.WillTopic)
-		assert.Equal(willQOS, willTopicMsg.QOS)
-		assert.Equal(willRetained, willTopicMsg.Retain)
+		willTopicPkt := stp.recv().(*pkts1.WillTopic)
+		assert.Equal(willTopic, willTopicPkt.WillTopic)
+		assert.Equal(willQOS, willTopicPkt.QOS)
+		assert.Equal(willRetained, willTopicPkt.Retain)
 
 		// client <--WILLMSGREQ-- GW
 		willMsgReq := pkts1.NewWillMsgReq()
