@@ -13,58 +13,58 @@ import (
 // It's safe for concurrent use.
 type TransactionStore struct {
 	sync.RWMutex
-	byMsgID   map[uint16]Transaction
-	byMsgType map[pkts1.MessageType]Transaction
+	byPktID   map[uint16]Transaction
+	byPktType map[pkts1.MessageType]Transaction
 }
 
 // NewTransactionStore creates a new transaction store.
 func NewTransactionStore() *TransactionStore {
 	return &TransactionStore{
-		byMsgID:   make(map[uint16]Transaction),
-		byMsgType: make(map[pkts1.MessageType]Transaction),
+		byPktID:   make(map[uint16]Transaction),
+		byPktType: make(map[pkts1.MessageType]Transaction),
 	}
 }
 
 // Store inserts a new transaction to the store by the MessageID.
-func (ts *TransactionStore) Store(msgID uint16, transaction Transaction) {
+func (ts *TransactionStore) Store(pktID uint16, transaction Transaction) {
 	ts.Lock()
 	defer ts.Unlock()
-	ts.byMsgID[msgID] = transaction
+	ts.byPktID[pktID] = transaction
 }
 
 // StoreByType inserts a new transaction to the store by the MessageType.
-func (ts *TransactionStore) StoreByType(msgType pkts1.MessageType, transaction Transaction) {
+func (ts *TransactionStore) StoreByType(pktType pkts1.MessageType, transaction Transaction) {
 	ts.Lock()
 	defer ts.Unlock()
-	ts.byMsgType[msgType] = transaction
+	ts.byPktType[pktType] = transaction
 }
 
 // Get retrieves a transaction from the store by the MessageID.
-func (ts *TransactionStore) Get(msgID uint16) (Transaction, bool) {
+func (ts *TransactionStore) Get(pktID uint16) (Transaction, bool) {
 	ts.RLock()
 	defer ts.RUnlock()
-	transaction, ok := ts.byMsgID[msgID]
+	transaction, ok := ts.byPktID[pktID]
 	return transaction, ok
 }
 
 // GetByType retrieves a transaction from the store by the MessageType.
-func (ts *TransactionStore) GetByType(msgType pkts1.MessageType) (Transaction, bool) {
+func (ts *TransactionStore) GetByType(pktType pkts1.MessageType) (Transaction, bool) {
 	ts.Lock()
 	defer ts.Unlock()
-	transaction, ok := ts.byMsgType[msgType]
+	transaction, ok := ts.byPktType[pktType]
 	return transaction, ok
 }
 
 // Delete removes a transaction from the store by the MessageID.
-func (ts *TransactionStore) Delete(msgID uint16) {
+func (ts *TransactionStore) Delete(pktID uint16) {
 	ts.Lock()
 	defer ts.Unlock()
-	delete(ts.byMsgID, msgID)
+	delete(ts.byPktID, pktID)
 }
 
 // DeleteByType removes a transaction from the store by the MessageType.
-func (ts *TransactionStore) DeleteByType(msgType pkts1.MessageType) {
+func (ts *TransactionStore) DeleteByType(pktType pkts1.MessageType) {
 	ts.Lock()
 	defer ts.Unlock()
-	delete(ts.byMsgType, msgType)
+	delete(ts.byPktType, pktType)
 }

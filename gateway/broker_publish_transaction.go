@@ -29,8 +29,8 @@ type transactionWithRegack interface {
 type brokerPublishTransaction interface {
 	transactions.StatefulTransaction
 	SetSNPublish(*snPkts1.Publish)
-	ProceedSN(newState transactionState, snMsg snPkts1.Packet) error
-	ProceedMQTT(newState transactionState, mqMsg mqPkts.ControlPacket) error
+	ProceedSN(newState transactionState, snPkt snPkts1.Packet) error
+	ProceedMQTT(newState transactionState, mqPkt mqPkts.ControlPacket) error
 }
 
 type brokerPublishTransactionBase struct {
@@ -58,9 +58,9 @@ func (t *brokerPublishTransactionBase) regack(snRegack *snPkts1.Regack, newState
 	return t.ProceedSN(newState, t.snPublish)
 }
 
-func (t *brokerPublishTransactionBase) ProceedSN(newState transactionState, snMsg snPkts1.Packet) error {
-	t.Proceed(newState, snMsg)
-	if err := t.handler.snSend(snMsg); err != nil {
+func (t *brokerPublishTransactionBase) ProceedSN(newState transactionState, snPkt snPkts1.Packet) error {
+	t.Proceed(newState, snPkt)
+	if err := t.handler.snSend(snPkt); err != nil {
 		t.Fail(err)
 		return err
 	}
@@ -70,9 +70,9 @@ func (t *brokerPublishTransactionBase) ProceedSN(newState transactionState, snMs
 	return nil
 }
 
-func (t *brokerPublishTransactionBase) ProceedMQTT(newState transactionState, mqMsg mqPkts.ControlPacket) error {
-	t.Proceed(newState, mqMsg)
-	if err := t.handler.mqttSend(mqMsg); err != nil {
+func (t *brokerPublishTransactionBase) ProceedMQTT(newState transactionState, mqPkt mqPkts.ControlPacket) error {
+	t.Proceed(newState, mqPkt)
+	if err := t.handler.mqttSend(mqPkt); err != nil {
 		t.Fail(err)
 		return err
 	}
@@ -88,8 +88,8 @@ func (t *brokerPublishTransactionBase) resend(pktx interface{}) error {
 	switch pkt := pktx.(type) {
 	case snPkts1.Packet:
 		// Set DUP if applicable.
-		if dupMsg, ok := pkt.(snPkts1.PacketWithDUP); ok {
-			dupMsg.SetDUP(true)
+		if dupPkt, ok := pkt.(snPkts1.PacketWithDUP); ok {
+			dupPkt.SetDUP(true)
 		}
 		return t.handler.snSend(pkt)
 	case mqPkts.ControlPacket:

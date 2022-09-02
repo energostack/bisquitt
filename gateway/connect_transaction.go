@@ -79,10 +79,10 @@ func (t *connectTransaction) Start(ctx context.Context) error {
 	return t.handler.mqttSend(t.mqConnect)
 }
 
-func (t *connectTransaction) Auth(snMsg *snPkts1.Auth) error {
+func (t *connectTransaction) Auth(snPkt *snPkts1.Auth) error {
 	// Extract username and password from PLAIN data.
-	if snMsg.Method == snPkts1.AUTH_PLAIN {
-		user, password, err := snPkts1.DecodePlain(snMsg)
+	if snPkt.Method == snPkts1.AUTH_PLAIN {
+		user, password, err := snPkts1.DecodePlain(snPkt)
 		if err != nil {
 			t.Fail(err)
 			return err
@@ -95,7 +95,7 @@ func (t *connectTransaction) Auth(snMsg *snPkts1.Auth) error {
 		if err := t.SendConnack(snPkts1.RC_NOT_SUPPORTED); err != nil {
 			return err
 		}
-		err := fmt.Errorf("unknown auth method: %#v", snMsg.Method)
+		err := fmt.Errorf("unknown auth method: %#v", snPkt.Method)
 		t.Fail(err)
 		return err
 	}
