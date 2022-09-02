@@ -35,7 +35,7 @@ func (c *ConnWithContext) Read(p []byte) (int, error) {
 AGAIN:
 	select {
 	case <-c.ctx.Done():
-		return 0, context.Canceled
+		return 0, c.ctx.Err()
 	default:
 		// continue
 	}
@@ -63,7 +63,7 @@ func (c *ConnWithContext) Write(b []byte) (int, error) {
 AGAIN:
 	select {
 	case <-c.ctx.Done():
-		return 0, context.Canceled
+		return 0, c.ctx.Err()
 	default:
 		// continue
 	}
