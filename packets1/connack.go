@@ -2,7 +2,6 @@ package packets1
 
 import (
 	"fmt"
-	"io"
 
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
@@ -21,12 +20,12 @@ func NewConnack(returnCode ReturnCode) *Connack {
 	}
 }
 
-func (p *Connack) Write(w io.Writer) error {
-	buf := p.Header.Pack()
-	buf.WriteByte(byte(p.ReturnCode))
+func (p *Connack) Pack() ([]byte, error) {
+	buf := p.Header.PackToBuffer()
 
-	_, err := buf.WriteTo(w)
-	return err
+	_ = buf.WriteByte(byte(p.ReturnCode))
+
+	return buf.Bytes(), nil
 }
 
 func (p *Connack) Unpack(buf []byte) error {

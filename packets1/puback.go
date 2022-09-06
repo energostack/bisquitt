@@ -3,7 +3,6 @@ package packets1
 import (
 	"encoding/binary"
 	"fmt"
-	"io"
 
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
@@ -25,14 +24,14 @@ func NewPuback(topicID uint16, returnCode ReturnCode) *Puback {
 	}
 }
 
-func (p *Puback) Write(w io.Writer) error {
-	buf := p.Header.Pack()
-	buf.Write(pkts.EncodeUint16(p.TopicID))
-	buf.Write(pkts.EncodeUint16(p.messageID))
-	buf.WriteByte(byte(p.ReturnCode))
+func (p *Puback) Pack() ([]byte, error) {
+	buf := p.Header.PackToBuffer()
 
-	_, err := buf.WriteTo(w)
-	return err
+	_, _ = buf.Write(pkts.EncodeUint16(p.TopicID))
+	_, _ = buf.Write(pkts.EncodeUint16(p.messageID))
+	_ = buf.WriteByte(byte(p.ReturnCode))
+
+	return buf.Bytes(), nil
 }
 
 func (p *Puback) Unpack(buf []byte) error {

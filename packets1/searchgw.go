@@ -2,7 +2,6 @@ package packets1
 
 import (
 	"fmt"
-	"io"
 
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
@@ -21,12 +20,12 @@ func NewSearchGw(radius uint8) *SearchGw {
 	}
 }
 
-func (p *SearchGw) Write(w io.Writer) error {
-	buf := p.Header.Pack()
-	buf.WriteByte(p.Radius)
+func (p *SearchGw) Pack() ([]byte, error) {
+	buf := p.Header.PackToBuffer()
 
-	_, err := buf.WriteTo(w)
-	return err
+	_ = buf.WriteByte(p.Radius)
+
+	return buf.Bytes(), nil
 }
 
 func (p *SearchGw) Unpack(buf []byte) error {

@@ -1,7 +1,6 @@
 package packets1
 
 import (
-	"bytes"
 	"reflect"
 	"testing"
 
@@ -26,20 +25,7 @@ func TestConnect(t *testing.T) {
 }
 
 func TestConnectMarshal(t *testing.T) {
-	assert := assert.New(t)
-	buf := bytes.NewBuffer(nil)
-
 	pkt1 := NewConnect([]byte("test-client"), true, true, 75)
-	err := pkt1.Write(buf)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	r := bytes.NewReader(buf.Bytes())
-	pkt2, err := ReadPacket(r)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	assert.Equal(pkt1, pkt2.(*Connect))
+	pkt2 := testPacketMarshal(t, pkt1)
+	assert.Equal(t, pkt1, pkt2.(*Connect))
 }

@@ -1,7 +1,6 @@
 package packets1
 
 import (
-	"bytes"
 	"reflect"
 	"testing"
 
@@ -21,19 +20,7 @@ func TestGwInfoStruct(t *testing.T) {
 }
 
 func TestGwInfoMarshal(t *testing.T) {
-	assert := assert.New(t)
-	buf := bytes.NewBuffer(nil)
-
 	pkt1 := NewGwInfo(123, []byte("gateway-address"))
-	if err := pkt1.Write(buf); err != nil {
-		t.Fatal(err)
-	}
-
-	r := bytes.NewReader(buf.Bytes())
-	pkt2, err := ReadPacket(r)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	assert.Equal(pkt1, pkt2.(*GwInfo))
+	pkt2 := testPacketMarshal(t, pkt1)
+	assert.Equal(t, pkt1, pkt2.(*GwInfo))
 }

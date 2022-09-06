@@ -3,7 +3,6 @@ package packets1
 import (
 	"encoding/binary"
 	"fmt"
-	"io"
 
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
@@ -33,16 +32,15 @@ func (p *Register) computeLength() {
 	p.Header.SetVarPartLength(registerHeaderLength + topicLength)
 }
 
-func (p *Register) Write(w io.Writer) error {
+func (p *Register) Pack() ([]byte, error) {
 	p.computeLength()
+	buf := p.Header.PackToBuffer()
 
-	buf := p.Header.Pack()
-	buf.Write(pkts.EncodeUint16(p.TopicID))
-	buf.Write(pkts.EncodeUint16(p.messageID))
-	buf.Write([]byte(p.TopicName))
+	_, _ = buf.Write(pkts.EncodeUint16(p.TopicID))
+	_, _ = buf.Write(pkts.EncodeUint16(p.messageID))
+	_, _ = buf.Write([]byte(p.TopicName))
 
-	_, err := buf.WriteTo(w)
-	return err
+	return buf.Bytes(), nil
 }
 
 func (p *Register) Unpack(buf []byte) error {

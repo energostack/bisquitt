@@ -3,7 +3,6 @@ package packets1
 import (
 	"encoding/binary"
 	"fmt"
-	"io"
 
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
@@ -54,17 +53,16 @@ func (p *Connect) encodeFlags() byte {
 	return b
 }
 
-func (p *Connect) Write(w io.Writer) error {
+func (p *Connect) Pack() ([]byte, error) {
 	p.computeLength()
+	buf := p.Header.PackToBuffer()
 
-	buf := p.Header.Pack()
-	buf.WriteByte(p.encodeFlags())
-	buf.WriteByte(p.ProtocolID)
-	buf.Write(pkts.EncodeUint16(p.Duration))
-	buf.Write([]byte(p.ClientID))
+	_ = buf.WriteByte(p.encodeFlags())
+	_ = buf.WriteByte(p.ProtocolID)
+	_, _ = buf.Write(pkts.EncodeUint16(p.Duration))
+	_, _ = buf.Write([]byte(p.ClientID))
 
-	_, err := buf.WriteTo(w)
-	return err
+	return buf.Bytes(), nil
 }
 
 func (p *Connect) Unpack(buf []byte) error {

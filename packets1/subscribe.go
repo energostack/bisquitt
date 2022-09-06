@@ -3,7 +3,6 @@ package packets1
 import (
 	"encoding/binary"
 	"fmt"
-	"io"
 
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
@@ -61,21 +60,20 @@ func (p *Subscribe) decodeFlags(b byte) {
 	p.TopicIDType = b & flagsTopicIDTypeBits
 }
 
-func (p *Subscribe) Write(w io.Writer) error {
+func (p *Subscribe) Pack() ([]byte, error) {
 	p.computeLength()
+	buf := p.Header.PackToBuffer()
 
-	buf := p.Header.Pack()
-	buf.WriteByte(p.encodeFlags())
-	buf.Write(pkts.EncodeUint16(p.messageID))
+	_ = buf.WriteByte(p.encodeFlags())
+	_, _ = buf.Write(pkts.EncodeUint16(p.messageID))
 	switch p.TopicIDType {
 	case TIT_STRING:
-		buf.Write(p.TopicName)
+		_, _ = buf.Write(p.TopicName)
 	case TIT_PREDEFINED, TIT_SHORT:
-		buf.Write(pkts.EncodeUint16(p.TopicID))
+		_, _ = buf.Write(pkts.EncodeUint16(p.TopicID))
 	}
 
-	_, err := buf.WriteTo(w)
-	return err
+	return buf.Bytes(), nil
 }
 
 func (p *Subscribe) Unpack(buf []byte) error {

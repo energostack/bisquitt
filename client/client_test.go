@@ -1869,7 +1869,12 @@ func (stp *testSetup) createSocketPair(sockType string, rand *rand.Rand) (*net.U
 }
 
 func (stp *testSetup) send(pkt pkts.Packet) {
-	if err := pkt.Write(stp.conn); err != nil {
+	buf, err := pkt.Pack()
+	if err != nil {
+		stp.t.Fatal(err)
+	}
+	_, err = stp.conn.Write(buf)
+	if err != nil {
 		stp.t.Fatal(err)
 	}
 }

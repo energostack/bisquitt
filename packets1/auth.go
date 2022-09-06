@@ -3,7 +3,6 @@ package packets1
 import (
 	"bytes"
 	"fmt"
-	"io"
 
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
@@ -19,6 +18,8 @@ const (
 const (
 	AUTH_PLAIN = "PLAIN"
 )
+
+const authHeaderLength uint16 = 2
 
 // Non-standard extension to allow user/password authentication in MQTT-SN.
 //
@@ -36,17 +37,16 @@ type Auth struct {
 // NewAuthPlain creates a new Auth with "PLAIN" method encoded
 // authentication data.
 func NewAuthPlain(user string, password []byte) *Auth {
-	auth := &Auth{Header: *pkts.NewHeader(pkts.AUTH, 0)}
-	auth.Method = "PLAIN"
+	p := &Auth{Header: *pkts.NewHeader(pkts.AUTH, 0)}
+	p.Method = "PLAIN"
 	var b bytes.Buffer
 	b.Write([]byte{0})
 	b.Write([]byte(user))
 	b.Write([]byte{0})
 	b.Write(password)
-	auth.Data = b.Bytes()
-	length := 2 + len(auth.Method) + len(auth.Data)
-	auth.SetVarPartLength(uint16(length))
-	return auth
+	p.Data = b.Bytes()
+	p.computeLength()
+	return p
 }
 
 // DecodePlain decodes username and password from AUTH package data encoded
@@ -60,15 +60,16 @@ func DecodePlain(auth *Auth) (string, []byte, error) {
 	return string(dataParts[1]), dataParts[2], nil
 }
 
-func (p *Auth) Write(w io.Writer) error {
-	buf := p.Header.Pack()
-	buf.WriteByte(p.Reason)
-	buf.WriteByte(byte(len(p.Method)))
-	buf.Write([]byte(p.Method))
-	buf.Write([]byte(p.Data))
+func (p *Auth) Pack() ([]byte, error) {
+	p.computeLength()
+	buf := p.Header.PackToBuffer()
 
-	_, err := buf.WriteTo(w)
-	return err
+	_ = buf.WriteByte(p.Reason)
+	_ = buf.WriteByte(byte(len(p.Method)))
+	_, _ = buf.Write([]byte(p.Method))
+	_, _ = buf.Write([]byte(p.Data))
+
+	return buf.Bytes(), nil
 }
 
 func (p *Auth) Unpack(buf []byte) error {
@@ -92,4 +93,10 @@ func (p *Auth) Unpack(buf []byte) error {
 func (p Auth) String() string {
 	// We intentionally do not print Data because it contains sensitive data.
 	return fmt.Sprintf("AUTH(Reason=%d, Method=%#v)", p.Reason, p.Method)
+}
+
+func (p *Auth) computeLength() {
+	methodLen := uint16(len(p.Method))
+	dataLen := uint16(len(p.Data))
+	p.Header.SetVarPartLength(authHeaderLength + methodLen + dataLen)
 }
