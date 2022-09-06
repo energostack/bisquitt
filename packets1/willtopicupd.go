@@ -2,7 +2,6 @@ package packets1
 
 import (
 	"fmt"
-	"io"
 
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
@@ -47,15 +46,14 @@ func (p *WillTopicUpdate) decodeFlags(b byte) {
 	p.Retain = (b & flagsRetainBit) == flagsRetainBit
 }
 
-func (p *WillTopicUpdate) Write(w io.Writer) error {
+func (p *WillTopicUpdate) Pack() ([]byte, error) {
 	p.computeLength()
+	buf := p.Header.PackToBuffer()
 
-	buf := p.Header.Pack()
-	buf.WriteByte(p.encodeFlags())
-	buf.Write(p.WillTopic)
+	_ = buf.WriteByte(p.encodeFlags())
+	_, _ = buf.Write(p.WillTopic)
 
-	_, err := buf.WriteTo(w)
-	return err
+	return buf.Bytes(), nil
 }
 
 func (p *WillTopicUpdate) Unpack(buf []byte) error {

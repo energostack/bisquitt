@@ -1,8 +1,6 @@
 package packets1
 
 import (
-	"io"
-
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
@@ -18,11 +16,9 @@ func NewPingresp() *Pingresp {
 	}
 }
 
-func (p *Pingresp) Write(w io.Writer) error {
-	buf := p.Header.Pack()
-
-	_, err := buf.WriteTo(w)
-	return err
+func (p *Pingresp) Pack() ([]byte, error) {
+	buf := p.Header.PackToBuffer()
+	return buf.Bytes(), nil
 }
 
 func (p *Pingresp) Unpack(buf []byte) error {

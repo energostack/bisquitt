@@ -2,7 +2,6 @@ package packets1
 
 import (
 	"fmt"
-	"io"
 
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
@@ -31,15 +30,14 @@ func (p *GwInfo) computeLength() {
 	p.Header.SetVarPartLength(gwInfoHeaderLength + addrLength)
 }
 
-func (p *GwInfo) Write(w io.Writer) error {
+func (p *GwInfo) Pack() ([]byte, error) {
 	p.computeLength()
+	buf := p.Header.PackToBuffer()
 
-	buf := p.Header.Pack()
-	buf.WriteByte(p.GatewayID)
-	buf.Write(p.GatewayAddress)
+	_ = buf.WriteByte(p.GatewayID)
+	_, _ = buf.Write(p.GatewayAddress)
 
-	_, err := buf.WriteTo(w)
-	return err
+	return buf.Bytes(), nil
 }
 
 func (p *GwInfo) Unpack(buf []byte) error {

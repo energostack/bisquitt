@@ -3,7 +3,6 @@ package packets1
 import (
 	"encoding/binary"
 	"fmt"
-	"io"
 
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
@@ -37,15 +36,15 @@ func (p *Suback) decodeFlags(b byte) {
 	p.QOS = (b & flagsQOSBits) >> 5
 }
 
-func (p *Suback) Write(w io.Writer) error {
-	buf := p.Header.Pack()
-	buf.WriteByte(p.encodeFlags())
-	buf.Write(pkts.EncodeUint16(p.TopicID))
-	buf.Write(pkts.EncodeUint16(p.messageID))
-	buf.WriteByte(byte(p.ReturnCode))
+func (p *Suback) Pack() ([]byte, error) {
+	buf := p.Header.PackToBuffer()
 
-	_, err := buf.WriteTo(w)
-	return err
+	_ = buf.WriteByte(p.encodeFlags())
+	_, _ = buf.Write(pkts.EncodeUint16(p.TopicID))
+	_, _ = buf.Write(pkts.EncodeUint16(p.messageID))
+	_ = buf.WriteByte(byte(p.ReturnCode))
+
+	return buf.Bytes(), nil
 }
 
 func (p *Suback) Unpack(buf []byte) error {

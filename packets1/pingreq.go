@@ -2,7 +2,6 @@ package packets1
 
 import (
 	"fmt"
-	"io"
 
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
@@ -27,16 +26,13 @@ func (p *Pingreq) computeLength() {
 	p.Header.SetVarPartLength(uint16(length))
 }
 
-func (p *Pingreq) Write(w io.Writer) error {
+func (p *Pingreq) Pack() ([]byte, error) {
 	p.computeLength()
+	buf := p.Header.PackToBuffer()
 
-	buf := p.Header.Pack()
-	if len(p.ClientID) > 0 {
-		buf.Write(p.ClientID)
-	}
+	_, _ = buf.Write(p.ClientID)
 
-	_, err := buf.WriteTo(w)
-	return err
+	return buf.Bytes(), nil
 }
 
 func (p *Pingreq) Unpack(buf []byte) error {

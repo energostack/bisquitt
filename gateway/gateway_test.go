@@ -1321,7 +1321,11 @@ func (stp *testSetup) snSend(pkt snPkts.Packet, setMsgID bool) {
 		}
 	}
 
-	err := pkt.Write(stp.snConn)
+	buf, err := pkt.Pack()
+	if err != nil {
+		stp.t.Fatal(err)
+	}
+	_, err = stp.snConn.Write(buf)
 	if err != nil {
 		stp.t.Fatal(err)
 	}

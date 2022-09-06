@@ -2,7 +2,6 @@ package packets1
 
 import (
 	"fmt"
-	"io"
 
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
@@ -27,14 +26,13 @@ func (p *WillMsg) computeLength() {
 	p.Header.SetVarPartLength(uint16(msgLength))
 }
 
-func (p *WillMsg) Write(w io.Writer) error {
+func (p *WillMsg) Pack() ([]byte, error) {
 	p.computeLength()
+	buf := p.Header.PackToBuffer()
 
-	buf := p.Header.Pack()
-	buf.Write(p.WillMsg)
+	_, _ = buf.Write(p.WillMsg)
 
-	_, err := buf.WriteTo(w)
-	return err
+	return buf.Bytes(), nil
 }
 
 func (p *WillMsg) Unpack(buf []byte) error {

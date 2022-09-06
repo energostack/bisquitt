@@ -3,7 +3,6 @@ package packets1
 import (
 	"encoding/binary"
 	"fmt"
-	"io"
 
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
@@ -24,13 +23,13 @@ func NewAdvertise(gatewayID uint8, duration uint16) *Advertise {
 	}
 }
 
-func (p *Advertise) Write(w io.Writer) error {
-	buf := p.Header.Pack()
-	buf.WriteByte(p.GatewayID)
-	buf.Write(pkts.EncodeUint16(p.Duration))
+func (p *Advertise) Pack() ([]byte, error) {
+	buf := p.Header.PackToBuffer()
 
-	_, err := buf.WriteTo(w)
-	return err
+	_ = buf.WriteByte(p.GatewayID)
+	_, _ = buf.Write(pkts.EncodeUint16(p.Duration))
+
+	return buf.Bytes(), nil
 }
 
 func (p *Advertise) Unpack(buf []byte) error {

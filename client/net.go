@@ -15,7 +15,15 @@ import (
 
 func (c *Client) send(pkt pkts.Packet) error {
 	c.log.Debug("<- %v", pkt)
-	return pkt.Write(c.conn)
+	buf, err := pkt.Pack()
+	if err != nil {
+		return err
+	}
+	_, err = c.conn.Write(buf)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *Client) keepaliveLoop(ctx context.Context) error {

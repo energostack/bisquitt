@@ -2,7 +2,6 @@ package packets1
 
 import (
 	"fmt"
-	"io"
 
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
@@ -19,11 +18,9 @@ func NewWillTopicReq() *WillTopicReq {
 	}
 }
 
-func (p *WillTopicReq) Write(w io.Writer) error {
-	buf := p.Header.Pack()
-
-	_, err := buf.WriteTo(w)
-	return err
+func (p *WillTopicReq) Pack() ([]byte, error) {
+	buf := p.Header.PackToBuffer()
+	return buf.Bytes(), nil
 }
 
 func (p *WillTopicReq) Unpack(buf []byte) error {

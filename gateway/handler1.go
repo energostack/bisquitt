@@ -887,7 +887,11 @@ func (h *handler1) snSend(pkt snPkts.Packet) error {
 		return nil
 	}
 	h.log.Debug("<- %v", pkt)
-	err := pkt.Write(h.snConn)
+	buf, err := pkt.Pack()
+	if err != nil {
+		return err
+	}
+	_, err = h.snConn.Write(buf)
 	if err != nil {
 		return err
 	}

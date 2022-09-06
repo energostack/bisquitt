@@ -3,7 +3,6 @@ package packets1
 import (
 	"encoding/binary"
 	"fmt"
-	"io"
 
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
@@ -21,12 +20,12 @@ func NewPubrec() *Pubrec {
 	}
 }
 
-func (p *Pubrec) Write(w io.Writer) error {
-	buf := p.Header.Pack()
-	buf.Write(pkts.EncodeUint16(p.messageID))
+func (p *Pubrec) Pack() ([]byte, error) {
+	buf := p.Header.PackToBuffer()
 
-	_, err := buf.WriteTo(w)
-	return err
+	_, _ = buf.Write(pkts.EncodeUint16(p.messageID))
+
+	return buf.Bytes(), nil
 }
 
 func (p *Pubrec) Unpack(buf []byte) error {

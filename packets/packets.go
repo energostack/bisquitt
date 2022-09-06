@@ -3,13 +3,12 @@ package packets
 import (
 	"encoding/binary"
 	"fmt"
-	"io"
 )
 
 type Packet interface {
 	fmt.Stringer
 
-	Write(io.Writer) error
+	Pack() ([]byte, error)
 	Unpack([]byte) error
 }
 

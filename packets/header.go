@@ -92,18 +92,22 @@ func (h *Header) Unpack(buf []byte) error {
 	return nil
 }
 
-func (h *Header) Pack() bytes.Buffer {
-	var buff bytes.Buffer
+// NOTE: We ignore bytes.Buffer.Write*() errors because they are always nil, see
+//       https://cs.opensource.google/go/go/+/refs/tags/go1.19:src/bytes/buffer.go;l=273;drc=535fe2b226096a3547321a51b36f464ab443b5cb
+//       Also, the underlying Buffer's byte array is pre-alocated, hence we also
+//       can't get panic with ErrTooLarge.
+func (h *Header) PackToBuffer() *bytes.Buffer {
+	buf := bytes.NewBuffer(make([]byte, 0, h.pktLength))
 
 	if h.pktLength > 255 {
-		buff.WriteByte(longPacketFlag)
-		buff.Write(EncodeUint16(h.pktLength))
+		_ = buf.WriteByte(longPacketFlag)
+		_, _ = buf.Write(EncodeUint16(h.pktLength))
 	} else {
-		buff.WriteByte(byte(h.pktLength))
+		_ = buf.WriteByte(byte(h.pktLength))
 	}
-	buff.WriteByte(byte(h.pktType))
+	_ = buf.WriteByte(byte(h.pktType))
 
-	return buff
+	return buf
 }
 
 func ReadByte(r io.Reader) (byte, error) {
