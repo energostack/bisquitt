@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/energomonitor/bisquitt"
 	"github.com/urfave/cli/v2"
+
+	"github.com/energomonitor/bisquitt"
 )
 
 const (

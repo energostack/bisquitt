@@ -6,10 +6,10 @@ import (
 	"net"
 	"time"
 
+	dtlsProtocol "github.com/pion/dtls/v2/pkg/protocol"
+
 	pkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/util"
-
-	dtlsProtocol "github.com/pion/dtls/v2/pkg/protocol"
 )
 
 func (c *Client) send(pkt pkts1.Packet) error {

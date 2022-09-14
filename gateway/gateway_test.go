@@ -13,10 +13,11 @@ import (
 	"time"
 
 	mqPkts "github.com/eclipse/paho.mqtt.golang/packets"
+	"github.com/stretchr/testify/assert"
+
 	snPkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/topics"
 	"github.com/energomonitor/bisquitt/util"
-	"github.com/stretchr/testify/assert"
 )
 
 const (

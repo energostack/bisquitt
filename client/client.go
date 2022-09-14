@@ -64,13 +64,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pion/dtls/v2"
+	"github.com/pion/dtls/v2/pkg/crypto/selfsign"
+	"golang.org/x/sync/errgroup"
+
 	pkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/topics"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
-	"github.com/pion/dtls/v2"
-	"github.com/pion/dtls/v2/pkg/crypto/selfsign"
-	"golang.org/x/sync/errgroup"
 )
 
 type ClientConfig struct {

@@ -13,12 +13,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	pkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/topics"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
-
-	"github.com/stretchr/testify/assert"
 )
 
 const (

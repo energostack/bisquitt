@@ -13,11 +13,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/urfave/cli/v2"
+
 	snClient "github.com/energomonitor/bisquitt/client"
 	"github.com/energomonitor/bisquitt/topics"
 	"github.com/energomonitor/bisquitt/util"
 	cryptoutils "github.com/energomonitor/bisquitt/util/crypto"
-	"github.com/urfave/cli/v2"
 )
 
 func handleAction() cli.ActionFunc {
