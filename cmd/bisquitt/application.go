@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/urfave/cli/v2"
+
 	"github.com/energomonitor/bisquitt"
 	"github.com/energomonitor/bisquitt/util/platform"
-	"github.com/urfave/cli/v2"
 )
 
 const (

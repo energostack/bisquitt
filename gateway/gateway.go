@@ -11,11 +11,12 @@ import (
 	"net"
 	"time"
 
-	"github.com/energomonitor/bisquitt/topics"
-	"github.com/energomonitor/bisquitt/util"
 	"github.com/pion/dtls/v2"
 	"github.com/pion/dtls/v2/pkg/crypto/selfsign"
 	"github.com/pion/udp"
+
+	"github.com/energomonitor/bisquitt/topics"
+	"github.com/energomonitor/bisquitt/util"
 )
 
 type GatewayConfig struct {

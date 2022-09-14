@@ -28,11 +28,12 @@ import (
 	"time"
 
 	mqPkts "github.com/eclipse/paho.mqtt.golang/packets"
+	"golang.org/x/sync/errgroup"
+
 	snPkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/topics"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
-	"golang.org/x/sync/errgroup"
 )
 
 type handler struct {
