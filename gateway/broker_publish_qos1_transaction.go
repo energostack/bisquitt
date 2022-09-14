@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	mqttPackets "github.com/eclipse/paho.mqtt.golang/packets"
+	mqPkts "github.com/eclipse/paho.mqtt.golang/packets"
+
 	snPkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
@@ -45,7 +46,7 @@ func (t *brokerPublishQOS1Transaction) Puback(snPuback *snPkts1.Puback) error {
 		t.Fail(fmt.Errorf("PUBACK return code: %d", snPuback.ReturnCode))
 		return nil
 	}
-	mqPuback := mqttPackets.NewControlPacket(mqttPackets.Puback).(*mqttPackets.PubackPacket)
+	mqPuback := mqPkts.NewControlPacket(mqPkts.Puback).(*mqPkts.PubackPacket)
 	mqPuback.MessageID = snPuback.MessageID()
 	return t.ProceedMQTT(transactionDone, mqPuback)
 }

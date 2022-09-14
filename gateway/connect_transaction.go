@@ -12,7 +12,8 @@ import (
 	"errors"
 	"fmt"
 
-	mqttPackets "github.com/eclipse/paho.mqtt.golang/packets"
+	mqPkts "github.com/eclipse/paho.mqtt.golang/packets"
+
 	snPkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
@@ -25,11 +26,11 @@ type connectTransaction struct {
 	handler       *handler
 	log           util.Logger
 	authEnabled   bool
-	mqConnect     *mqttPackets.ConnectPacket
+	mqConnect     *mqPkts.ConnectPacket
 	authenticated bool
 }
 
-func newConnectTransaction(ctx context.Context, h *handler, authEnabled bool, mqConnect *mqttPackets.ConnectPacket) *connectTransaction {
+func newConnectTransaction(ctx context.Context, h *handler, authEnabled bool, mqConnect *mqPkts.ConnectPacket) *connectTransaction {
 	tLog := h.log.WithTag("CONNECT")
 	tLog.Debug("Created.")
 	return &connectTransaction{
@@ -124,14 +125,14 @@ func (t *connectTransaction) WillMsg(snWillMsg *snPkts1.WillMsg) error {
 	return t.handler.mqttSend(t.mqConnect)
 }
 
-func (t *connectTransaction) Connack(mqConnack *mqttPackets.ConnackPacket) error {
-	if mqConnack.ReturnCode != mqttPackets.Accepted {
+func (t *connectTransaction) Connack(mqConnack *mqPkts.ConnackPacket) error {
+	if mqConnack.ReturnCode != mqPkts.Accepted {
 		// We misuse RC_CONGESTION here because MQTT-SN spec v. 1.2 does not define
 		// any suitable return code.
 		if err := t.SendConnack(snPkts1.RC_CONGESTION); err != nil {
 			return err
 		}
-		returnCodeStr, ok := mqttPackets.ConnackReturnCodes[mqConnack.ReturnCode]
+		returnCodeStr, ok := mqPkts.ConnackReturnCodes[mqConnack.ReturnCode]
 		if !ok {
 			returnCodeStr = "unknown code!"
 		}

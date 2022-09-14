@@ -27,12 +27,11 @@ import (
 	"sync"
 	"time"
 
+	mqPkts "github.com/eclipse/paho.mqtt.golang/packets"
 	snPkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/topics"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
-
-	mqttPackets "github.com/eclipse/paho.mqtt.golang/packets"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -226,7 +225,7 @@ func (h *handler) findTopicID(topic string) (uint16, uint8, bool) {
 func (h *handler) handleClientPublish(ctx context.Context, snPublish *snPkts1.Publish) error {
 	msgID := snPublish.MessageID()
 
-	mqPublish := mqttPackets.NewControlPacket(mqttPackets.Publish).(*mqttPackets.PublishPacket)
+	mqPublish := mqPkts.NewControlPacket(mqPkts.Publish).(*mqPkts.PublishPacket)
 	mqPublish.MessageID = msgID
 	mqPublish.Dup = snPublish.DUP()
 	if snPublish.QOS == 3 {
@@ -261,7 +260,7 @@ func (h *handler) handleClientPublish(ctx context.Context, snPublish *snPkts1.Pu
 	return h.mqttSend(mqPublish)
 }
 
-func (h *handler) handleBrokerPublish(ctx context.Context, mqPublish *mqttPackets.PublishPacket) error {
+func (h *handler) handleBrokerPublish(ctx context.Context, mqPublish *mqPkts.PublishPacket) error {
 	msgID := mqPublish.MessageID
 
 	// Get TopicID
@@ -360,12 +359,12 @@ func (h *handler) handleBrokerPublish(ctx context.Context, mqPublish *mqttPacket
 	return transaction.ProceedSN(nextState, snMsg)
 }
 
-func (h *handler) handleMqtt(ctx context.Context, pkt mqttPackets.ControlPacket) error {
+func (h *handler) handleMqtt(ctx context.Context, pkt mqPkts.ControlPacket) error {
 	h.log.Debug("=> %v", pkt)
 	switch mqMsg := pkt.(type) {
 
 	// Client CONNECT transaction.
-	case *mqttPackets.ConnackPacket:
+	case *mqPkts.ConnackPacket:
 		transactionx, _ := h.transactions.GetByType(snPkts1.CONNECT)
 		transaction, ok := transactionx.(*connectTransaction)
 		if !ok {
@@ -375,7 +374,7 @@ func (h *handler) handleMqtt(ctx context.Context, pkt mqttPackets.ControlPacket)
 		return transaction.Connack(mqMsg)
 
 	// Client PUBLISH QoS 1 transaction.
-	case *mqttPackets.PubackPacket:
+	case *mqPkts.PubackPacket:
 		transactionx, _ := h.transactions.Get(mqMsg.MessageID)
 		transaction, ok := transactionx.(*clientPublishQOS1Transaction)
 		if !ok {
@@ -385,19 +384,19 @@ func (h *handler) handleMqtt(ctx context.Context, pkt mqttPackets.ControlPacket)
 		return transaction.Puback(mqMsg)
 
 	// Client PUBLISH QoS 2 transaction.
-	case *mqttPackets.PubrecPacket:
+	case *mqPkts.PubrecPacket:
 		snPubrec := snPkts1.NewPubrec()
 		snPubrec.SetMessageID(mqMsg.MessageID)
 		return h.snSend(snPubrec)
 
 	// Client PUBLISH QoS 2 transaction.
-	case *mqttPackets.PubcompPacket:
+	case *mqPkts.PubcompPacket:
 		snPubcomp := snPkts1.NewPubcomp()
 		snPubcomp.SetMessageID(mqMsg.MessageID)
 		return h.snSend(snPubcomp)
 
 	// Client SUBSCRIBE transaction.
-	case *mqttPackets.SubackPacket:
+	case *mqPkts.SubackPacket:
 		transactionx, _ := h.transactions.Get(mqMsg.MessageID)
 		transaction, ok := transactionx.(*subscribeTransaction)
 		if !ok {
@@ -407,13 +406,13 @@ func (h *handler) handleMqtt(ctx context.Context, pkt mqttPackets.ControlPacket)
 		return transaction.Suback(mqMsg)
 
 	// Client UNSUBSCRIBE transaction.
-	case *mqttPackets.UnsubackPacket:
+	case *mqPkts.UnsubackPacket:
 		snUnsuback := snPkts1.NewUnsuback()
 		snUnsuback.SetMessageID(mqMsg.MessageID)
 		return h.snSend(snUnsuback)
 
 	// Client PING transaction (keepalive).
-	case *mqttPackets.PingrespPacket:
+	case *mqPkts.PingrespPacket:
 		// Response to sleepPinger pings => do not pass to the sleeping client.
 		if h.state.Get() != util.StateActive {
 			return nil
@@ -421,11 +420,11 @@ func (h *handler) handleMqtt(ctx context.Context, pkt mqttPackets.ControlPacket)
 		return h.snSend(snPkts1.NewPingresp())
 
 	// MQTT broker PUBLISH QOS 0,1,2 transaction.
-	case *mqttPackets.PublishPacket:
+	case *mqPkts.PublishPacket:
 		return h.handleBrokerPublish(ctx, mqMsg)
 
 	// MQTT broker PUBLISH QoS 2 transaction.
-	case *mqttPackets.PubrelPacket:
+	case *mqPkts.PubrelPacket:
 		transactionx, _ := h.transactions.Get(mqMsg.MessageID)
 		transaction, ok := transactionx.(*brokerPublishQOS2Transaction)
 		if !ok {
@@ -462,7 +461,7 @@ func (h *handler) mqttReceiveLoop(ctx context.Context) error {
 	h.log.Debug("MQTT receiver starts.")
 	defer h.log.Debug("MQTT receiver quits.")
 	for {
-		pkt, err := mqttPackets.ReadPacket(h.mqttConn)
+		pkt, err := mqPkts.ReadPacket(h.mqttConn)
 		if err != nil {
 			if err == context.Canceled {
 				return nil
@@ -549,9 +548,9 @@ func (h *handler) handleConnect(ctx context.Context, snConnect *snPkts1.Connect)
 	h.keepAlive = snConnect.Duration
 	h.clientID = string(snConnect.ClientID)
 
-	mqConnect := &mqttPackets.ConnectPacket{
-		FixedHeader: mqttPackets.FixedHeader{
-			MessageType: mqttPackets.Connect,
+	mqConnect := &mqPkts.ConnectPacket{
+		FixedHeader: mqPkts.FixedHeader{
+			MessageType: mqPkts.Connect,
 		},
 		ClientIdentifier: h.clientID,
 		CleanSession:     snConnect.CleanSession,
@@ -621,7 +620,7 @@ func (h *handler) handleSubscribe(ctx context.Context, snSubscribe *snPkts1.Subs
 	transaction := newSubscribeTransaction(ctx, h, msgID, topicID)
 	h.transactions.Store(msgID, transaction)
 
-	mqSubscribe := mqttPackets.NewControlPacket(mqttPackets.Subscribe).(*mqttPackets.SubscribePacket)
+	mqSubscribe := mqPkts.NewControlPacket(mqPkts.Subscribe).(*mqPkts.SubscribePacket)
 	mqSubscribe.MessageID = snSubscribe.MessageID()
 	mqSubscribe.Dup = snSubscribe.DUP()
 	mqSubscribe.Qoss = []byte{snSubscribe.QOS}
@@ -644,7 +643,7 @@ func (h *handler) handleUnsubscribe(_ context.Context, snUnsubscribe *snPkts1.Un
 		topic = snPkts1.DecodeShortTopic(snUnsubscribe.TopicID)
 	}
 
-	mqUnsubscribe := mqttPackets.NewControlPacket(mqttPackets.Unsubscribe).(*mqttPackets.UnsubscribePacket)
+	mqUnsubscribe := mqPkts.NewControlPacket(mqPkts.Unsubscribe).(*mqPkts.UnsubscribePacket)
 	mqUnsubscribe.MessageID = snUnsubscribe.MessageID()
 	mqUnsubscribe.Topics = []string{topic}
 	return h.mqttSend(mqUnsubscribe)
@@ -760,7 +759,7 @@ func (h *handler) handleMqttSn(ctx context.Context, pkt snPkts1.Packet) error {
 
 	// Client PUBLISH QoS 2 transaction.
 	case *snPkts1.Pubrel:
-		mqPubrel := mqttPackets.NewControlPacket(mqttPackets.Pubrel).(*mqttPackets.PubrelPacket)
+		mqPubrel := mqPkts.NewControlPacket(mqPkts.Pubrel).(*mqPkts.PubrelPacket)
 		mqPubrel.MessageID = snMsg.MessageID()
 		return h.mqttSend(mqPubrel)
 
@@ -785,14 +784,14 @@ func (h *handler) handleMqttSn(ctx context.Context, pkt snPkts1.Packet) error {
 			h.pktBuffer = nil
 			return h.snSend(snPkts1.NewPingresp())
 		} else {
-			mqMsg := mqttPackets.NewControlPacket(mqttPackets.Pingreq).(*mqttPackets.PingreqPacket)
+			mqMsg := mqPkts.NewControlPacket(mqPkts.Pingreq).(*mqPkts.PingreqPacket)
 			return h.mqttSend(mqMsg)
 		}
 
 	// Client DISCONNECT transaction.
 	case *snPkts1.Disconnect:
 		if snMsg.Duration == 0 {
-			mqMsg := mqttPackets.NewControlPacket(mqttPackets.Disconnect).(*mqttPackets.DisconnectPacket)
+			mqMsg := mqPkts.NewControlPacket(mqPkts.Disconnect).(*mqPkts.DisconnectPacket)
 			h.mqttSend(mqMsg)
 			h.setState(util.StateDisconnected)
 			m3 := snPkts1.NewDisconnect(0)
@@ -870,7 +869,7 @@ func (h *handler) startSleepPinger(ctx context.Context) context.CancelFunc {
 		for {
 			select {
 			case <-time.After(time.Duration(h.keepAlive) * time.Second):
-				p := mqttPackets.NewControlPacket(mqttPackets.Pingreq).(*mqttPackets.PingreqPacket)
+				p := mqPkts.NewControlPacket(mqPkts.Pingreq).(*mqPkts.PingreqPacket)
 				if err := h.mqttSend(p); err != nil {
 					return err
 				}
@@ -925,7 +924,7 @@ func (h *handler) snReceive() (snPkts1.Packet, error) {
 	return pkt, nil
 }
 
-func (h *handler) mqttSend(pkt mqttPackets.ControlPacket) error {
+func (h *handler) mqttSend(pkt mqPkts.ControlPacket) error {
 	h.log.Debug("<= %v", pkt)
 	buff := &bytes.Buffer{}
 	err := pkt.Write(buff)
