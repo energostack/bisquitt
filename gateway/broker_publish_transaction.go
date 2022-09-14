@@ -3,7 +3,8 @@ package gateway
 import (
 	"fmt"
 
-	mqttPackets "github.com/eclipse/paho.mqtt.golang/packets"
+	mqPkts "github.com/eclipse/paho.mqtt.golang/packets"
+
 	snPkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
@@ -29,7 +30,7 @@ type brokerPublishTransaction interface {
 	transactions.StatefulTransaction
 	SetSNPublish(*snPkts1.Publish)
 	ProceedSN(newState transactionState, snMsg snPkts1.Packet) error
-	ProceedMQTT(newState transactionState, mqMsg mqttPackets.ControlPacket) error
+	ProceedMQTT(newState transactionState, mqMsg mqPkts.ControlPacket) error
 }
 
 type brokerPublishTransactionBase struct {
@@ -69,7 +70,7 @@ func (t *brokerPublishTransactionBase) ProceedSN(newState transactionState, snMs
 	return nil
 }
 
-func (t *brokerPublishTransactionBase) ProceedMQTT(newState transactionState, mqMsg mqttPackets.ControlPacket) error {
+func (t *brokerPublishTransactionBase) ProceedMQTT(newState transactionState, mqMsg mqPkts.ControlPacket) error {
 	t.Proceed(newState, mqMsg)
 	if err := t.handler.mqttSend(mqMsg); err != nil {
 		t.Fail(err)
@@ -91,9 +92,9 @@ func (t *brokerPublishTransactionBase) resend(pktx interface{}) error {
 			dupMsg.SetDUP(true)
 		}
 		return t.handler.snSend(pkt)
-	case mqttPackets.ControlPacket:
+	case mqPkts.ControlPacket:
 		// PUBLISH is the only packet with DUP in MQTT.
-		if publish, ok := pkt.(*mqttPackets.PublishPacket); ok {
+		if publish, ok := pkt.(*mqPkts.PublishPacket); ok {
 			publish.Dup = true
 		}
 		return t.handler.mqttSend(pkt)

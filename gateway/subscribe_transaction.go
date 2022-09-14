@@ -7,7 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	mqttPackets "github.com/eclipse/paho.mqtt.golang/packets"
+	mqPkts "github.com/eclipse/paho.mqtt.golang/packets"
+
 	snPkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
@@ -37,7 +38,7 @@ func newSubscribeTransaction(ctx context.Context, h *handler, msgID uint16, topi
 	}
 }
 
-func (t *subscribeTransaction) Suback(mqSuback *mqttPackets.SubackPacket) error {
+func (t *subscribeTransaction) Suback(mqSuback *mqPkts.SubackPacket) error {
 	if len(mqSuback.ReturnCodes) != 1 {
 		err := fmt.Errorf("unexpected ReturnCodes length in MQTT/SUBACK: %d", len(mqSuback.ReturnCodes))
 		t.Fail(err)

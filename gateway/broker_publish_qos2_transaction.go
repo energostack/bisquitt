@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	mqttPackets "github.com/eclipse/paho.mqtt.golang/packets"
+	mqPkts "github.com/eclipse/paho.mqtt.golang/packets"
+
 	snPkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
@@ -41,12 +42,12 @@ func (t *brokerPublishQOS2Transaction) Pubrec(snPubrec *snPkts1.Pubrec) error {
 		t.log.Debug("Unexpected packet in %d: %v", t.State, snPubrec)
 		return nil
 	}
-	mqPubrec := mqttPackets.NewControlPacket(mqttPackets.Pubrec).(*mqttPackets.PubrecPacket)
+	mqPubrec := mqPkts.NewControlPacket(mqPkts.Pubrec).(*mqPkts.PubrecPacket)
 	mqPubrec.MessageID = snPubrec.MessageID()
 	return t.ProceedMQTT(awaitingPubrel, mqPubrec)
 }
 
-func (t *brokerPublishQOS2Transaction) Pubrel(mqPubrel *mqttPackets.PubrelPacket) error {
+func (t *brokerPublishQOS2Transaction) Pubrel(mqPubrel *mqPkts.PubrelPacket) error {
 	if t.State != awaitingPubrel {
 		t.log.Debug("Unexpected packet in %d: %v", t.State, mqPubrel)
 		return nil
@@ -61,7 +62,7 @@ func (t *brokerPublishQOS2Transaction) Pubcomp(snPubcomp *snPkts1.Pubcomp) error
 		t.log.Debug("Unexpected packet in %d: %v", t.State, snPubcomp)
 		return nil
 	}
-	mqPubcomp := mqttPackets.NewControlPacket(mqttPackets.Pubcomp).(*mqttPackets.PubcompPacket)
+	mqPubcomp := mqPkts.NewControlPacket(mqPkts.Pubcomp).(*mqPkts.PubcompPacket)
 	mqPubcomp.MessageID = snPubcomp.MessageID()
 	return t.ProceedMQTT(transactionDone, mqPubcomp)
 }
