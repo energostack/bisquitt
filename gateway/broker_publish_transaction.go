@@ -5,6 +5,7 @@ import (
 
 	mqPkts "github.com/eclipse/paho.mqtt.golang/packets"
 
+	snPkts "github.com/energomonitor/bisquitt/packets"
 	snPkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
@@ -29,7 +30,7 @@ type transactionWithRegack interface {
 type brokerPublishTransaction interface {
 	transactions.StatefulTransaction
 	SetSNPublish(*snPkts1.Publish)
-	ProceedSN(newState transactionState, snPkt snPkts1.Packet) error
+	ProceedSN(newState transactionState, snPkt snPkts.Packet) error
 	ProceedMQTT(newState transactionState, mqPkt mqPkts.ControlPacket) error
 }
 
@@ -58,7 +59,7 @@ func (t *brokerPublishTransactionBase) regack(snRegack *snPkts1.Regack, newState
 	return t.ProceedSN(newState, t.snPublish)
 }
 
-func (t *brokerPublishTransactionBase) ProceedSN(newState transactionState, snPkt snPkts1.Packet) error {
+func (t *brokerPublishTransactionBase) ProceedSN(newState transactionState, snPkt snPkts.Packet) error {
 	t.Proceed(newState, snPkt)
 	if err := t.handler.snSend(snPkt); err != nil {
 		t.Fail(err)
@@ -86,7 +87,7 @@ func (t *brokerPublishTransactionBase) ProceedMQTT(newState transactionState, mq
 func (t *brokerPublishTransactionBase) resend(pktx interface{}) error {
 	t.log.Debug("Resend.")
 	switch pkt := pktx.(type) {
-	case snPkts1.Packet:
+	case snPkts.Packet:
 		// Set DUP if applicable.
 		if dupPkt, ok := pkt.(snPkts1.PacketWithDUP); ok {
 			dupPkt.SetDUP(true)

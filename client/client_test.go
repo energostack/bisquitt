@@ -1869,13 +1869,13 @@ func (stp *testSetup) createSocketPair(sockType string, rand *rand.Rand) (*net.U
 	return listener, conn
 }
 
-func (stp *testSetup) send(pkt pkts1.Packet) {
+func (stp *testSetup) send(pkt pkts.Packet) {
 	if err := pkt.Write(stp.conn); err != nil {
 		stp.t.Fatal(err)
 	}
 }
 
-func (stp *testSetup) recv() pkts1.Packet {
+func (stp *testSetup) recv() pkts.Packet {
 	buff := make([]byte, maxTestPktLength)
 	n, err := stp.conn.Read(buff)
 	if err != nil {

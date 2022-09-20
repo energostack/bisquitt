@@ -1314,7 +1314,7 @@ func (stp *testSetup) createSocketPair(sockType string) (*net.UnixListener, *net
 	return listener, conn
 }
 
-func (stp *testSetup) snSend(pkt snPkts1.Packet, setMsgID bool) {
+func (stp *testSetup) snSend(pkt snPkts.Packet, setMsgID bool) {
 	if setMsgID {
 		if pkt2, ok := pkt.(snPkts1.PacketWithID); ok {
 			pkt2.SetMessageID(stp.snNextMsgID)
@@ -1328,7 +1328,7 @@ func (stp *testSetup) snSend(pkt snPkts1.Packet, setMsgID bool) {
 	}
 }
 
-func (stp *testSetup) snRecv() snPkts1.Packet {
+func (stp *testSetup) snRecv() snPkts.Packet {
 	buff := make([]byte, maxTestPktLength)
 	n, err := stp.snConn.Read(buff)
 	if err != nil {

@@ -34,21 +34,6 @@ const MaxPacketLen = 8192
 // this arbitrary "small enough to be safe" maximal payload length.
 const MaxPayloadLength = 7168
 
-type Packet interface {
-	fmt.Stringer
-
-	Write(io.Writer) error
-	Unpack(io.Reader) error
-
-	// NOTE: This method is not used anywhere but we must temporary keep it
-	// here because if we remove it, MQTT packets would accidently implement
-	// this interface and we would not be able to type-switch between MQTT
-	// and MQTT-SN packets.
-	// TODO: Remove as soon as this interface is changed and this problem
-	//  disappears.
-	SetVarPartLength(uint16)
-}
-
 // TopicID type constants.
 const (
 	TIT_REGISTERED uint8 = iota
@@ -104,7 +89,7 @@ const (
 )
 
 // ReadPacket reads an MQTT-SN packet from the given io.Reader.
-func ReadPacket(r io.Reader) (pkt Packet, err error) {
+func ReadPacket(r io.Reader) (pkt pkts.Packet, err error) {
 	var h pkts.Header
 	packet := make([]byte, MaxPacketLen)
 	n, err := r.Read(packet)
@@ -123,7 +108,7 @@ func ReadPacket(r io.Reader) (pkt Packet, err error) {
 
 // NewPacketWithHeader returns a particular packet struct with a given header.
 // The struct type is determined by h.msgType.
-func NewPacketWithHeader(h pkts.Header) (pkt Packet) {
+func NewPacketWithHeader(h pkts.Header) (pkt pkts.Packet) {
 	switch h.PacketType() {
 	case pkts.ADVERTISE:
 		pkt = &Advertise{Header: h}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	pkts "github.com/energomonitor/bisquitt/packets"
 	pkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
@@ -24,7 +25,7 @@ func newSubscribeTransaction(client *Client, msgID uint16, callback MessageHandl
 					tLog.Debug("Resend.")
 					dupPkt := lastPkt.(pkts1.PacketWithDUP)
 					dupPkt.SetDUP(true)
-					return client.send(lastPkt.(pkts1.Packet))
+					return client.send(lastPkt.(pkts.Packet))
 				},
 				func() {
 					tLog.Debug("Deleted.")
