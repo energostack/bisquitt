@@ -13,7 +13,7 @@ import (
 	"github.com/energomonitor/bisquitt/util"
 )
 
-func (c *Client) send(pkt pkts1.Packet) error {
+func (c *Client) send(pkt pkts.Packet) error {
 	c.log.Debug("<- %v", pkt)
 	return pkt.Write(c.conn)
 }
@@ -119,7 +119,7 @@ func (c *Client) topicForPublish(pkt *pkts1.Publish) (string, error) {
 	return topic, nil
 }
 
-func (c *Client) handlePacket(pktx pkts1.Packet) error {
+func (c *Client) handlePacket(pktx pkts.Packet) error {
 	switch pkt := pktx.(type) {
 	case *pkts1.Connack:
 		transactionx, _ := c.transactions.GetByType(pkts.CONNECT)

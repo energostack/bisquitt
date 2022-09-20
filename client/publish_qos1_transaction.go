@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 
+	pkts "github.com/energomonitor/bisquitt/packets"
 	pkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
@@ -20,7 +21,7 @@ func newPublishQOS1Transaction(client *Client, msgID uint16) *publishQOS1Transac
 				client.groupCtx, client.cfg.RetryDelay, client.cfg.RetryCount,
 				func(lastPkt interface{}) error {
 					tLog.Debug("Resend.")
-					return client.send(lastPkt.(pkts1.Packet))
+					return client.send(lastPkt.(pkts.Packet))
 				},
 				func() {
 					client.transactions.Delete(msgID)

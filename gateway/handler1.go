@@ -50,7 +50,7 @@ type handler1 struct {
 	keepAlive        uint16
 	clientID         string
 	topicID          *util.IDSequence
-	pktBuffer        []snPkts1.Packet
+	pktBuffer        []snPkts.Packet
 	group            *errgroup.Group
 	transactions     *transactions.TransactionStore
 	// for testing
@@ -327,7 +327,7 @@ func (h *handler1) handleBrokerPublish(ctx context.Context, mqPublish *mqPkts.Pu
 		return fmt.Errorf("invalid QoS in %v", mqPublish)
 	}
 
-	var snPkt snPkts1.Packet
+	var snPkt snPkts.Packet
 	var nextState transactionState
 	if needsRegister {
 		topicID, err := h.newTopicID()
@@ -656,7 +656,7 @@ func (h *handler1) handleUnsubscribe(snUnsubscribe *snPkts1.Unsubscribe) error {
 //    transactions. Also unexpected packets can be caused by delayed UDP
 //    packets etc. therefore we do not want to close the connection
 //    when such packet appears.
-func (h *handler1) checkPacketLegal(pkt snPkts1.Packet) error {
+func (h *handler1) checkPacketLegal(pkt snPkts.Packet) error {
 	state := h.state.Get()
 	if state != util.StateDisconnected {
 		return nil
@@ -692,7 +692,7 @@ func (h *handler1) checkPacketLegal(pkt snPkts1.Packet) error {
 	return ErrIllegalPacketWhenDisconnected
 }
 
-func (h *handler1) handleMqttSn(ctx context.Context, pkt snPkts1.Packet) error {
+func (h *handler1) handleMqttSn(ctx context.Context, pkt snPkts.Packet) error {
 	if err := h.checkPacketLegal(pkt); err != nil {
 		return err
 	}
@@ -879,7 +879,7 @@ func (h *handler1) startSleepPinger(ctx context.Context) context.CancelFunc {
 	return cancel
 }
 
-func (h *handler1) snSend(pkt snPkts1.Packet) error {
+func (h *handler1) snSend(pkt snPkts.Packet) error {
 	if h.state.Get() == util.StateAsleep {
 		h.log.Debug("Queued %v", pkt)
 		h.pktBuffer = append(h.pktBuffer, pkt)
@@ -895,7 +895,7 @@ func (h *handler1) snSend(pkt snPkts1.Packet) error {
 	return nil
 }
 
-func (h *handler1) snReceive() (snPkts1.Packet, error) {
+func (h *handler1) snReceive() (snPkts.Packet, error) {
 	// TODO: make static...
 	buffer := make([]byte, snPkts1.MaxPacketLen)
 

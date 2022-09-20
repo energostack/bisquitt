@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	pkts "github.com/energomonitor/bisquitt/packets"
 	pkts1 "github.com/energomonitor/bisquitt/packets1"
 	"github.com/energomonitor/bisquitt/transactions"
 )
@@ -21,7 +22,7 @@ func newUnsubscribeTransaction(client *Client, msgID uint16) *unsubscribeTransac
 				client.groupCtx, client.cfg.RetryDelay, client.cfg.RetryCount,
 				func(lastPkt interface{}) error {
 					tLog.Debug("Resend.")
-					return client.send(lastPkt.(pkts1.Packet))
+					return client.send(lastPkt.(pkts.Packet))
 				},
 				func() {
 					tLog.Debug("Deleted.")
