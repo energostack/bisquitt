@@ -6,9 +6,9 @@ import (
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
-const willTopicUpdateHeaderLength uint16 = 1
+const willTopicUpdHeaderLength uint16 = 1
 
-type WillTopicUpdate struct {
+type WillTopicUpd struct {
 	pkts.Header
 	QOS       uint8
 	Retain    bool
@@ -16,8 +16,8 @@ type WillTopicUpdate struct {
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewWillTopicUpdate(willTopic []byte, qos uint8, retain bool) *WillTopicUpdate {
-	p := &WillTopicUpdate{
+func NewWillTopicUpd(willTopic []byte, qos uint8, retain bool) *WillTopicUpd {
+	p := &WillTopicUpd{
 		Header:    *pkts.NewHeader(pkts.WILLTOPICUPD, 0),
 		QOS:       qos,
 		Retain:    retain,
@@ -27,12 +27,12 @@ func NewWillTopicUpdate(willTopic []byte, qos uint8, retain bool) *WillTopicUpda
 	return p
 }
 
-func (p *WillTopicUpdate) computeLength() {
+func (p *WillTopicUpd) computeLength() {
 	topicLength := uint16(len(p.WillTopic))
-	p.Header.SetVarPartLength(willTopicUpdateHeaderLength + topicLength)
+	p.Header.SetVarPartLength(willTopicUpdHeaderLength + topicLength)
 }
 
-func (p *WillTopicUpdate) encodeFlags() byte {
+func (p *WillTopicUpd) encodeFlags() byte {
 	var b byte
 	b |= (p.QOS << 5) & flagsQOSBits
 	if p.Retain {
@@ -41,12 +41,12 @@ func (p *WillTopicUpdate) encodeFlags() byte {
 	return b
 }
 
-func (p *WillTopicUpdate) decodeFlags(b byte) {
+func (p *WillTopicUpd) decodeFlags(b byte) {
 	p.QOS = (b & flagsQOSBits) >> 5
 	p.Retain = (b & flagsRetainBit) == flagsRetainBit
 }
 
-func (p *WillTopicUpdate) Pack() ([]byte, error) {
+func (p *WillTopicUpd) Pack() ([]byte, error) {
 	p.computeLength()
 	buf := p.Header.PackToBuffer()
 
@@ -56,10 +56,10 @@ func (p *WillTopicUpdate) Pack() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (p *WillTopicUpdate) Unpack(buf []byte) error {
-	if len(buf) <= int(willTopicUpdateHeaderLength) {
-		return fmt.Errorf("bad WILLTOPICUPDATE packet length: expected >%d, got %d",
-			willTopicUpdateHeaderLength, len(buf))
+func (p *WillTopicUpd) Unpack(buf []byte) error {
+	if len(buf) <= int(willTopicUpdHeaderLength) {
+		return fmt.Errorf("bad WILLTOPICUPD packet length: expected >%d, got %d",
+			willTopicUpdHeaderLength, len(buf))
 	}
 
 	p.decodeFlags(buf[0])
@@ -68,7 +68,7 @@ func (p *WillTopicUpdate) Unpack(buf []byte) error {
 	return nil
 }
 
-func (p WillTopicUpdate) String() string {
-	return fmt.Sprintf("WILLTOPICUPDATE(WillTopic=%#v, QOS=%d, Retain=%t)",
+func (p WillTopicUpd) String() string {
+	return fmt.Sprintf("WILLTOPICUPD(WillTopic=%#v, QOS=%d, Retain=%t)",
 		p.WillTopic, p.QOS, p.Retain)
 }
