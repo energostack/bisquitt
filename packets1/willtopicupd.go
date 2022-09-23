@@ -12,11 +12,11 @@ type WillTopicUpd struct {
 	pkts.Header
 	QOS       uint8
 	Retain    bool
-	WillTopic []byte
+	WillTopic string
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewWillTopicUpd(willTopic []byte, qos uint8, retain bool) *WillTopicUpd {
+func NewWillTopicUpd(willTopic string, qos uint8, retain bool) *WillTopicUpd {
 	p := &WillTopicUpd{
 		Header:    *pkts.NewHeader(pkts.WILLTOPICUPD, 0),
 		QOS:       qos,
@@ -51,7 +51,7 @@ func (p *WillTopicUpd) Pack() ([]byte, error) {
 	buf := p.Header.PackToBuffer()
 
 	_ = buf.WriteByte(p.encodeFlags())
-	_, _ = buf.Write(p.WillTopic)
+	_, _ = buf.Write([]byte(p.WillTopic))
 
 	return buf.Bytes(), nil
 }
@@ -63,7 +63,7 @@ func (p *WillTopicUpd) Unpack(buf []byte) error {
 	}
 
 	p.decodeFlags(buf[0])
-	p.WillTopic = buf[1:]
+	p.WillTopic = string(buf[1:])
 
 	return nil
 }

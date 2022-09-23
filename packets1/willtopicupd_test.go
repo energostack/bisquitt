@@ -8,7 +8,7 @@ import (
 )
 
 func TestWillTopicUpdStruct(t *testing.T) {
-	willTopic := []byte("test-topic")
+	willTopic := "test-topic"
 	qos := uint8(1)
 	retain := true
 	pkt := NewWillTopicUpd(willTopic, qos, retain)
@@ -23,7 +23,7 @@ func TestWillTopicUpdStruct(t *testing.T) {
 }
 
 func TestWillTopicUpdMarshal(t *testing.T) {
-	pkt1 := NewWillTopicUpd([]byte("test-topic"), 1, true)
+	pkt1 := NewWillTopicUpd("test-topic", 1, true)
 	pkt2 := testPacketMarshal(t, pkt1)
 	assert.Equal(t, pkt1, pkt2.(*WillTopicUpd))
 }

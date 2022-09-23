@@ -14,11 +14,11 @@ type Unsubscribe struct {
 	MessageIDProperty
 	TopicIDType uint8
 	TopicID     uint16
-	TopicName   []byte
+	TopicName   string
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewUnsubscribe(topicID uint16, topicIDType uint8, topicName []byte) *Unsubscribe {
+func NewUnsubscribe(topicID uint16, topicIDType uint8, topicName string) *Unsubscribe {
 	p := &Unsubscribe{
 		Header:      *pkts.NewHeader(pkts.UNSUBSCRIBE, 0),
 		TopicIDType: topicIDType,
@@ -58,7 +58,7 @@ func (p *Unsubscribe) Pack() ([]byte, error) {
 	_, _ = buf.Write(pkts.EncodeUint16(p.messageID))
 	switch p.TopicIDType {
 	case TIT_STRING:
-		_, _ = buf.Write(p.TopicName)
+		_, _ = buf.Write([]byte(p.TopicName))
 	case TIT_PREDEFINED, TIT_SHORT:
 		_, _ = buf.Write(pkts.EncodeUint16(p.TopicID))
 	}
@@ -78,13 +78,13 @@ func (p *Unsubscribe) Unpack(buf []byte) error {
 	switch p.TopicIDType {
 	case TIT_STRING:
 		p.TopicID = 0
-		p.TopicName = buf[3:]
+		p.TopicName = string(buf[3:])
 	case TIT_PREDEFINED, TIT_SHORT:
 		if len(buf) != int(unsubscribeHeaderLength+2) {
 			return fmt.Errorf("bad UNSUBSCRIBE packet length: expected %d, got %d",
 				unsubscribeHeaderLength+2, len(buf))
 		}
-		p.TopicName = nil
+		p.TopicName = ""
 		p.TopicID = binary.BigEndian.Uint16(buf[3:5])
 	default:
 		return fmt.Errorf("invalid TopicIDType: %d", p.TopicIDType)
