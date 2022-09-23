@@ -6,14 +6,14 @@ import (
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
-type WillMsgUpdate struct {
+type WillMsgUpd struct {
 	pkts.Header
 	WillMsg []byte
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewWillMsgUpdate(willMsg []byte) *WillMsgUpdate {
-	p := &WillMsgUpdate{
+func NewWillMsgUpd(willMsg []byte) *WillMsgUpd {
+	p := &WillMsgUpd{
 		Header:  *pkts.NewHeader(pkts.WILLMSGUPD, 0),
 		WillMsg: willMsg,
 	}
@@ -21,12 +21,12 @@ func NewWillMsgUpdate(willMsg []byte) *WillMsgUpdate {
 	return p
 }
 
-func (p *WillMsgUpdate) computeLength() {
+func (p *WillMsgUpd) computeLength() {
 	length := len(p.WillMsg)
 	p.Header.SetVarPartLength(uint16(length))
 }
 
-func (p *WillMsgUpdate) Pack() ([]byte, error) {
+func (p *WillMsgUpd) Pack() ([]byte, error) {
 	p.computeLength()
 	buf := p.Header.PackToBuffer()
 
@@ -35,11 +35,11 @@ func (p *WillMsgUpdate) Pack() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (p *WillMsgUpdate) Unpack(buf []byte) error {
+func (p *WillMsgUpd) Unpack(buf []byte) error {
 	p.WillMsg = buf
 	return nil
 }
 
-func (p WillMsgUpdate) String() string {
-	return fmt.Sprintf("WILLMSGUPDATE(WillMsg=%#v)", string(p.WillMsg))
+func (p WillMsgUpd) String() string {
+	return fmt.Sprintf("WILLMSGUPD(WillMsg=%#v)", string(p.WillMsg))
 }

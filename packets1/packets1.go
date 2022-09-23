@@ -147,7 +147,7 @@ func NewPacketWithHeader(h pkts.Header) (pkt pkts.Packet) {
 	case pkts.WILLTOPICRESP:
 		pkt = &WillTopicResp{Header: h}
 	case pkts.WILLMSGUPD:
-		pkt = &WillMsgUpdate{Header: h}
+		pkt = &WillMsgUpd{Header: h}
 	case pkts.WILLMSGRESP:
 		pkt = &WillMsgResp{Header: h}
 	}
