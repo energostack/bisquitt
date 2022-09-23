@@ -10,7 +10,7 @@ import (
 func TestSubscribeStruct(t *testing.T) {
 	topicID := uint16(12)
 	topicIDType := TIT_REGISTERED
-	topicName := []byte("test-topic")
+	topicName := "test-topic"
 	qos := uint8(1)
 	dup := true
 	pkt := NewSubscribe(topicID, topicIDType, topicName, qos, dup)
@@ -27,14 +27,14 @@ func TestSubscribeStruct(t *testing.T) {
 }
 
 func TestSubscribeMarshalString(t *testing.T) {
-	pkt1 := NewSubscribe(0, TIT_STRING, []byte("test-topic"), 1, true)
+	pkt1 := NewSubscribe(0, TIT_STRING, "test-topic", 1, true)
 	pkt1.SetMessageID(12)
 	pkt2 := testPacketMarshal(t, pkt1)
 	assert.Equal(t, pkt1, pkt2.(*Subscribe))
 }
 
 func TestSubscribeMarshalShort(t *testing.T) {
-	pkt1 := NewSubscribe(123, TIT_SHORT, nil, 1, true)
+	pkt1 := NewSubscribe(123, TIT_SHORT, "", 1, true)
 	pkt1.SetMessageID(12)
 	pkt2 := testPacketMarshal(t, pkt1)
 	assert.Equal(t, pkt1, pkt2.(*Subscribe))

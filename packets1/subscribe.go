@@ -16,11 +16,11 @@ type Subscribe struct {
 	QOS         uint8
 	TopicIDType uint8
 	TopicID     uint16
-	TopicName   []byte
+	TopicName   string
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewSubscribe(topicID uint16, topicIDType uint8, topicName []byte, qos uint8, dup bool) *Subscribe {
+func NewSubscribe(topicID uint16, topicIDType uint8, topicName string, qos uint8, dup bool) *Subscribe {
 	p := &Subscribe{
 		Header:      *pkts.NewHeader(pkts.SUBSCRIBE, 0),
 		DUPProperty: *pkts.NewDUPProperty(dup),
@@ -68,7 +68,7 @@ func (p *Subscribe) Pack() ([]byte, error) {
 	_, _ = buf.Write(pkts.EncodeUint16(p.messageID))
 	switch p.TopicIDType {
 	case TIT_STRING:
-		_, _ = buf.Write(p.TopicName)
+		_, _ = buf.Write([]byte(p.TopicName))
 	case TIT_PREDEFINED, TIT_SHORT:
 		_, _ = buf.Write(pkts.EncodeUint16(p.TopicID))
 	}
@@ -88,13 +88,13 @@ func (p *Subscribe) Unpack(buf []byte) error {
 	switch p.TopicIDType {
 	case TIT_STRING:
 		p.TopicID = 0
-		p.TopicName = buf[3:]
+		p.TopicName = string(buf[3:])
 	case TIT_PREDEFINED, TIT_SHORT:
 		if len(buf) != int(subscribeHeaderLength+2) {
 			return fmt.Errorf("bad SUBSCRIBE packet length: expected %d, got %d",
 				subscribeHeaderLength+2, len(buf))
 		}
-		p.TopicName = nil
+		p.TopicName = ""
 		p.TopicID = binary.BigEndian.Uint16(buf[3:5])
 	default:
 		return fmt.Errorf("invalid TopicIDType: %d", p.TopicIDType)

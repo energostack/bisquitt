@@ -130,7 +130,7 @@ func TestPubSubPredefined(t *testing.T) {
 	// SUBSCRIBE, PREDEFINED TOPIC
 
 	// client --SUBSCRIBE--> GW
-	snSubscribe := snPkts1.NewSubscribe(topicID, snPkts1.TIT_PREDEFINED, nil, 0, false)
+	snSubscribe := snPkts1.NewSubscribe(topicID, snPkts1.TIT_PREDEFINED, "", 0, false)
 	stp.snSend(snSubscribe, true)
 
 	// GW --SUBSCRIBE--> MQTT broker
@@ -201,7 +201,7 @@ func TestPubSubPredefinedLong(t *testing.T) {
 	// SUBSCRIBE, PREDEFINED TOPIC
 
 	// client --SUBSCRIBE--> GW
-	snSubscribe := snPkts1.NewSubscribe(topicID, snPkts1.TIT_PREDEFINED, nil, 0, false)
+	snSubscribe := snPkts1.NewSubscribe(topicID, snPkts1.TIT_PREDEFINED, "", 0, false)
 	stp.snSend(snSubscribe, true)
 
 	// GW --SUBSCRIBE--> MQTT broker
@@ -279,7 +279,7 @@ func TestDisconnectedSubscribe(t *testing.T) {
 
 	stp.snSend(
 		snPkts1.NewSubscribe(0, snPkts1.TIT_STRING,
-			[]byte("test-topic-0"), 0, false),
+			"test-topic-0", 0, false),
 		true,
 	)
 
@@ -897,7 +897,7 @@ func TestUnsubscribeString(t *testing.T) {
 	stp.subscribe(topic, 0)
 
 	// client --UNSUBSCRIBE--> GW
-	snUnsubscribe := snPkts1.NewUnsubscribe(0, snPkts1.TIT_STRING, []byte(topic))
+	snUnsubscribe := snPkts1.NewUnsubscribe(0, snPkts1.TIT_STRING, topic)
 	stp.snSend(snUnsubscribe, true)
 
 	// GW --UNSUBSCRIBE--> MQTT broker
@@ -931,7 +931,7 @@ func TestUnsubscribeShort(t *testing.T) {
 	stp.subscribeShort(topic, 0)
 
 	// client --UNSUBSCRIBE--> GW
-	snUnsubscribe := snPkts1.NewUnsubscribe(snPkts.EncodeShortTopic(topic), snPkts1.TIT_SHORT, []byte(""))
+	snUnsubscribe := snPkts1.NewUnsubscribe(snPkts.EncodeShortTopic(topic), snPkts1.TIT_SHORT, "")
 	stp.snSend(snUnsubscribe, true)
 
 	// GW --UNSUBSCRIBE--> MQTT broker
@@ -972,7 +972,7 @@ func TestUnsubscribePredefined(t *testing.T) {
 	// SUBSCRIBE, PREDEFINED TOPIC
 
 	// client --SUBSCRIBE--> GW
-	snSubscribe := snPkts1.NewSubscribe(topicID, snPkts1.TIT_PREDEFINED, nil, 0, false)
+	snSubscribe := snPkts1.NewSubscribe(topicID, snPkts1.TIT_PREDEFINED, "", 0, false)
 	stp.snSend(snSubscribe, true)
 
 	// GW --SUBSCRIBE--> MQTT broker
@@ -994,7 +994,7 @@ func TestUnsubscribePredefined(t *testing.T) {
 	assert.Equal(snPkts1.RC_ACCEPTED, snSuback.ReturnCode)
 
 	// client --UNSUBSCRIBE--> GW
-	snUnsubscribe := snPkts1.NewUnsubscribe(topicID, snPkts1.TIT_PREDEFINED, []byte(""))
+	snUnsubscribe := snPkts1.NewUnsubscribe(topicID, snPkts1.TIT_PREDEFINED, "")
 	stp.snSend(snUnsubscribe, true)
 
 	// GW --UNSUBSCRIBE--> MQTT broker
@@ -1505,7 +1505,7 @@ func (stp *testSetup) subscribe(topic string, qos uint8) uint16 {
 	assert := assert.New(stp.t)
 
 	// client --SUBSCRIBE--> GW
-	snSubscribe := snPkts1.NewSubscribe(0, snPkts1.TIT_STRING, []byte(topic), qos, false)
+	snSubscribe := snPkts1.NewSubscribe(0, snPkts1.TIT_STRING, topic, qos, false)
 	stp.snSend(snSubscribe, true)
 
 	// GW --SUBSCRIBE--> MQTT broker
@@ -1542,7 +1542,7 @@ func (stp *testSetup) subscribeShort(topic string, qos uint8) {
 
 	// client --SUBSCRIBE--> GW
 	topicID := snPkts.EncodeShortTopic(topic)
-	snSubscribe := snPkts1.NewSubscribe(topicID, snPkts1.TIT_SHORT, nil, qos, false)
+	snSubscribe := snPkts1.NewSubscribe(topicID, snPkts1.TIT_SHORT, "", qos, false)
 	stp.snSend(snSubscribe, true)
 
 	// GW --SUBSCRIBE--> MQTT broker

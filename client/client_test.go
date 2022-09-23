@@ -929,7 +929,7 @@ func TestSubscribeQOS0(t *testing.T) {
 		// client --SUBSCRIBE--> GW
 		subscribe := stp.recv().(*pkts1.Subscribe)
 		subscribe.QOS = qos
-		assert.Equal([]byte(topic), subscribe.TopicName)
+		assert.Equal(topic, subscribe.TopicName)
 		assert.Equal(pkts1.TIT_STRING, subscribe.TopicIDType)
 
 		// client <--SUBACK-- GW
@@ -997,7 +997,7 @@ func TestSubscribeQOS1(t *testing.T) {
 		// client --SUBSCRIBE--> GW
 		subscribe := stp.recv().(*pkts1.Subscribe)
 		subscribe.QOS = qos
-		assert.Equal([]byte(topic), subscribe.TopicName)
+		assert.Equal(topic, subscribe.TopicName)
 		assert.Equal(pkts1.TIT_STRING, subscribe.TopicIDType)
 
 		// client <--SUBACK-- GW
@@ -1069,7 +1069,7 @@ func TestSubscribeQOS2(t *testing.T) {
 		// client --SUBSCRIBE--> GW
 		subscribe := stp.recv().(*pkts1.Subscribe)
 		subscribe.QOS = qos
-		assert.Equal([]byte(topic), subscribe.TopicName)
+		assert.Equal(topic, subscribe.TopicName)
 		assert.Equal(pkts1.TIT_STRING, subscribe.TopicIDType)
 
 		// client <--SUBACK-- GW
@@ -1155,7 +1155,7 @@ func TestSubscribeWildcard(t *testing.T) {
 		// client --SUBSCRIBE--> GW
 		subscribe := stp.recv().(*pkts1.Subscribe)
 		assert.Equal(pkts1.TIT_STRING, subscribe.TopicIDType)
-		assert.Equal([]byte(wildcard), subscribe.TopicName)
+		assert.Equal(wildcard, subscribe.TopicName)
 
 		// client <--SUBACK-- GW
 		suback := pkts1.NewSuback(0, 0, pkts1.RC_ACCEPTED)
@@ -1374,7 +1374,7 @@ func TestUnsubscribeString(t *testing.T) {
 		// client --SUBSCRIBE--> GW
 		subscribe := stp.recv().(*pkts1.Subscribe)
 		subscribe.QOS = qos
-		assert.Equal([]byte(topic), subscribe.TopicName)
+		assert.Equal(topic, subscribe.TopicName)
 		assert.Equal(pkts1.TIT_STRING, subscribe.TopicIDType)
 
 		// client <--SUBACK-- GW
@@ -1384,7 +1384,7 @@ func TestUnsubscribeString(t *testing.T) {
 
 		// client --UNSUBSCRIBE--> GW
 		unsubscribe := stp.recv().(*pkts1.Unsubscribe)
-		assert.Equal([]byte(topic), unsubscribe.TopicName)
+		assert.Equal(topic, unsubscribe.TopicName)
 		assert.Equal(pkts1.TIT_STRING, unsubscribe.TopicIDType)
 
 		// client <--UNSUBACK-- GW

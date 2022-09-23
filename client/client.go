@@ -362,7 +362,7 @@ func (c *Client) Register(topic string) error {
 func (c *Client) subscribe(topicName string, topicIDType uint8, topicID uint16, qos uint8, callback MessageHandlerFunc) error {
 	msgID, _ := c.msgID.Next()
 	transaction := newSubscribeTransaction(c, msgID, callback)
-	subscribe := pkts1.NewSubscribe(topicID, topicIDType, []byte(topicName), qos, false)
+	subscribe := pkts1.NewSubscribe(topicID, topicIDType, topicName, qos, false)
 	subscribe.SetMessageID(msgID)
 	c.transactions.Store(msgID, transaction)
 	transaction.Proceed(nil, subscribe)
@@ -397,7 +397,7 @@ func (c *Client) SubscribePredefined(topicID uint16, qos uint8, callback Message
 func (c *Client) unsubscribe(topicName string, topicIDType uint8, topicID uint16) error {
 	msgID, _ := c.msgID.Next()
 	transaction := newUnsubscribeTransaction(c, msgID)
-	unsubscribe := pkts1.NewUnsubscribe(topicID, topicIDType, []byte(topicName))
+	unsubscribe := pkts1.NewUnsubscribe(topicID, topicIDType, topicName)
 	unsubscribe.SetMessageID(msgID)
 	c.transactions.Store(msgID, transaction)
 	transaction.Proceed(nil, unsubscribe)

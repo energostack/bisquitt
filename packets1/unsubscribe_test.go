@@ -10,7 +10,7 @@ import (
 func TestUnsubscribeStruct(t *testing.T) {
 	topicID := uint16(12)
 	topicIDType := TIT_REGISTERED
-	topicName := []byte("test-topic")
+	topicName := "test-topic"
 	pkt := NewUnsubscribe(topicID, topicIDType, topicName)
 
 	if assert.NotNil(t, pkt, "New packet should not be nil") {
@@ -23,14 +23,14 @@ func TestUnsubscribeStruct(t *testing.T) {
 }
 
 func TestUnsubscribeMarshalString(t *testing.T) {
-	pkt1 := NewUnsubscribe(0, TIT_STRING, []byte("test-topic"))
+	pkt1 := NewUnsubscribe(0, TIT_STRING, "test-topic")
 	pkt1.SetMessageID(12)
 	pkt2 := testPacketMarshal(t, pkt1)
 	assert.Equal(t, pkt1, pkt2.(*Unsubscribe))
 }
 
 func TestUnsubscribeMarshalShort(t *testing.T) {
-	pkt1 := NewUnsubscribe(123, TIT_SHORT, nil)
+	pkt1 := NewUnsubscribe(123, TIT_SHORT, "")
 	pkt1.SetMessageID(12)
 	pkt2 := testPacketMarshal(t, pkt1)
 	assert.Equal(t, pkt1, pkt2.(*Unsubscribe))
