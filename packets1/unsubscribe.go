@@ -18,7 +18,7 @@ type Unsubscribe struct {
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewUnsubscribe(topicID uint16, topicIDType uint8, topicName string) *Unsubscribe {
+func NewUnsubscribe(topicName string, topicID uint16, topicIDType uint8) *Unsubscribe {
 	p := &Unsubscribe{
 		Header:      *pkts.NewHeader(pkts.UNSUBSCRIBE, 0),
 		TopicIDType: topicIDType,
