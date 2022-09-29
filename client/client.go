@@ -363,7 +363,7 @@ func (c *Client) Register(topic string) error {
 func (c *Client) subscribe(topicName string, topicIDType uint8, topicID uint16, qos uint8, callback MessageHandlerFunc) error {
 	msgID, _ := c.msgID.Next()
 	transaction := newSubscribeTransaction(c, msgID, callback)
-	subscribe := pkts1.NewSubscribe(topicID, topicIDType, topicName, qos, false)
+	subscribe := pkts1.NewSubscribe(topicName, topicID, false, qos, topicIDType)
 	subscribe.SetMessageID(msgID)
 	c.transactions.Store(msgID, transaction)
 	transaction.Proceed(nil, subscribe)

@@ -130,7 +130,11 @@ func TestPubSubPredefined(t *testing.T) {
 	// SUBSCRIBE, PREDEFINED TOPIC
 
 	// client --SUBSCRIBE--> GW
+<<<<<<< HEAD
 	snSubscribe := snPkts1.NewSubscribe(topicID, snPkts1.TIT_PREDEFINED, "", 0, false)
+=======
+	snSubscribe := snPkts1.NewSubscribe(nil, topicID, false, 0, snPkts1.TIT_PREDEFINED)
+>>>>>>> 4d06ebf... packets1: Change `Subscribe` constructor args order
 	stp.snSend(snSubscribe, true)
 
 	// GW --SUBSCRIBE--> MQTT broker
@@ -201,7 +205,11 @@ func TestPubSubPredefinedLong(t *testing.T) {
 	// SUBSCRIBE, PREDEFINED TOPIC
 
 	// client --SUBSCRIBE--> GW
+<<<<<<< HEAD
 	snSubscribe := snPkts1.NewSubscribe(topicID, snPkts1.TIT_PREDEFINED, "", 0, false)
+=======
+	snSubscribe := snPkts1.NewSubscribe(nil, topicID, false, 0, snPkts1.TIT_PREDEFINED)
+>>>>>>> 4d06ebf... packets1: Change `Subscribe` constructor args order
 	stp.snSend(snSubscribe, true)
 
 	// GW --SUBSCRIBE--> MQTT broker
@@ -278,8 +286,12 @@ func TestDisconnectedSubscribe(t *testing.T) {
 	defer stp.cancel()
 
 	stp.snSend(
+<<<<<<< HEAD
 		snPkts1.NewSubscribe(0, snPkts1.TIT_STRING,
 			"test-topic-0", 0, false),
+=======
+		snPkts1.NewSubscribe([]byte("test-topic-0"), 0, false, 0, snPkts1.TIT_STRING),
+>>>>>>> 4d06ebf... packets1: Change `Subscribe` constructor args order
 		true,
 	)
 
@@ -972,7 +984,7 @@ func TestUnsubscribePredefined(t *testing.T) {
 	// SUBSCRIBE, PREDEFINED TOPIC
 
 	// client --SUBSCRIBE--> GW
-	snSubscribe := snPkts1.NewSubscribe(topicID, snPkts1.TIT_PREDEFINED, "", 0, false)
+	snSubscribe := snPkts1.NewSubscribe("", topicID, false, 0, snPkts1.TIT_PREDEFINED)
 	stp.snSend(snSubscribe, true)
 
 	// GW --SUBSCRIBE--> MQTT broker
@@ -1505,7 +1517,11 @@ func (stp *testSetup) subscribe(topic string, qos uint8) uint16 {
 	assert := assert.New(stp.t)
 
 	// client --SUBSCRIBE--> GW
+<<<<<<< HEAD
 	snSubscribe := snPkts1.NewSubscribe(0, snPkts1.TIT_STRING, topic, qos, false)
+=======
+	snSubscribe := snPkts1.NewSubscribe([]byte(topic), 0, false, qos, snPkts1.TIT_STRING)
+>>>>>>> 4d06ebf... packets1: Change `Subscribe` constructor args order
 	stp.snSend(snSubscribe, true)
 
 	// GW --SUBSCRIBE--> MQTT broker
@@ -1542,7 +1558,11 @@ func (stp *testSetup) subscribeShort(topic string, qos uint8) {
 
 	// client --SUBSCRIBE--> GW
 	topicID := snPkts.EncodeShortTopic(topic)
+<<<<<<< HEAD
 	snSubscribe := snPkts1.NewSubscribe(topicID, snPkts1.TIT_SHORT, "", qos, false)
+=======
+	snSubscribe := snPkts1.NewSubscribe(nil, topicID, false, qos, snPkts1.TIT_SHORT)
+>>>>>>> 4d06ebf... packets1: Change `Subscribe` constructor args order
 	stp.snSend(snSubscribe, true)
 
 	// GW --SUBSCRIBE--> MQTT broker
