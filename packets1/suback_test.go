@@ -11,7 +11,7 @@ func TestSubackStruct(t *testing.T) {
 	topicID := uint16(12)
 	qos := uint8(1)
 	returnCode := RC_ACCEPTED
-	pkt := NewSuback(topicID, qos, returnCode)
+	pkt := NewSuback(topicID, returnCode, qos)
 
 	if assert.NotNil(t, pkt, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.Suback", reflect.TypeOf(pkt).String(), "Type should be Suback")
@@ -24,7 +24,7 @@ func TestSubackStruct(t *testing.T) {
 }
 
 func TestSubackMarshal(t *testing.T) {
-	pkt1 := NewSuback(123, 1, RC_CONGESTION)
+	pkt1 := NewSuback(123, RC_CONGESTION, 1)
 	pkt1.SetMessageID(12)
 	pkt2 := testPacketMarshal(t, pkt1)
 	assert.Equal(t, pkt1, pkt2.(*Suback))

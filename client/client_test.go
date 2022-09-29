@@ -933,7 +933,7 @@ func TestSubscribeQOS0(t *testing.T) {
 		assert.Equal(pkts1.TIT_STRING, subscribe.TopicIDType)
 
 		// client <--SUBACK-- GW
-		suback := pkts1.NewSuback(1, 0, pkts1.RC_ACCEPTED)
+		suback := pkts1.NewSuback(1, pkts1.RC_ACCEPTED, 0)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
@@ -1001,7 +1001,7 @@ func TestSubscribeQOS1(t *testing.T) {
 		assert.Equal(pkts1.TIT_STRING, subscribe.TopicIDType)
 
 		// client <--SUBACK-- GW
-		suback := pkts1.NewSuback(1, 0, pkts1.RC_ACCEPTED)
+		suback := pkts1.NewSuback(1, pkts1.RC_ACCEPTED, 0)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
@@ -1073,7 +1073,7 @@ func TestSubscribeQOS2(t *testing.T) {
 		assert.Equal(pkts1.TIT_STRING, subscribe.TopicIDType)
 
 		// client <--SUBACK-- GW
-		suback := pkts1.NewSuback(1, 0, pkts1.RC_ACCEPTED)
+		suback := pkts1.NewSuback(1, pkts1.RC_ACCEPTED, 0)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
@@ -1158,7 +1158,7 @@ func TestSubscribeWildcard(t *testing.T) {
 		assert.Equal(wildcard, subscribe.TopicName)
 
 		// client <--SUBACK-- GW
-		suback := pkts1.NewSuback(0, 0, pkts1.RC_ACCEPTED)
+		suback := pkts1.NewSuback(0, pkts1.RC_ACCEPTED, 0)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
@@ -1245,7 +1245,7 @@ func TestSubscribeShort(t *testing.T) {
 		assert.Equal(encodedTopic, subscribe.TopicID)
 
 		// client <--SUBACK-- GW
-		suback := pkts1.NewSuback(0, 0, pkts1.RC_ACCEPTED)
+		suback := pkts1.NewSuback(0, pkts1.RC_ACCEPTED, 0)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
@@ -1312,7 +1312,7 @@ func TestSubscribePredefined(t *testing.T) {
 		assert.Equal(topicID, subscribe.TopicID)
 
 		// client <--SUBACK-- GW
-		suback := pkts1.NewSuback(0, 0, pkts1.RC_ACCEPTED)
+		suback := pkts1.NewSuback(0, pkts1.RC_ACCEPTED, 0)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
@@ -1378,7 +1378,7 @@ func TestUnsubscribeString(t *testing.T) {
 		assert.Equal(pkts1.TIT_STRING, subscribe.TopicIDType)
 
 		// client <--SUBACK-- GW
-		suback := pkts1.NewSuback(1, 0, pkts1.RC_ACCEPTED)
+		suback := pkts1.NewSuback(1, pkts1.RC_ACCEPTED, 0)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
@@ -1442,7 +1442,7 @@ func TestUnsubscribeShort(t *testing.T) {
 		assert.Equal(encodedTopic, subscribe.TopicID)
 
 		// client <--SUBACK-- GW
-		suback := pkts1.NewSuback(0, 0, pkts1.RC_ACCEPTED)
+		suback := pkts1.NewSuback(0, pkts1.RC_ACCEPTED, 0)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
@@ -1506,7 +1506,7 @@ func TestUnsubscribePredefined(t *testing.T) {
 		assert.Equal(topicID, subscribe.TopicID)
 
 		// client <--SUBACK-- GW
-		suback := pkts1.NewSuback(0, 0, pkts1.RC_ACCEPTED)
+		suback := pkts1.NewSuback(0, pkts1.RC_ACCEPTED, 0)
 		suback.CopyMessageID(subscribe)
 		stp.send(suback)
 
