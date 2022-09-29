@@ -12,7 +12,7 @@ func TestConnect(t *testing.T) {
 	cleanSession := true
 	will := true
 	duration := uint16(90)
-	pkt := NewConnect(clientID, cleanSession, will, duration)
+	pkt := NewConnect(duration, clientID, will, cleanSession)
 
 	if assert.NotNil(t, pkt, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.Connect", reflect.TypeOf(pkt).String(), "Type should be Connect")
@@ -25,7 +25,7 @@ func TestConnect(t *testing.T) {
 }
 
 func TestConnectMarshal(t *testing.T) {
-	pkt1 := NewConnect([]byte("test-client"), true, true, 75)
+	pkt1 := NewConnect(75, []byte("test-client"), true, true)
 	pkt2 := testPacketMarshal(t, pkt1)
 	assert.Equal(t, pkt1, pkt2.(*Connect))
 }

@@ -19,7 +19,7 @@ type Connect struct {
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewConnect(clientID []byte, cleanSession bool, will bool, duration uint16) *Connect {
+func NewConnect(duration uint16, clientID []byte, will bool, cleanSession bool) *Connect {
 	p := &Connect{
 		Header:       *pkts.NewHeader(pkts.CONNECT, 0),
 		Will:         will,
