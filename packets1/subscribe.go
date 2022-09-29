@@ -20,7 +20,7 @@ type Subscribe struct {
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewSubscribe(topicID uint16, topicIDType uint8, topicName string, qos uint8, dup bool) *Subscribe {
+func NewSubscribe(topicName string, topicID uint16, dup bool, qos uint8, topicIDType uint8) *Subscribe {
 	p := &Subscribe{
 		Header:      *pkts.NewHeader(pkts.SUBSCRIBE, 0),
 		DUPProperty: *pkts.NewDUPProperty(dup),

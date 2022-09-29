@@ -13,7 +13,7 @@ func TestSubscribeStruct(t *testing.T) {
 	topicName := "test-topic"
 	qos := uint8(1)
 	dup := true
-	pkt := NewSubscribe(topicID, topicIDType, topicName, qos, dup)
+	pkt := NewSubscribe(topicName, topicID, dup, qos, topicIDType)
 
 	if assert.NotNil(t, pkt, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.Subscribe", reflect.TypeOf(pkt).String(), "Type should be Subscribe")
@@ -27,14 +27,14 @@ func TestSubscribeStruct(t *testing.T) {
 }
 
 func TestSubscribeMarshalString(t *testing.T) {
-	pkt1 := NewSubscribe(0, TIT_STRING, "test-topic", 1, true)
+	pkt1 := NewSubscribe("test-topic", 0, true, 1, TIT_STRING)
 	pkt1.SetMessageID(12)
 	pkt2 := testPacketMarshal(t, pkt1)
 	assert.Equal(t, pkt1, pkt2.(*Subscribe))
 }
 
 func TestSubscribeMarshalShort(t *testing.T) {
-	pkt1 := NewSubscribe(123, TIT_SHORT, "", 1, true)
+	pkt1 := NewSubscribe("", 123, true, 1, TIT_SHORT)
 	pkt1.SetMessageID(12)
 	pkt2 := testPacketMarshal(t, pkt1)
 	assert.Equal(t, pkt1, pkt2.(*Subscribe))
