@@ -429,7 +429,7 @@ func (c *Client) UnsubscribePredefined(topicID uint16) error {
 }
 
 func (c *Client) publish(topicIDType uint8, topicID uint16, qos uint8, retain bool, payload []byte) error {
-	publish := pkts1.NewPublish(topicID, topicIDType, payload, qos, retain, false)
+	publish := pkts1.NewPublish(topicID, payload, false, qos, retain, topicIDType)
 	msgID, _ := c.msgID.Next()
 	publish.SetMessageID(msgID)
 

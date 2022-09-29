@@ -940,7 +940,7 @@ func TestSubscribeQOS0(t *testing.T) {
 		// client <--PUBLISH-- GW
 		msgID := uint16(123)
 		publish := pkts1.NewPublish(suback.TopicID,
-			pkts1.TIT_REGISTERED, []byte(""), qos, false, false)
+			[]byte(""), false, qos, false, pkts1.TIT_REGISTERED)
 		publish.SetMessageID(msgID)
 		stp.send(publish)
 
@@ -1008,7 +1008,7 @@ func TestSubscribeQOS1(t *testing.T) {
 		// client <--PUBLISH-- GW
 		msgID := uint16(123)
 		publish := pkts1.NewPublish(suback.TopicID,
-			pkts1.TIT_REGISTERED, []byte(""), qos, false, false)
+			[]byte(""), false, qos, false, pkts1.TIT_REGISTERED)
 		publish.SetMessageID(msgID)
 		stp.send(publish)
 
@@ -1081,7 +1081,7 @@ func TestSubscribeQOS2(t *testing.T) {
 		for i := uint(0); i < stp.client.cfg.RetryCount+1; i++ {
 			// client <--PUBLISH-- GW
 			publish := pkts1.NewPublish(suback.TopicID,
-				pkts1.TIT_REGISTERED, []byte(""), qos, false, false)
+				[]byte(""), false, qos, false, pkts1.TIT_REGISTERED)
 			publish.SetMessageID(msgID)
 			stp.send(publish)
 
@@ -1175,7 +1175,7 @@ func TestSubscribeWildcard(t *testing.T) {
 
 		// client <--PUBLISH-- GW
 		publish := pkts1.NewPublish(register.TopicID,
-			pkts1.TIT_REGISTERED, []byte(""), 0, false, false)
+			[]byte(""), false, 0, false, pkts1.TIT_REGISTERED)
 		stp.send(publish)
 
 		close(published)
@@ -1251,7 +1251,7 @@ func TestSubscribeShort(t *testing.T) {
 
 		// client <--PUBLISH-- GW
 		publish := pkts1.NewPublish(encodedTopic,
-			pkts1.TIT_SHORT, []byte(""), 0, false, false)
+			[]byte(""), false, 0, false, pkts1.TIT_SHORT)
 		stp.send(publish)
 
 		stp.disconnect()
@@ -1318,7 +1318,7 @@ func TestSubscribePredefined(t *testing.T) {
 
 		// client <--PUBLISH-- GW
 		publish := pkts1.NewPublish(topicID,
-			pkts1.TIT_PREDEFINED, []byte(""), 0, false, false)
+			[]byte(""), false, 0, false, pkts1.TIT_PREDEFINED)
 		stp.send(publish)
 
 		stp.disconnect()
@@ -1635,7 +1635,7 @@ func TestSleep(t *testing.T) {
 			// client <--PUBLISH-- GW
 			encodedTopic := pkts.EncodeShortTopic(topic)
 			publish := pkts1.NewPublish(encodedTopic,
-				pkts1.TIT_SHORT, []byte(""), 0, false, false)
+				[]byte(""), false, 0, false, pkts1.TIT_SHORT)
 			stp.send(publish)
 
 			// client <--PINGRESP-- GW

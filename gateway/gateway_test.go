@@ -156,7 +156,7 @@ func TestPubSubPredefined(t *testing.T) {
 	payload := []byte("test-msg-1")
 
 	// client --PUBLISH--> GW
-	snPublish := snPkts1.NewPublish(topicID, snPkts1.TIT_PREDEFINED, payload, 0, false, false)
+	snPublish := snPkts1.NewPublish(topicID, payload, false, 0, false, snPkts1.TIT_PREDEFINED)
 	stp.snSend(snPublish, true)
 
 	// GW --PUBLISH--> MQTT broker
@@ -233,7 +233,7 @@ func TestPubSubPredefinedLong(t *testing.T) {
 	}
 
 	// client --PUBLISH--> GW
-	snPublish := snPkts1.NewPublish(topicID, snPkts1.TIT_PREDEFINED, payload, 0, false, false)
+	snPublish := snPkts1.NewPublish(topicID, payload, false, 0, false, snPkts1.TIT_PREDEFINED)
 	stp.snSend(snPublish, true)
 
 	// GW --PUBLISH--> MQTT broker
@@ -293,9 +293,8 @@ func TestDisconnectedPublishQOS0(t *testing.T) {
 	defer stp.cancel()
 
 	snPublish := snPkts1.NewPublish(
-		snPkts.EncodeShortTopic("ab"),
-		snPkts1.TIT_SHORT, []byte("test-payload"), 0, false, false,
-	)
+		snPkts.EncodeShortTopic("ab"), []byte("test-payload"),
+		false, 0, false, snPkts1.TIT_SHORT)
 	stp.snSend(snPublish, true)
 
 	stp.assertHandlerDone()
@@ -308,7 +307,8 @@ func TestDisconnectedPublishQOS3Registered(t *testing.T) {
 	defer stp.cancel()
 
 	snPublish := snPkts1.NewPublish(
-		123, snPkts1.TIT_REGISTERED, []byte("test-payload"), 3, false, false)
+		123, []byte("test-payload"),
+		false, 3, false, snPkts1.TIT_REGISTERED)
 	stp.snSend(snPublish, true)
 
 	stp.assertHandlerDone()
@@ -325,8 +325,8 @@ func TestDisconnectedAuthPublishQOS3Registered(t *testing.T) {
 	payload := []byte("test-msg-0")
 	qos := uint8(3)
 
-	snPublish := snPkts1.NewPublish(topicID, snPkts1.TIT_SHORT,
-		payload, qos, false, false)
+	snPublish := snPkts1.NewPublish(topicID, payload,
+		false, qos, false, snPkts1.TIT_SHORT)
 	stp.snSend(snPublish, true)
 
 	stp.assertHandlerDone()
@@ -346,8 +346,8 @@ func TestDisconnectedPublishQOS3Short(t *testing.T) {
 	qos := uint8(3)
 
 	// client --PUBLISH--> GW
-	snPublish := snPkts1.NewPublish(topicID, snPkts1.TIT_SHORT,
-		payload, qos, false, false)
+	snPublish := snPkts1.NewPublish(topicID, payload,
+		false, qos, false, snPkts1.TIT_SHORT)
 	stp.snSend(snPublish, true)
 
 	// GW --PUBLISH--> MQTT broker
@@ -378,8 +378,8 @@ func TestDisconnectedPublishQOS3Predefined(t *testing.T) {
 	defer stp.cancel()
 
 	// client --PUBLISH--> GW
-	snPublish := snPkts1.NewPublish(topicID, snPkts1.TIT_PREDEFINED,
-		payload, qos, false, false)
+	snPublish := snPkts1.NewPublish(topicID,
+		payload, false, qos, false, snPkts1.TIT_PREDEFINED)
 	stp.snSend(snPublish, true)
 
 	// GW --PUBLISH--> MQTT broker
@@ -406,7 +406,7 @@ func TestClientPublishQOS0(t *testing.T) {
 	topicID := stp.register(topic)
 
 	// client --PUBLISH--> GW
-	snPublish := snPkts1.NewPublish(topicID, snPkts1.TIT_REGISTERED, payload, 0, false, false)
+	snPublish := snPkts1.NewPublish(topicID, payload, false, 0, false, snPkts1.TIT_REGISTERED)
 	stp.snSend(snPublish, true)
 
 	// GW --PUBLISH--> MQTT broker
@@ -436,7 +436,7 @@ func TestClientPublishQOS1(t *testing.T) {
 	payload = []byte("test-msg-1")
 
 	// client --PUBLISH--> GW
-	snPublish := snPkts1.NewPublish(topicID, snPkts1.TIT_REGISTERED, payload, 1, false, false)
+	snPublish := snPkts1.NewPublish(topicID, payload, false, 1, false, snPkts1.TIT_REGISTERED)
 	stp.snSend(snPublish, true)
 
 	// GW --PUBLISH--> MQTT broker
@@ -475,7 +475,7 @@ func TestClientPublishQOS2(t *testing.T) {
 	payload = []byte("test-msg-2")
 
 	// client --PUBLISH--> GW
-	snPublish := snPkts1.NewPublish(topicID, snPkts1.TIT_REGISTERED, payload, 2, false, false)
+	snPublish := snPkts1.NewPublish(topicID, payload, false, 2, false, snPkts1.TIT_REGISTERED)
 	stp.snSend(snPublish, true)
 
 	// GW --PUBLISH--> MQTT broker

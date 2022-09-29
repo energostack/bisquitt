@@ -275,8 +275,8 @@ func (h *handler1) handleBrokerPublish(ctx context.Context, mqPublish *mqPkts.Pu
 		needsRegister = !ok
 	}
 
-	snPublish := snPkts1.NewPublish(topicID, topicIDType,
-		mqPublish.Payload, mqPublish.Qos, mqPublish.Retain, mqPublish.Dup)
+	snPublish := snPkts1.NewPublish(topicID, mqPublish.Payload, mqPublish.Dup,
+		mqPublish.Qos, mqPublish.Retain, topicIDType)
 	snPublish.SetMessageID(mqPublish.MessageID)
 
 	if mqPublish.Qos == 0 {

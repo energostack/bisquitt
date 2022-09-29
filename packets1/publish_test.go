@@ -14,7 +14,7 @@ func TestPublishStruct(t *testing.T) {
 	topicIDType := TIT_SHORT
 	topicID := uint16(123)
 	payload := []byte("test-payload")
-	pkt := NewPublish(topicID, topicIDType, payload, qos, retain, dup)
+	pkt := NewPublish(topicID, payload, dup, qos, retain, topicIDType)
 
 	if assert.NotNil(t, pkt, "New packet should not be nil") {
 		assert.Equal(t, "*packets1.Publish", reflect.TypeOf(pkt).String(), "Type should be Publish")
@@ -29,8 +29,7 @@ func TestPublishStruct(t *testing.T) {
 }
 
 func TestPublishMarshal(t *testing.T) {
-	pkt1 := NewPublish(123, TIT_PREDEFINED,
-		[]byte("test-payload"), 1, true, true)
+	pkt1 := NewPublish(123, []byte("test-payload"), true, 1, true, TIT_PREDEFINED)
 	pkt1.SetMessageID(12)
 	pkt2 := testPacketMarshal(t, pkt1)
 	assert.Equal(t, pkt1, pkt2.(*Publish))
