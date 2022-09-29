@@ -48,7 +48,7 @@ func TestRepeatedConnect(t *testing.T) {
 	defer stp.cancel()
 
 	// client --CONNECT--> GW
-	snConnect := snPkts1.NewConnect(clientID, true, false, 1)
+	snConnect := snPkts1.NewConnect(1, clientID, false, true)
 	stp.snSend(snConnect, false)
 
 	// GW --CONNECT--> MQTT broker
@@ -1031,7 +1031,7 @@ func TestLastWill(t *testing.T) {
 	// CONNECT
 
 	// client --CONNECT--> GW
-	snConnect := snPkts1.NewConnect(clientID, true, true, keepalive)
+	snConnect := snPkts1.NewConnect(keepalive, clientID, true, true)
 	stp.snSend(snConnect, false)
 
 	// client <--WILLTOPICREQ-- GW
@@ -1111,7 +1111,7 @@ func TestConnectTimeout(t *testing.T) {
 	// CONNECT
 
 	// client --CONNECT--> GW
-	snConnect := snPkts1.NewConnect(clientID, true, true, 2)
+	snConnect := snPkts1.NewConnect(2, clientID, true, true)
 	stp.snSend(snConnect, false)
 
 	// client <--WILLTOPICREQ-- GW
@@ -1138,7 +1138,7 @@ func TestAuthSuccess(t *testing.T) {
 	// CONNECT
 
 	// client --CONNECT--> GW
-	snConnect := snPkts1.NewConnect(clientID, true, false, 1)
+	snConnect := snPkts1.NewConnect(1, clientID, false, true)
 	stp.snSend(snConnect, false)
 
 	// client --AUTH--> GW
@@ -1182,7 +1182,7 @@ func TestAuthFail(t *testing.T) {
 	// CONNECT
 
 	// client --CONNECT--> GW
-	snConnect := snPkts1.NewConnect(clientID, true, false, 1)
+	snConnect := snPkts1.NewConnect(1, clientID, false, true)
 	stp.snSend(snConnect, false)
 
 	// client --AUTH--> GW
@@ -1459,7 +1459,7 @@ func (stp *testSetup) connect() {
 	clientID := []byte("test-client")
 
 	// client --CONNECT--> GW
-	snConnect := snPkts1.NewConnect(clientID, true, false, 1)
+	snConnect := snPkts1.NewConnect(1, clientID, false, true)
 	stp.snSend(snConnect, false)
 
 	// GW --CONNECT--> MQTT broker

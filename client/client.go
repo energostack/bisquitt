@@ -298,10 +298,11 @@ func (c *Client) notifyStateChange(s util.ClientState) {
 // unless it's a PUBLISH packet with QoS = -1.
 func (c *Client) Connect() error {
 	connect := pkts1.NewConnect(
+		uint16(c.cfg.KeepAlive.Seconds()),
 		[]byte(c.cfg.ClientID),
-		c.cfg.CleanSession,
 		c.cfg.WillTopic != "",
-		uint16(c.cfg.KeepAlive.Seconds()))
+		c.cfg.CleanSession,
+	)
 
 	var auth *pkts1.Auth
 	if c.cfg.User != "" {
