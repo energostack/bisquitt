@@ -398,7 +398,7 @@ func (c *Client) SubscribePredefined(topicID uint16, qos uint8, callback Message
 func (c *Client) unsubscribe(topicName string, topicIDType uint8, topicID uint16) error {
 	msgID, _ := c.msgID.Next()
 	transaction := newUnsubscribeTransaction(c, msgID)
-	unsubscribe := pkts1.NewUnsubscribe(topicID, topicIDType, topicName)
+	unsubscribe := pkts1.NewUnsubscribe(topicName, topicID, topicIDType)
 	unsubscribe.SetMessageID(msgID)
 	c.transactions.Store(msgID, transaction)
 	transaction.Proceed(nil, unsubscribe)
