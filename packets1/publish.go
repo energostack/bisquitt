@@ -21,8 +21,8 @@ type Publish struct {
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewPublish(topicID uint16, topicIDType uint8, payload []byte, qos uint8,
-	retain bool, dup bool) *Publish {
+func NewPublish(topicID uint16, payload []byte, dup bool, qos uint8, retain bool,
+	topicIDType uint8) *Publish {
 	p := &Publish{
 		Header:      *pkts.NewHeader(pkts.PUBLISH, 0),
 		DUPProperty: *pkts.NewDUPProperty(dup),
