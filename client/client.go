@@ -482,7 +482,7 @@ func (c *Client) Publish(topic string, payload []byte, qos uint8, retain bool) e
 }
 
 // PublishPredefined publishes a message to the provided predefined topic.
-func (c *Client) PublishPredefined(topicID uint16, qos uint8, retain bool, payload []byte) error {
+func (c *Client) PublishPredefined(topicID uint16, payload []byte, qos uint8, retain bool) error {
 	return c.publish(pkts1.TIT_PREDEFINED, topicID, qos, retain, payload)
 }
 

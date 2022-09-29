@@ -187,7 +187,7 @@ func handleAction() cli.ActionFunc {
 
 		topicID, isPredefinedTopic := predefinedTopics.GetTopicID(clientID, topic)
 		if isPredefinedTopic {
-			if err := client.PublishPredefined(topicID, qos, retain, payload); err != nil {
+			if err := client.PublishPredefined(topicID, payload, qos, retain); err != nil {
 				return err
 			}
 		} else {
