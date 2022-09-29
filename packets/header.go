@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"io"
 )
 
 // The header of packets longer than 255B starts with 0x01.
@@ -108,22 +107,6 @@ func (h *Header) PackToBuffer() *bytes.Buffer {
 	_ = buf.WriteByte(byte(h.pktType))
 
 	return buf
-}
-
-func ReadByte(r io.Reader) (byte, error) {
-	buf := make([]byte, 1)
-	if _, err := io.ReadFull(r, buf); err != nil {
-		return 0, err
-	}
-	return buf[0], nil
-}
-
-func ReadUint16(r io.Reader) (uint16, error) {
-	buf := make([]byte, 2)
-	if _, err := io.ReadFull(r, buf); err != nil {
-		return 0, err
-	}
-	return binary.BigEndian.Uint16(buf), nil
 }
 
 func EncodeUint16(num uint16) []byte {
