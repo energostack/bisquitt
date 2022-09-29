@@ -311,7 +311,7 @@ func TestPublishQOS0(t *testing.T) {
 		stp.t.Fatal(err)
 	}
 
-	if err := stp.client.Publish(topic, qos, retain, payload); err != nil {
+	if err := stp.client.Publish(topic, payload, qos, retain); err != nil {
 		stp.t.Fatal(err)
 	}
 
@@ -408,7 +408,7 @@ func TestPublishQOS0Short(t *testing.T) {
 	}
 	assert.Equal(util.StateActive, stp.client.state.Get())
 
-	if err := stp.client.Publish(topic, qos, retain, payload); err != nil {
+	if err := stp.client.Publish(topic, payload, qos, retain); err != nil {
 		stp.t.Fatal(err)
 	}
 
@@ -489,7 +489,7 @@ func TestPublishQOS1(t *testing.T) {
 		stp.t.Fatal(err)
 	}
 
-	if err := stp.client.Publish(topic, qos, retain, payload); err != nil {
+	if err := stp.client.Publish(topic, payload, qos, retain); err != nil {
 		stp.t.Fatal(err)
 	}
 
@@ -622,7 +622,7 @@ func TestPublishQOS1Short(t *testing.T) {
 	}
 	assert.Equal(util.StateActive, stp.client.state.Get())
 
-	if err := stp.client.Publish(topic, qos, retain, payload); err != nil {
+	if err := stp.client.Publish(topic, payload, qos, retain); err != nil {
 		stp.t.Fatal(err)
 	}
 
@@ -712,7 +712,7 @@ func TestPublishQOS2(t *testing.T) {
 		stp.t.Fatal(err)
 	}
 
-	if err := stp.client.Publish(topic, qos, retain, payload); err != nil {
+	if err := stp.client.Publish(topic, payload, qos, retain); err != nil {
 		stp.t.Fatal(err)
 	}
 
@@ -863,7 +863,7 @@ func TestPublishQOS2Short(t *testing.T) {
 	}
 	assert.Equal(util.StateActive, stp.client.state.Get())
 
-	if err := stp.client.Publish(topic, qos, retain, payload); err != nil {
+	if err := stp.client.Publish(topic, payload, qos, retain); err != nil {
 		stp.t.Fatal(err)
 	}
 
