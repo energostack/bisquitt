@@ -359,7 +359,7 @@ func TestPublishQOS0Predefined(t *testing.T) {
 	}
 	assert.Equal(util.StateActive, stp.client.state.Get())
 
-	if err := stp.client.PublishPredefined(topicID, qos, retain, payload); err != nil {
+	if err := stp.client.PublishPredefined(topicID, payload, qos, retain); err != nil {
 		stp.t.Fatal(err)
 	}
 
@@ -555,7 +555,7 @@ func TestPublishQOS1Predefined(t *testing.T) {
 	}
 	assert.Equal(util.StateActive, stp.client.state.Get())
 
-	if err := stp.client.PublishPredefined(topicID, qos, retain, payload); err != nil {
+	if err := stp.client.PublishPredefined(topicID, payload, qos, retain); err != nil {
 		stp.t.Fatal(err)
 	}
 
@@ -787,7 +787,7 @@ func TestPublishQOS2Predefined(t *testing.T) {
 	}
 	assert.Equal(util.StateActive, stp.client.state.Get())
 
-	if err := stp.client.PublishPredefined(topicID, qos, retain, payload); err != nil {
+	if err := stp.client.PublishPredefined(topicID, payload, qos, retain); err != nil {
 		stp.t.Fatal(err)
 	}
 
@@ -902,7 +902,7 @@ func TestPublishQOS3(t *testing.T) {
 		assert.Equal(qos, publish.QOS)
 	}()
 
-	if err := stp.client.PublishPredefined(topicID, qos, retain, payload); err != nil {
+	if err := stp.client.PublishPredefined(topicID, payload, qos, retain); err != nil {
 		stp.t.Fatal(err)
 	}
 
