@@ -462,7 +462,7 @@ func (c *Client) publish(topicIDType uint8, topicID uint16, qos uint8, retain bo
 }
 
 // Publish publishes a message to the provided topic.
-func (c *Client) Publish(topic string, qos uint8, retain bool, payload []byte) error {
+func (c *Client) Publish(topic string, payload []byte, qos uint8, retain bool) error {
 	var topicIDType uint8
 	var topicID uint16
 	if pkts.IsShortTopic(topic) {

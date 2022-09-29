@@ -200,7 +200,7 @@ func handleAction() cli.ActionFunc {
 				return err
 			}
 
-			if err := client.Publish(topic, qos, retain, payload); err != nil {
+			if err := client.Publish(topic, payload, qos, retain); err != nil {
 				return err
 			}
 		}
