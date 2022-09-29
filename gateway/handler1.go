@@ -587,7 +587,7 @@ func (h *handler1) handleSubscribe(ctx context.Context, snSubscribe *snPkts1.Sub
 			var err error
 			topicID, err = h.newTopicID()
 			if err != nil {
-				snSuback := snPkts1.NewSuback(0, 0, snPkts1.RC_INVALID_TOPIC_ID)
+				snSuback := snPkts1.NewSuback(0, snPkts1.RC_INVALID_TOPIC_ID, 0)
 				// We are kind of misusing the "invalid topic ID" return code here.
 				// Please see note in `case *snPkts.Register`.
 				snSuback.CopyMessageID(snSubscribe)
