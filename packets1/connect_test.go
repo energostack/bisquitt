@@ -21,6 +21,13 @@ func TestConnect(t *testing.T) {
 		assert.Equal(t, uint8(1), pkt.ProtocolID, "Default ProtocolID should be 1")
 		assert.Equal(t, duration, pkt.Duration, "Bad Duration value")
 		assert.Equal(t, clientID, pkt.ClientID, "Bad ClientID value")
+
+		unpackError := pkt.Unpack([]byte(""))
+		assert.NotNil(t, unpackError)
+		assert.Error(t, unpackError)
+		assert.Contains(t, unpackError.Error(), "bad CONNECT packet length")
+
+		assert.Equal(t, "CONNECT(ClientID=\"client-id\", CleanSession=true, Will=true, Duration=90)", pkt.String())
 	}
 }
 

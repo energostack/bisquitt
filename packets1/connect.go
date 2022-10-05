@@ -60,7 +60,7 @@ func (p *Connect) Pack() ([]byte, error) {
 	_ = buf.WriteByte(p.encodeFlags())
 	_ = buf.WriteByte(p.ProtocolID)
 	_, _ = buf.Write(pkts.EncodeUint16(p.Duration))
-	_, _ = buf.Write([]byte(p.ClientID))
+	_, _ = buf.Write(p.ClientID)
 
 	return buf.Bytes(), nil
 }
@@ -77,7 +77,7 @@ func (p *Connect) Unpack(buf []byte) error {
 	return nil
 }
 
-func (p Connect) String() string {
+func (p *Connect) String() string {
 	return fmt.Sprintf(
 		"CONNECT(ClientID=%#v, CleanSession=%t, Will=%t, Duration=%d)",
 
