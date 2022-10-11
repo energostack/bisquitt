@@ -11,18 +11,20 @@ const subackVarPartLength uint16 = 6
 
 type Suback struct {
 	pkts.Header
+	// Flags
+	QOS uint8
+	// Fields
+	TopicID uint16
 	MessageIDProperty
-	QOS        uint8
 	ReturnCode ReturnCode
-	TopicID    uint16
 }
 
 func NewSuback(topicID uint16, returnCode ReturnCode, qos uint8) *Suback {
 	return &Suback{
 		Header:     *pkts.NewHeader(pkts.SUBACK, subackVarPartLength),
 		QOS:        qos,
-		ReturnCode: returnCode,
 		TopicID:    topicID,
+		ReturnCode: returnCode,
 	}
 }
 

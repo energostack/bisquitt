@@ -11,6 +11,7 @@ const unsubackVarPartLength uint16 = 2
 
 type Unsuback struct {
 	pkts.Header
+	// Fields
 	MessageIDProperty
 }
 

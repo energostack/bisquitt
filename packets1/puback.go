@@ -11,8 +11,9 @@ const pubackVarPartLength uint16 = 5
 
 type Puback struct {
 	pkts.Header
+	// Fields
+	TopicID uint16
 	MessageIDProperty
-	TopicID    uint16
 	ReturnCode ReturnCode
 }
 

@@ -8,6 +8,7 @@ import (
 
 type WillMsgUpd struct {
 	pkts.Header
+	// Fields
 	WillMsg []byte
 }
 

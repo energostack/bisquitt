@@ -10,6 +10,7 @@ const willTopicRespVarPartLength uint16 = 1
 
 type WillTopicResp struct {
 	pkts.Header
+	// Fields
 	ReturnCode ReturnCode
 }
 

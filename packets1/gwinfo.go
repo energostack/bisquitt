@@ -10,6 +10,7 @@ const gwInfoHeaderLength uint16 = 1
 
 type GwInfo struct {
 	pkts.Header
+	// Fields
 	GatewayID      uint8
 	GatewayAddress []byte
 }

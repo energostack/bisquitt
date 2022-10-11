@@ -11,6 +11,7 @@ const advertiseVarPartLength uint16 = 3
 
 type Advertise struct {
 	pkts.Header
+	// Fields
 	GatewayID uint8
 	Duration  uint16
 }

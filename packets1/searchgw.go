@@ -10,6 +10,7 @@ const searchGwVarPartLength uint16 = 1
 
 type SearchGw struct {
 	pkts.Header
+	// Fields
 	Radius uint8
 }
 

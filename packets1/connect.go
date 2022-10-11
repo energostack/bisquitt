@@ -11,11 +11,13 @@ const connectHeaderLength uint16 = 4
 
 type Connect struct {
 	pkts.Header
-	CleanSession bool
-	ClientID     []byte
-	Duration     uint16
-	ProtocolID   uint8
+	// Flags
 	Will         bool
+	CleanSession bool
+	// Fields
+	ProtocolID uint8
+	Duration   uint16
+	ClientID   []byte
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().

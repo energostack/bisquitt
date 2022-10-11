@@ -11,6 +11,7 @@ const pubcompVarPartLength uint16 = 2
 
 type Pubcomp struct {
 	pkts.Header
+	// Fields
 	MessageIDProperty
 }
 

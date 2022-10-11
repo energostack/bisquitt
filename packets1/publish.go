@@ -11,13 +11,15 @@ const publishHeaderLength uint16 = 5
 
 type Publish struct {
 	pkts.Header
-	MessageIDProperty
+	// Flags
 	pkts.DUPProperty
-	Retain      bool
 	QOS         uint8
+	Retain      bool
 	TopicIDType uint8
-	TopicID     uint16
-	Data        []byte
+	// Fields
+	TopicID uint16
+	MessageIDProperty
+	Data []byte
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
@@ -26,11 +28,11 @@ func NewPublish(topicID uint16, payload []byte, dup bool, qos uint8, retain bool
 	p := &Publish{
 		Header:      *pkts.NewHeader(pkts.PUBLISH, 0),
 		DUPProperty: *pkts.NewDUPProperty(dup),
-		TopicID:     topicID,
-		TopicIDType: topicIDType,
-		Data:        payload,
 		QOS:         qos,
 		Retain:      retain,
+		TopicIDType: topicIDType,
+		TopicID:     topicID,
+		Data:        payload,
 	}
 	p.computeLength()
 	return p

@@ -11,10 +11,12 @@ const unsubscribeHeaderLength uint16 = 3
 
 type Unsubscribe struct {
 	pkts.Header
-	MessageIDProperty
+	// Flags
 	TopicIDType uint8
-	TopicID     uint16
-	TopicName   string
+	// Fields
+	MessageIDProperty
+	TopicID   uint16
+	TopicName string
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().

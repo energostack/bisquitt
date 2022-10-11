@@ -11,6 +11,7 @@ const pubrelVarPartLength uint16 = 2
 
 type Pubrel struct {
 	pkts.Header
+	// Fields
 	MessageIDProperty
 }
 
