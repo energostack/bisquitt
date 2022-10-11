@@ -11,8 +11,9 @@ const registerHeaderLength uint16 = 4
 
 type Register struct {
 	pkts.Header
+	// Fields
+	TopicID uint16
 	MessageIDProperty
-	TopicID   uint16
 	TopicName string
 }
 

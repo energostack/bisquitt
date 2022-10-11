@@ -8,6 +8,7 @@ import (
 
 type Pingreq struct {
 	pkts.Header
+	// Fields
 	ClientID []byte
 }
 

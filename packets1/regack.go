@@ -11,8 +11,9 @@ const regackVarPartLength uint16 = 5
 
 type Regack struct {
 	pkts.Header
+	// Fields
+	TopicID uint16
 	MessageIDProperty
-	TopicID    uint16
 	ReturnCode ReturnCode
 }
 

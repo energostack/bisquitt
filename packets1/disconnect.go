@@ -11,6 +11,7 @@ const disconnectDurationLength uint16 = 2
 
 type Disconnect struct {
 	pkts.Header
+	// Fields
 	Duration uint16
 }
 

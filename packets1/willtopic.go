@@ -10,8 +10,10 @@ const willTopicFlagsLength uint16 = 1
 
 type WillTopic struct {
 	pkts.Header
-	QOS       uint8
-	Retain    bool
+	// Flags
+	QOS    uint8
+	Retain bool
+	// Fields
 	WillTopic string
 }
 

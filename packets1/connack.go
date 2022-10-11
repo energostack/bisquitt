@@ -10,6 +10,7 @@ const connackVarPartLength uint16 = 1
 
 type Connack struct {
 	pkts.Header
+	// Fields
 	ReturnCode ReturnCode
 }
 

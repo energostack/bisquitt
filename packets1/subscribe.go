@@ -11,12 +11,14 @@ const subscribeHeaderLength uint16 = 3
 
 type Subscribe struct {
 	pkts.Header
+	// Flags
 	pkts.DUPProperty
-	MessageIDProperty
 	QOS         uint8
 	TopicIDType uint8
-	TopicID     uint16
-	TopicName   string
+	// Fields
+	MessageIDProperty
+	TopicID   uint16
+	TopicName string
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().

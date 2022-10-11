@@ -29,6 +29,7 @@ const authHeaderLength uint16 = 2
 // SASL PLAIN method specification: https://datatracker.ietf.org/doc/html/rfc4616
 type Auth struct {
 	pkts.Header
+	// Fields
 	Reason uint8
 	Method string
 	Data   []byte
