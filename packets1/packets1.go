@@ -80,12 +80,16 @@ func ReadPacket(r io.Reader) (pkt pkts.Packet, err error) {
 		return nil, err
 	}
 	packet = packet[:n]
-	h.Unpack(packet)
+	if err := h.Unpack(packet); err != nil {
+		return nil, err
+	}
 	pkt = NewPacketWithHeader(h)
 	if pkt == nil {
-		return nil, errors.New("invalid MQTT-SN packet")
+		return nil, errors.New("invalid MQTT-SN packet type")
 	}
-	pkt.Unpack(packet[h.HeaderLength():])
+	if err := pkt.Unpack(packet[h.HeaderLength():]); err != nil {
+		return nil, err
+	}
 
 	return pkt, nil
 }
