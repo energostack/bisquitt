@@ -52,10 +52,10 @@ func NewAuthPlain(user string, password []byte) *Auth {
 
 // DecodePlain decodes username and password from AUTH package data encoded
 // using "PLAIN" method.
-func DecodePlain(auth *Auth) (string, []byte, error) {
-	dataParts := bytes.Split(auth.Data, []byte{0})
+func (p *Auth) DecodePlain() (string, []byte, error) {
+	dataParts := bytes.Split(p.Data, []byte{0})
 	if len(dataParts) != 3 {
-		return "", nil, fmt.Errorf("invalid PLAIN auth data format: %v.", auth.Data)
+		return "", nil, fmt.Errorf("invalid PLAIN auth data format: %v.", p.Data)
 	}
 	// NOTE: PLAIN first part (authorization identity) not used.
 	return string(dataParts[1]), dataParts[2], nil

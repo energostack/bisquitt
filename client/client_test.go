@@ -163,7 +163,7 @@ func TestConnectAuthWill(t *testing.T) {
 		// client --AUTH--> GW
 		auth := stp.recv().(*pkts1.Auth)
 		assert.Equal(pkts1.AUTH_PLAIN, auth.Method)
-		authUser, authPassword, err := pkts1.DecodePlain(auth)
+		authUser, authPassword, err := auth.DecodePlain()
 		assert.Equal(user, authUser)
 		assert.Equal(password, authPassword)
 		assert.Nil(err)
