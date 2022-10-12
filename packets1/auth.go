@@ -41,10 +41,10 @@ func NewAuthPlain(user string, password []byte) *Auth {
 	p := &Auth{Header: *pkts.NewHeader(pkts.AUTH, 0)}
 	p.Method = "PLAIN"
 	var b bytes.Buffer
-	b.Write([]byte{0})
-	b.Write([]byte(user))
-	b.Write([]byte{0})
-	b.Write(password)
+	_ = b.WriteByte(0)
+	_, _ = b.Write([]byte(user))
+	_ = b.WriteByte(0)
+	_, _ = b.Write(password)
 	p.Data = b.Bytes()
 	p.computeLength()
 	return p
