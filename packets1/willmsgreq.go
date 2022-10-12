@@ -24,7 +24,7 @@ func (p *WillMsgReq) Pack() ([]byte, error) {
 }
 
 func (p *WillMsgReq) Unpack(buf []byte) error {
-	if len(buf) <= int(willMsgReqVarPartLength) {
+	if len(buf) != int(willMsgReqVarPartLength) {
 		return fmt.Errorf("bad WILLMSGREQ packet length: expected %d, got %d",
 			willMsgReqVarPartLength, len(buf))
 	}
