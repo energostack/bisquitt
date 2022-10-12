@@ -83,7 +83,7 @@ func (t *connectTransaction) Start(ctx context.Context) error {
 func (t *connectTransaction) Auth(snPkt *snPkts1.Auth) error {
 	// Extract username and password from PLAIN data.
 	if snPkt.Method == snPkts1.AUTH_PLAIN {
-		user, password, err := snPkts1.DecodePlain(snPkt)
+		user, password, err := snPkt.DecodePlain()
 		if err != nil {
 			t.Fail(err)
 			return err
