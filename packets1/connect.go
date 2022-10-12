@@ -71,8 +71,12 @@ func (p *Connect) Unpack(buf []byte) error {
 	if len(buf) < int(connectHeaderLength+1) {
 		return fmt.Errorf("bad CONNECT packet length: expected >=%d, got %d", connectHeaderLength+1, len(buf))
 	}
+
 	p.decodeFlags(buf[0])
 	p.ProtocolID = buf[1]
+	if p.ProtocolID != 1 {
+		return fmt.Errorf("bad CONNECT ProtocolId: expected 1, got %d", buf[1])
+	}
 	p.Duration = binary.BigEndian.Uint16(buf[2:4])
 	p.ClientID = buf[connectHeaderLength:]
 
