@@ -84,5 +84,8 @@ func (p *WillTopic) Unpack(buf []byte) error {
 }
 
 func (p WillTopic) String() string {
+	if len(p.WillTopic) == 0 {
+		return fmt.Sprintf(`WILLTOPIC(WillTopic="")`)
+	}
 	return fmt.Sprintf("WILLTOPIC(WillTopic=%#v, QOS=%d, Retain=%t)", p.WillTopic, p.QOS, p.Retain)
 }
