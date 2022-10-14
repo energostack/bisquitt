@@ -106,6 +106,19 @@ func (p *Subscribe) Unpack(buf []byte) error {
 }
 
 func (p Subscribe) String() string {
-	return fmt.Sprintf("SUBSCRIBE(TopicName=%#v, QOS=%d, TopicID=%d, TopicIDType=%d, MessageID=%d, Dup=%t)",
-		string(p.TopicName), p.QOS, p.TopicID, p.TopicIDType, p.messageID, p.DUP())
+	switch p.TopicIDType {
+	case TIT_STRING:
+		return fmt.Sprintf("SUBSCRIBE(TopicName=%#v, QOS=%d, MessageID=%d, Dup=%t)",
+			p.TopicName, p.QOS, p.messageID, p.DUP())
+	case TIT_PREDEFINED:
+		return fmt.Sprintf("SUBSCRIBE(TopicID(p)=%d, QOS=%d, MessageID=%d, Dup=%t)",
+			p.TopicID, p.QOS, p.messageID, p.DUP())
+	case TIT_SHORT:
+		topicName := pkts.DecodeShortTopic(p.TopicID)
+		return fmt.Sprintf("SUBSCRIBE(TopicName(s)=%#v, QOS=%d, MessageID=%d, Dup=%t)",
+			topicName, p.QOS, p.messageID, p.DUP())
+	default:
+		return fmt.Sprintf("SUBSCRIBE(TopicName=%#v, QOS=%d, TopicID=%d, TopicIDType=%d (INVALID!), MessageID=%d, Dup=%t)",
+			p.TopicName, p.QOS, p.TopicID, p.TopicIDType, p.messageID, p.DUP())
+	}
 }

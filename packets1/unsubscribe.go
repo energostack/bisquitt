@@ -96,6 +96,19 @@ func (p *Unsubscribe) Unpack(buf []byte) error {
 }
 
 func (p Unsubscribe) String() string {
-	return fmt.Sprintf("UNSUBSCRIBE(TopicName=%#v, TopicID=%d, TopicIDType=%d, MessageID=%d)",
-		string(p.TopicName), p.TopicID, p.TopicIDType, p.messageID)
+	switch p.TopicIDType {
+	case TIT_STRING:
+		return fmt.Sprintf("UNSUBSCRIBE(TopicName=%#v, MessageID=%d)",
+			string(p.TopicName), p.messageID)
+	case TIT_PREDEFINED:
+		return fmt.Sprintf("UNSUBSCRIBE(TopicID(p)=%d, MessageID=%d)",
+			p.TopicID, p.messageID)
+	case TIT_SHORT:
+		topicName := pkts.DecodeShortTopic(p.TopicID)
+		return fmt.Sprintf("UNSUBSCRIBE(TopicName(s)=%#v, MessageID=%d)",
+			topicName, p.messageID)
+	default:
+		return fmt.Sprintf("UNSUBSCRIBE(TopicName=%#v, TopicID=%d, TopicIDType=%d (INVALID!), MessageID=%d)",
+			p.TopicName, p.TopicID, p.TopicIDType, p.messageID)
+	}
 }
