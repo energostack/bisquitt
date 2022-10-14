@@ -23,7 +23,7 @@ type Publish struct {
 }
 
 // NOTE: Packet length is initialized in this constructor and recomputed in m.Write().
-func NewPublish(topicID uint16, payload []byte, dup bool, qos uint8, retain bool,
+func NewPublish(topicID uint16, data []byte, dup bool, qos uint8, retain bool,
 	topicIDType uint8) *Publish {
 	p := &Publish{
 		Header:      *pkts.NewHeader(pkts.PUBLISH, 0),
@@ -32,15 +32,15 @@ func NewPublish(topicID uint16, payload []byte, dup bool, qos uint8, retain bool
 		Retain:      retain,
 		TopicIDType: topicIDType,
 		TopicID:     topicID,
-		Data:        payload,
+		Data:        data,
 	}
 	p.computeLength()
 	return p
 }
 
 func (p *Publish) computeLength() {
-	payloadLen := uint16(len(p.Data))
-	p.Header.SetVarPartLength(publishHeaderLength + payloadLen)
+	dataLen := uint16(len(p.Data))
+	p.Header.SetVarPartLength(publishHeaderLength + dataLen)
 }
 
 func (p *Publish) encodeFlags() byte {
