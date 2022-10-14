@@ -6,7 +6,7 @@ import (
 	pkts "github.com/energomonitor/bisquitt/packets"
 )
 
-const willTopicUpdHeaderLength uint16 = 1
+const willTopicUpdFlagsLength uint16 = 1
 
 type WillTopicUpd struct {
 	pkts.Header
@@ -30,8 +30,15 @@ func NewWillTopicUpd(willTopic string, qos uint8, retain bool) *WillTopicUpd {
 }
 
 func (p *WillTopicUpd) computeLength() {
-	topicLength := uint16(len(p.WillTopic))
-	p.Header.SetVarPartLength(willTopicUpdHeaderLength + topicLength)
+	// An empty WILLTOPICUPD message is a WILLTOPICUPD message without Flags and
+	// WillTopicUpd field (i.e. it is exactly 2 octets long).
+	// [MQTT-SN specification v. 1.2, chapter 5.4.22 WILLTOPICUPD]
+	if len(p.WillTopic) == 0 {
+		p.Header.SetVarPartLength(0)
+	} else {
+		length := willTopicUpdFlagsLength + uint16(len(p.WillTopic))
+		p.Header.SetVarPartLength(length)
+	}
 }
 
 func (p *WillTopicUpd) encodeFlags() byte {
@@ -52,25 +59,32 @@ func (p *WillTopicUpd) Pack() ([]byte, error) {
 	p.computeLength()
 	buf := p.Header.PackToBuffer()
 
-	_ = buf.WriteByte(p.encodeFlags())
-	_, _ = buf.Write([]byte(p.WillTopic))
+	if p.Header.VarPartLength() > 0 {
+		_ = buf.WriteByte(p.encodeFlags())
+		_, _ = buf.Write([]byte(p.WillTopic))
+	}
 
 	return buf.Bytes(), nil
 }
 
 func (p *WillTopicUpd) Unpack(buf []byte) error {
-	if len(buf) <= int(willTopicUpdHeaderLength) {
-		return fmt.Errorf("bad WILLTOPICUPD packet length: expected >%d, got %d",
-			willTopicUpdHeaderLength, len(buf))
+	switch len(buf) {
+	case 0:
+		p.WillTopic = ""
+	case 1:
+		return fmt.Errorf("bad WILLTOPICUPD packet length: expected 0 or >=2, got %d",
+			len(buf))
+	default:
+		p.decodeFlags(buf[0])
+		p.WillTopic = string(buf[1:])
 	}
-
-	p.decodeFlags(buf[0])
-	p.WillTopic = string(buf[1:])
 
 	return nil
 }
 
 func (p WillTopicUpd) String() string {
-	return fmt.Sprintf("WILLTOPICUPD(WillTopic=%#v, QOS=%d, Retain=%t)",
-		p.WillTopic, p.QOS, p.Retain)
+	if len(p.WillTopic) == 0 {
+		return fmt.Sprintf(`WILLTOPICUPD(WillTopicUpd="")`)
+	}
+	return fmt.Sprintf("WILLTOPICUPD(WillTopicUpd=%#v, QOS=%d, Retain=%t)", p.WillTopic, p.QOS, p.Retain)
 }
