@@ -9,7 +9,6 @@ package gateway
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	mqPkts "github.com/eclipse/paho.mqtt.golang/packets"
@@ -19,8 +18,6 @@ import (
 	"github.com/energomonitor/bisquitt/transactions"
 	"github.com/energomonitor/bisquitt/util"
 )
-
-var Cancelled = errors.New("transaction cancelled")
 
 type connectTransaction struct {
 	*transactions.TimedTransaction
@@ -54,7 +51,7 @@ func (t *connectTransaction) Start(ctx context.Context) error {
 		select {
 		case <-t.Done():
 			if err := t.Err(); err != nil {
-				if err == Cancelled {
+				if err == TransactionCanceled {
 					return nil
 				}
 				return fmt.Errorf("CONNECT: %s", err)

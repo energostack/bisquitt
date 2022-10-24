@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto"
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"net"
 	"time"
@@ -63,12 +62,12 @@ func newDTLSListener(ctx context.Context, cfg *GatewayConfig, address *net.UDPAd
 	} else {
 		privateKey := cfg.PrivateKey
 		if privateKey == nil {
-			err = errors.New("private key is missing")
+			err = ErrMissingPrivateKey
 		}
 		if certificate = cfg.Certificate; certificate != nil {
 			certificate.PrivateKey = privateKey
 		} else {
-			err = errors.New("TLS certificate is missing")
+			err = ErrTLSCertMissing
 		}
 	}
 	if err != nil {
