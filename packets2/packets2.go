@@ -123,8 +123,8 @@ func NewPacketWithHeader(h pkts.Header) (pkt pkts.Packet, err error) {
 		pkt = &Connack{Header: h}
 	//case pkts.WILLTOPICREQ:
 	//	pkt = &WillTopicReq{Header: h}
-	//case pkts.WILLTOPIC:
-	//	pkt = &WillTopic{Header: h}
+	case pkts.WILLTOPIC:
+		pkt = &WillTopic{Header: h}
 	case pkts.WILLMSGREQ:
 		pkt = &WillMsgReq{Header: h}
 	case pkts.WILLMSG:
