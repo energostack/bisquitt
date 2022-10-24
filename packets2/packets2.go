@@ -151,8 +151,8 @@ func NewPacketWithHeader(h pkts.Header) (pkt pkts.Packet, err error) {
 	//	pkt = &Unsubscribe{Header: h}
 	//case pkts.UNSUBACK:
 	//	pkt = &Unsuback{Header: h}
-	//case pkts.PINGREQ:
-	//	pkt = &Pingreq{Header: h}
+	case pkts.PINGREQ:
+		pkt = &Pingreq{Header: h}
 	//case pkts.PINGRESP:
 	//	pkt = &Pingresp{Header: h}
 	case pkts.DISCONNECT:
