@@ -129,8 +129,8 @@ func NewPacketWithHeader(h pkts.Header) (pkt pkts.Packet, err error) {
 	//	pkt = &WillMsgReq{Header: h}
 	//case pkts.WILLMSG:
 	//	pkt = &WillMsg{Header: h}
-	//case pkts.REGISTER:
-	//	pkt = &Register{Header: h}
+	case pkts.REGISTER:
+		pkt = &Register{Header: h}
 	case pkts.REGACK:
 		pkt = &Regack{Header: h}
 	case pkts.PUBLISH:
