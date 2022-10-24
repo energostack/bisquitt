@@ -1,0 +1,46 @@
+package packets2
+
+import (
+	"encoding/binary"
+	"fmt"
+
+	pkts "github.com/energomonitor/bisquitt/packets"
+)
+
+const pubcompVarPartLength uint16 = 2
+
+type Pubcomp struct {
+	pkts.Header
+	PacketV2
+	// Fields
+	PacketIDProperty
+}
+
+func NewPubcomp() *Pubcomp {
+	return &Pubcomp{
+		Header: *pkts.NewHeader(pkts.PUBCOMP, pubcompVarPartLength),
+	}
+}
+
+func (p *Pubcomp) Pack() ([]byte, error) {
+	buf := p.Header.PackToBuffer()
+
+	_, _ = buf.Write(pkts.EncodeUint16(p.packetID))
+
+	return buf.Bytes(), nil
+}
+
+func (p *Pubcomp) Unpack(buf []byte) error {
+	if len(buf) != int(pubcompVarPartLength) {
+		return fmt.Errorf("bad PUBCOMP2 packet length: expected %d, got %d",
+			pubcompVarPartLength, len(buf))
+	}
+
+	p.packetID = binary.BigEndian.Uint16(buf)
+
+	return nil
+}
+
+func (p Pubcomp) String() string {
+	return fmt.Sprintf("PUBCOMP2(PacketID=%d)", p.packetID)
+}
