@@ -114,3 +114,9 @@ func EncodeUint16(num uint16) []byte {
 	binary.BigEndian.PutUint16(bytes, num)
 	return bytes
 }
+
+func EncodeUint32(num uint32) []byte {
+	bytes := make([]byte, 4)
+	binary.BigEndian.PutUint32(bytes, num)
+	return bytes
+}
