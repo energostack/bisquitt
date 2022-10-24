@@ -115,8 +115,8 @@ func NewPacketWithHeader(h pkts.Header) (pkt pkts.Packet, err error) {
 		pkt = &SearchGw{Header: h}
 	case pkts.GWINFO:
 		pkt = &GwInfo{Header: h}
-	//case pkts.AUTH:
-	//	pkt = &Auth{Header: h}
+	case pkts.AUTH:
+		pkt = &Auth{Header: h}
 	//case pkts.CONNECT:
 	//	pkt = &Connect{Header: h}
 	//case pkts.CONNACK:
