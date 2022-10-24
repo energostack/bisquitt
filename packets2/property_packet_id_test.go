@@ -1,7 +1,11 @@
 package packets2
 
-// TODO: Uncomment as soon as Pubrec and Pubrel types are defined.
-/*
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
 func TestPacketID(t *testing.T) {
 	msgID := uint16(1234)
 
@@ -13,4 +17,3 @@ func TestPacketID(t *testing.T) {
 	pkt2.CopyPacketID(pkt1)
 	assert.Equal(t, msgID, pkt2.PacketID())
 }
-*/
