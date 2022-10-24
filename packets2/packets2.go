@@ -111,8 +111,8 @@ func NewPacketWithHeader(h pkts.Header) (pkt pkts.Packet, err error) {
 	switch h.PacketType() {
 	case pkts.ADVERTISE:
 		pkt = &Advertise{Header: h}
-	//case pkts.SEARCHGW:
-	//	pkt = &SearchGw{Header: h}
+	case pkts.SEARCHGW:
+		pkt = &SearchGw{Header: h}
 	case pkts.GWINFO:
 		pkt = &GwInfo{Header: h}
 	//case pkts.AUTH:
