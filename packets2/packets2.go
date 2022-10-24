@@ -109,8 +109,8 @@ const flagsTopicAliasTypeBits = 0b00000011
 // The struct type is determined by h.msgType.
 func NewPacketWithHeader(h pkts.Header) (pkt pkts.Packet, err error) {
 	switch h.PacketType() {
-	//case pkts.ADVERTISE:
-	//	pkt = &Advertise{Header: h}
+	case pkts.ADVERTISE:
+		pkt = &Advertise{Header: h}
 	//case pkts.SEARCHGW:
 	//	pkt = &SearchGw{Header: h}
 	//case pkts.GWINFO:
