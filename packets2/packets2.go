@@ -141,8 +141,8 @@ func NewPacketWithHeader(h pkts.Header) (pkt pkts.Packet, err error) {
 		pkt = &Pubcomp{Header: h}
 	case pkts.PUBREC:
 		pkt = &Pubrec{Header: h}
-	//case pkts.PUBREL:
-	//	pkt = &Pubrel{Header: h}
+	case pkts.PUBREL:
+		pkt = &Pubrel{Header: h}
 	//case pkts.SUBSCRIBE:
 	//	pkt = &Subscribe{Header: h}
 	//case pkts.SUBACK:
