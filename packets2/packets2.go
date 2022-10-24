@@ -163,8 +163,8 @@ func NewPacketWithHeader(h pkts.Header) (pkt pkts.Packet, err error) {
 	//	pkt = &WillTopicResp{Header: h}
 	//case pkts.WILLMSGUPD:
 	//	pkt = &WillMsgUpd{Header: h}
-	//case pkts.WILLMSGRESP:
-	//	pkt = &WillMsgResp{Header: h}
+	case pkts.WILLMSGRESP:
+		pkt = &WillMsgResp{Header: h}
 	default:
 		err = fmt.Errorf("invalid MQTT-SN 2.0 packet type: %d", h.PacketType())
 	}
