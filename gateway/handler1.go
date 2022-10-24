@@ -19,7 +19,6 @@ package gateway
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -66,13 +65,6 @@ const (
 	// How long to wait for CONNECT transaction to be finished
 	connectTransactionTimeout = 5 * time.Second
 )
-
-// This error is used to shut down the handler from a goroutine.
-// It does not signalize error.
-var Shutdown = errors.New("clean shutdown")
-var ErrTopicIDsExhausted = errors.New("no more TopicIDs available")
-var ErrMqttConnClosed = errors.New("MQTT broker closed connection")
-var ErrIllegalPacketWhenDisconnected = errors.New("illegal packet in disconnected state")
 
 func hasWildcard(topic string) bool {
 	if strings.Contains(topic, "+") {
@@ -311,7 +303,7 @@ func (h *handler1) handleBrokerPublish(ctx context.Context, mqPublish *mqPkts.Pu
 			}
 		}
 		if !found {
-			return errors.New("cannot find available MsgID")
+			return ErrPacketIDsExhausted
 		}
 	}
 
@@ -566,7 +558,7 @@ func (h *handler1) handleConnect(ctx context.Context, snConnect *snPkts1.Connect
 
 	// Cancel previous transaction, if any.
 	if oldTransaction, ok := h.transactions.GetByType(snPkts.CONNECT); ok {
-		oldTransaction.Fail(Cancelled)
+		oldTransaction.Fail(TransactionCanceled)
 	}
 	transaction := newConnectTransaction(ctx, h, h.cfg.AuthEnabled, mqConnect)
 	h.transactions.StoreByType(snPkts.CONNECT, transaction)
