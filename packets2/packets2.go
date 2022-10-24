@@ -133,8 +133,8 @@ func NewPacketWithHeader(h pkts.Header) (pkt pkts.Packet, err error) {
 	//	pkt = &Register{Header: h}
 	//case pkts.REGACK:
 	//	pkt = &Regack{Header: h}
-	//case pkts.PUBLISH:
-	//	pkt = &Publish{Header: h}
+	case pkts.PUBLISH:
+		pkt = &Publish{Header: h}
 	case pkts.PUBACK:
 		pkt = &Puback{Header: h}
 	case pkts.PUBCOMP:
