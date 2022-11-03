@@ -42,6 +42,6 @@ func TestUnmarshalInvalidPacketType(t *testing.T) {
 	})
 	_, err := ReadPacket(buff)
 	if assert.Error(t, err) {
-		assert.Equal(t, err.Error(), "invalid MQTT-SN packet type")
+		assert.Equal(t, err.Error(), "invalid MQTT-SN 1.2 packet type: 25")
 	}
 }

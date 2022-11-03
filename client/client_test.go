@@ -1890,11 +1890,18 @@ func (stp *testSetup) recv() pkts.Packet {
 	rawPacket = rawPacket[:n]
 
 	var h pkts.Header
-	h.Unpack(rawPacket)
-	p := pkts1.NewPacketWithHeader(h)
-	p.Unpack(rawPacket[h.HeaderLength():])
+	if err := h.Unpack(rawPacket); err != nil {
+		stp.t.Fatal(err)
+	}
+	pkt, err := pkts1.NewPacketWithHeader(h)
+	if err != nil {
+		stp.t.Fatal(err)
+	}
+	if err := pkt.Unpack(rawPacket[h.HeaderLength():]); err != nil {
+		stp.t.Fatal(err)
+	}
 
-	return p
+	return pkt
 }
 
 func testRead(conn net.Conn, timeout time.Duration) ([]byte, error) {

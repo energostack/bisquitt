@@ -1341,11 +1341,18 @@ func (stp *testSetup) snRecv() snPkts.Packet {
 	rawPacket = rawPacket[:n]
 
 	var h snPkts.Header
-	h.Unpack(rawPacket)
-	p := snPkts1.NewPacketWithHeader(h)
-	p.Unpack(rawPacket[h.HeaderLength():])
+	if err := h.Unpack(rawPacket); err != nil {
+		stp.t.Fatal(err)
+	}
+	pkt, err := snPkts1.NewPacketWithHeader(h)
+	if err != nil {
+		stp.t.Fatal(err)
+	}
+	if err := pkt.Unpack(rawPacket[h.HeaderLength():]); err != nil {
+		stp.t.Fatal(err)
+	}
 
-	return p
+	return pkt
 }
 
 func (stp *testSetup) mqttSend(pkt mqPkts.ControlPacket, setMsgID bool) {
