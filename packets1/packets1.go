@@ -2,7 +2,6 @@
 package packets1
 
 import (
-	"errors"
 	"fmt"
 	"io"
 
@@ -74,20 +73,20 @@ func (c ReturnCode) String() string {
 func ReadPacket(r io.Reader) (pkt pkts.Packet, err error) {
 	var h pkts.Header
 
-	packet := make([]byte, MaxPacketLen)
-	n, err := r.Read(packet)
+	rawPacket := make([]byte, MaxPacketLen)
+	n, err := r.Read(rawPacket)
 	if err != nil {
 		return nil, err
 	}
-	packet = packet[:n]
-	if err := h.Unpack(packet); err != nil {
+	rawPacket = rawPacket[:n]
+	if err := h.Unpack(rawPacket); err != nil {
 		return nil, err
 	}
-	pkt = NewPacketWithHeader(h)
-	if pkt == nil {
-		return nil, errors.New("invalid MQTT-SN packet type")
+	pkt, err = NewPacketWithHeader(h)
+	if err != nil {
+		return nil, err
 	}
-	if err := pkt.Unpack(packet[h.HeaderLength():]); err != nil {
+	if err := pkt.Unpack(rawPacket[h.HeaderLength():]); err != nil {
 		return nil, err
 	}
 
@@ -96,7 +95,7 @@ func ReadPacket(r io.Reader) (pkt pkts.Packet, err error) {
 
 // NewPacketWithHeader returns a particular packet struct with a given header.
 // The struct type is determined by h.msgType.
-func NewPacketWithHeader(h pkts.Header) (pkt pkts.Packet) {
+func NewPacketWithHeader(h pkts.Header) (pkt pkts.Packet, err error) {
 	switch h.PacketType() {
 	case pkts.ADVERTISE:
 		pkt = &Advertise{Header: h}
@@ -154,6 +153,8 @@ func NewPacketWithHeader(h pkts.Header) (pkt pkts.Packet) {
 		pkt = &WillMsgUpd{Header: h}
 	case pkts.WILLMSGRESP:
 		pkt = &WillMsgResp{Header: h}
+	default:
+		err = fmt.Errorf("invalid MQTT-SN 1.2 packet type: %d", h.PacketType())
 	}
 	return
 }
