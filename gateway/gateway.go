@@ -62,7 +62,7 @@ func newDTLSListener(ctx context.Context, cfg *GatewayConfig, address *net.UDPAd
 	} else {
 		privateKey := cfg.PrivateKey
 		if privateKey == nil {
-			err = ErrMissingPrivateKey
+			err = ErrPrivateKeyMissing
 		}
 		if certificate = cfg.Certificate; certificate != nil {
 			certificate.PrivateKey = privateKey
