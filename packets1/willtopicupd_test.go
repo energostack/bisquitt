@@ -57,9 +57,9 @@ func TestWillTopicUpdUnmarshalInvalid(t *testing.T) {
 
 func TestWillTopicUpdStringer(t *testing.T) {
 	pkt := NewWillTopicUpd("test-topic", 1, true)
-	assert.Equal(t, `WILLTOPICUPD(WillTopicUpd="test-topic", QOS=1, Retain=true)`, pkt.String())
+	assert.Equal(t, `WILLTOPICUPD(WillTopic="test-topic", QOS=1, Retain=true)`, pkt.String())
 
 	// Packet with a zero-length topic.
 	pkt = NewWillTopicUpd("", 0, false)
-	assert.Equal(t, `WILLTOPICUPD(WillTopicUpd="")`, pkt.String())
+	assert.Equal(t, `WILLTOPICUPD(WillTopic="")`, pkt.String())
 }
