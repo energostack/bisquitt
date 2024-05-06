@@ -15,6 +15,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/patrickmn/go-cache"
 	"github.com/urfave/cli/v2"
 
 	snClient "github.com/energomonitor/bisquitt/client"
@@ -34,13 +35,20 @@ func handleAction() cli.ActionFunc {
 
 		useDTLS := c.Bool(DtlsFlag)
 		useSelfSigned := c.Bool(SelfSignedFlag)
+		usePSK := c.Bool(PskFlag)
+		pskCacheExpiration := c.Duration(PskCacheExpirationFlag)
+		pskIdentity := c.String(PskIdentityFlag)
+		pskAPITimeout := c.Duration(PSKAPITimeoutFlag)
+		pskAPIBasicAuthUsername := c.String(PSKAPIBasicAuthUsernameFlag)
+		pskAPIBasicAuthPassword := c.String(PSKAPIBasicAuthPasswordFlag)
+		pskAPIEndpoint := c.String(PSKAPIEndpointFlag)
 		certFile := c.Path(CertFlag)
 		keyFile := c.Path(KeyFlag)
 		caFile := c.Path(CAFileFlag)
 		caPath := c.Path(CAPathFlag)
 		debug := c.Bool(DebugFlag)
 
-		if useDTLS && (certFile == "" || keyFile == "") && !useSelfSigned {
+		if useDTLS && ((certFile == "" || keyFile == "") && !useSelfSigned) && !usePSK {
 			return fmt.Errorf(`options "--%s" and "--%s" are mandatory when using DTLS. Use "--%s" to generate self-signed certificate.`,
 				CertFlag, KeyFlag, SelfSignedFlag)
 		}
@@ -133,21 +141,29 @@ func handleAction() cli.ActionFunc {
 		password := []byte(c.String(PasswordFlag))
 
 		clientCfg := &snClient.ClientConfig{
-			ClientID:         clientID,
-			UseDTLS:          useDTLS,
-			SelfSigned:       useSelfSigned,
-			Insecure:         insecure,
-			Certificate:      certificate,
-			PrivateKey:       privateKey,
-			CACertificates:   caCertificates,
-			PredefinedTopics: predefinedTopics,
-			RetryDelay:       10 * time.Second,
-			RetryCount:       4,
-			ConnectTimeout:   20 * time.Second,
-			KeepAlive:        60 * time.Second,
-			CleanSession:     true,
-			User:             user,
-			Password:         password,
+			ClientID:                clientID,
+			UseDTLS:                 useDTLS,
+			SelfSigned:              useSelfSigned,
+			UsePSK:                  usePSK,
+			PSKKeys:                 cache.New(pskCacheExpiration, 5*time.Minute),
+			PSKCacheExpiration:      pskCacheExpiration,
+			PSKIdentityHint:         pskIdentity,
+			PSKAPITimeout:           pskAPITimeout,
+			PSKAPIBasicAuthUsername: pskAPIBasicAuthUsername,
+			PSKAPIBasicAuthPassword: pskAPIBasicAuthPassword,
+			PSKAPIEndpoint:          pskAPIEndpoint,
+			Insecure:                insecure,
+			Certificate:             certificate,
+			PrivateKey:              privateKey,
+			CACertificates:          caCertificates,
+			PredefinedTopics:        predefinedTopics,
+			RetryDelay:              10 * time.Second,
+			RetryCount:              4,
+			ConnectTimeout:          20 * time.Second,
+			KeepAlive:               60 * time.Second,
+			CleanSession:            true,
+			User:                    user,
+			Password:                password,
 		}
 
 		if c.IsSet(WillTopicFlag) {

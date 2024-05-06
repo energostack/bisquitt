@@ -11,27 +11,34 @@ import (
 )
 
 const (
-	MqttHostFlag             = "mqtt-host"
-	MqttPortFlag             = "mqtt-port"
-	MqttUserFlag             = "mqtt-user"
-	MqttPasswordFlag         = "mqtt-password"
-	MqttPasswordFileFlag     = "mqtt-password-file"
-	MqttTimeoutFlag          = "mqtt-timeout"
-	HostFlag                 = "host"
-	PortFlag                 = "port"
-	DtlsFlag                 = "dtls"
-	SelfSignedFlag           = "self-signed"
-	CertFlag                 = "cert"
-	KeyFlag                  = "key"
-	PredefinedTopicFlag      = "predefined-topic"
-	PredefinedTopicsFileFlag = "predefined-topics-file"
-	SyslogFlag               = "syslog"
-	DebugFlag                = "debug"
-	PerformanceLogTimeFlag   = "performance-log-time"
-	InsecureFlag             = "insecure"
-	AuthFlag                 = "auth"
-	UserFlag                 = "user"
-	GroupFlag                = "group"
+	MqttHostFlag                = "mqtt-host"
+	MqttPortFlag                = "mqtt-port"
+	MqttUserFlag                = "mqtt-user"
+	MqttPasswordFlag            = "mqtt-password"
+	MqttPasswordFileFlag        = "mqtt-password-file"
+	MqttTimeoutFlag             = "mqtt-timeout"
+	HostFlag                    = "host"
+	PortFlag                    = "port"
+	DtlsFlag                    = "dtls"
+	PskFlag                     = "psk"
+	PskCacheExpirationFlag      = "psk-cache-expiration"
+	PskIdentityFlag             = "psk-identity"
+	PSKAPITimeoutFlag           = "psk-api-timeout"
+	PSKAPIBasicAuthUsernameFlag = "psk-api-basic-auth-username"
+	PSKAPIBasicAuthPasswordFlag = "psk-api-basic-auth-password"
+	PSKAPIEndpointFlag          = "psk-api-endpoint"
+	SelfSignedFlag              = "self-signed"
+	CertFlag                    = "cert"
+	KeyFlag                     = "key"
+	PredefinedTopicFlag         = "predefined-topic"
+	PredefinedTopicsFileFlag    = "predefined-topics-file"
+	SyslogFlag                  = "syslog"
+	DebugFlag                   = "debug"
+	PerformanceLogTimeFlag      = "performance-log-time"
+	InsecureFlag                = "insecure"
+	AuthFlag                    = "auth"
+	UserFlag                    = "user"
+	GroupFlag                   = "group"
 )
 
 var Application = cli.App{
@@ -107,6 +114,57 @@ var Application = cli.App{
 			Usage: "use DTLS",
 			EnvVars: []string{
 				"DTLS_ENABLED",
+			},
+		},
+		&cli.BoolFlag{
+			Name:  PskFlag,
+			Usage: "use PSK",
+			EnvVars: []string{
+				"PSK_ENABLED",
+			},
+		},
+		&cli.DurationFlag{
+			Name:  PskCacheExpirationFlag,
+			Value: 5 * time.Minute,
+			Usage: "PSKKeys cache expiration",
+			EnvVars: []string{
+				"PSK_CACHE_EXPIRATION",
+			},
+		},
+		&cli.StringFlag{
+			Name:  PskIdentityFlag,
+			Usage: "PSKKeys identity",
+			EnvVars: []string{
+				"PSK_IDENTITY",
+			},
+		},
+		&cli.DurationFlag{
+			Name:  PSKAPITimeoutFlag,
+			Usage: "PSKKeys API timeout",
+			Value: 5 * time.Second,
+			EnvVars: []string{
+				"PSK_API_TIMEOUT",
+			},
+		},
+		&cli.StringFlag{
+			Name:  PSKAPIBasicAuthUsernameFlag,
+			Usage: "PSKKeys API basic auth username",
+			EnvVars: []string{
+				"PSK_API_BASIC_AUTH_USERNAME",
+			},
+		},
+		&cli.StringFlag{
+			Name:  PSKAPIBasicAuthPasswordFlag,
+			Usage: "PSKKeys API basic auth password",
+			EnvVars: []string{
+				"PSK_API_BASIC_AUTH_PASSWORD",
+			},
+		},
+		&cli.StringFlag{
+			Name:  PSKAPIEndpointFlag,
+			Usage: "PSKKeys API endpoint",
+			EnvVars: []string{
+				"PSK_API_ENDPOINT",
 			},
 		},
 		&cli.BoolFlag{

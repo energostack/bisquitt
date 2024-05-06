@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/urfave/cli/v2"
 
@@ -9,25 +10,32 @@ import (
 )
 
 const (
-	HostFlag                 = "host"
-	PortFlag                 = "port"
-	DtlsFlag                 = "dtls"
-	SelfSignedFlag           = "self-signed"
-	CertFlag                 = "cert"
-	KeyFlag                  = "key"
-	CAFileFlag               = "cafile"
-	CAPathFlag               = "capath"
-	InsecureFlag             = "insecure"
-	DebugFlag                = "debug"
-	TopicFlag                = "topic"
-	MessageFlag              = "message"
-	RetainFlag               = "retain"
-	PredefinedTopicFlag      = "predefined-topic"
-	PredefinedTopicsFileFlag = "predefined-topics-file"
-	QOSFlag                  = "qos"
-	ClientIDFlag             = "client-id"
-	UserFlag                 = "user"
-	PasswordFlag             = "password"
+	HostFlag                    = "host"
+	PortFlag                    = "port"
+	DtlsFlag                    = "dtls"
+	SelfSignedFlag              = "self-signed"
+	PskFlag                     = "psk"
+	PskCacheExpirationFlag      = "psk-cache-expiration"
+	PskIdentityFlag             = "psk-identity"
+	PSKAPITimeoutFlag           = "psk-api-timeout"
+	PSKAPIBasicAuthUsernameFlag = "psk-api-basic-auth-username"
+	PSKAPIBasicAuthPasswordFlag = "psk-api-basic-auth-password"
+	PSKAPIEndpointFlag          = "psk-api-endpoint"
+	CertFlag                    = "cert"
+	KeyFlag                     = "key"
+	CAFileFlag                  = "cafile"
+	CAPathFlag                  = "capath"
+	InsecureFlag                = "insecure"
+	DebugFlag                   = "debug"
+	TopicFlag                   = "topic"
+	MessageFlag                 = "message"
+	RetainFlag                  = "retain"
+	PredefinedTopicFlag         = "predefined-topic"
+	PredefinedTopicsFileFlag    = "predefined-topics-file"
+	QOSFlag                     = "qos"
+	ClientIDFlag                = "client-id"
+	UserFlag                    = "user"
+	PasswordFlag                = "password"
 )
 
 func init() {
@@ -74,6 +82,57 @@ var Application = cli.App{
 			Usage: "generate self-signed certificate",
 			EnvVars: []string{
 				"SELF_SIGNED",
+			},
+		},
+		&cli.BoolFlag{
+			Name:  PskFlag,
+			Usage: "use PSK",
+			EnvVars: []string{
+				"PSK_ENABLED",
+			},
+		},
+		&cli.DurationFlag{
+			Name:  PskCacheExpirationFlag,
+			Usage: "PSKKeys cache expiration",
+			Value: 5 * time.Minute,
+			EnvVars: []string{
+				"PSK_CACHE_EXPIRATION",
+			},
+		},
+		&cli.StringFlag{
+			Name:  PskIdentityFlag,
+			Usage: "PSKKeys identity",
+			EnvVars: []string{
+				"PSK_IDENTITY",
+			},
+		},
+		&cli.DurationFlag{
+			Name:  PSKAPITimeoutFlag,
+			Usage: "PSKKeys API timeout",
+			Value: 5 * time.Second,
+			EnvVars: []string{
+				"PSK_API_TIMEOUT",
+			},
+		},
+		&cli.StringFlag{
+			Name:  PSKAPIBasicAuthUsernameFlag,
+			Usage: "PSKKeys API basic auth username",
+			EnvVars: []string{
+				"PSK_API_BASIC_AUTH_USERNAME",
+			},
+		},
+		&cli.StringFlag{
+			Name:  PSKAPIBasicAuthPasswordFlag,
+			Usage: "PSKKeys API basic auth password",
+			EnvVars: []string{
+				"PSK_API_BASIC_AUTH_PASSWORD",
+			},
+		},
+		&cli.StringFlag{
+			Name:  PSKAPIEndpointFlag,
+			Usage: "PSKKeys API endpoint",
+			EnvVars: []string{
+				"PSK_API_ENDPOINT",
 			},
 		},
 		&cli.PathFlag{

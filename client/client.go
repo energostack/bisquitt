@@ -4,6 +4,7 @@
 // Use ClientConfig struct to set various client's options and features.
 //
 // Example:
+//
 //	import (
 //		"fmt"
 //		"time"
@@ -64,6 +65,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/patrickmn/go-cache"
 	"github.com/pion/dtls/v2"
 	"github.com/pion/dtls/v2/pkg/crypto/selfsign"
 	"golang.org/x/sync/errgroup"
@@ -76,6 +78,20 @@ import (
 )
 
 type ClientConfig struct {
+	// UsePSK controls whether pre-shared key should be used to secure the
+	// connection to the MQTT-SN gateway. If UsePSK is true, you must provide
+	// PSKIdentityHint, PSKAPIBasicAuthUsername, PSKAPIBasicAuthPassword and
+	// PSKAPIEndpoint.
+	// If UsePSK is true, the client will use PSKKeys instead of the certificate
+	// and private key.
+	UsePSK                  bool
+	PSKKeys                 *cache.Cache
+	PSKCacheExpiration      time.Duration
+	PSKIdentityHint         string
+	PSKAPITimeout           time.Duration
+	PSKAPIBasicAuthUsername string
+	PSKAPIBasicAuthPassword string
+	PSKAPIEndpoint          string
 	// UseDTLS controls whether DTLS should be used to secure the connection
 	// to the MQTT-SN gateway.
 	UseDTLS        bool
@@ -147,21 +163,26 @@ func (c *Client) connectDTLS(ctx context.Context, address string) (net.Conn, err
 	var certificate *tls.Certificate
 	var err error
 
-	if c.cfg.SelfSigned {
-		var cert tls.Certificate
-		cert, err = selfsign.GenerateSelfSigned()
-		certificate = &cert
-	} else {
-		privateKey := c.cfg.PrivateKey
-		if privateKey == nil {
-			err = errors.New("private key is missing")
-		}
-		if certificate = c.cfg.Certificate; certificate != nil {
-			certificate.PrivateKey = privateKey
+	if !c.cfg.UsePSK && c.cfg.UseDTLS {
+		if c.cfg.SelfSigned {
+			var cert tls.Certificate
+			cert, err = selfsign.GenerateSelfSigned()
+			certificate = &cert
 		} else {
-			err = errors.New("TLS certificate is missing")
+			privateKey := c.cfg.PrivateKey
+			if privateKey == nil {
+				err = errors.New("private key is missing")
+			}
+
+			certificate = c.cfg.Certificate
+			if certificate == nil {
+				err = errors.New("TLS certificate is missing")
+			} else {
+				certificate.PrivateKey = privateKey
+			}
 		}
 	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -182,10 +203,40 @@ func (c *Client) connectDTLS(ctx context.Context, address string) (net.Conn, err
 
 	// Prepare the configuration of the DTLS connection
 	config := &dtls.Config{
-		Certificates:         []tls.Certificate{*certificate},
 		InsecureSkipVerify:   c.cfg.Insecure,
 		ExtendedMasterSecret: dtls.RequireExtendedMasterSecret,
 		RootCAs:              certPool,
+	}
+
+	if !c.cfg.UsePSK && c.cfg.UseDTLS && certificate != nil {
+		config.Certificates = []tls.Certificate{*certificate}
+	}
+
+	if c.cfg.UsePSK && c.cfg.UseDTLS {
+		config.CipherSuites = []dtls.CipherSuiteID{dtls.TLS_PSK_WITH_AES_128_GCM_SHA256}
+		config.PSK = func(hint []byte) ([]byte, error) {
+			psk, ok := c.cfg.PSKKeys.Get(string(hint))
+			if ok {
+				return psk.([]byte), nil
+			}
+
+			psk, ok = util.GetPSKKeyFromAPI(
+				string(hint),
+				c.cfg.PSKAPIEndpoint,
+				c.cfg.PSKAPIBasicAuthUsername,
+				c.cfg.PSKAPIBasicAuthPassword,
+				c.cfg.PSKAPITimeout,
+				c.log,
+			)
+
+			if ok {
+				c.cfg.PSKKeys.Set(string(hint), psk, c.cfg.PSKCacheExpiration)
+				return psk.([]byte), nil
+			}
+
+			return nil, errors.New("PSK key not found")
+		}
+		config.PSKIdentityHint = []byte(c.cfg.PSKIdentityHint)
 	}
 
 	// Connect to a DTLS server
