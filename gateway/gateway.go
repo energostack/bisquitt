@@ -11,6 +11,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/patrickmn/go-cache"
 	"github.com/pion/dtls/v2"
 	"github.com/pion/dtls/v2/pkg/crypto/selfsign"
 	"github.com/pion/udp"
@@ -24,13 +25,27 @@ type GatewayConfig struct {
 	MqttConnectionTimeout time.Duration
 	MqttUser              *string
 	MqttPassword          []byte
-	UseDTLS               bool
-	SelfSigned            bool
-	Certificate           *tls.Certificate
-	PrivateKey            crypto.PrivateKey
-	PerformanceLogTime    time.Duration
-	PredefinedTopics      topics.PredefinedTopics
-	AuthEnabled           bool
+	// UsePSK controls whether pre-shared key should be used to secure the
+	// connection to the MQTT-SN gateway. If UsePSK is true, you must provide
+	// PSKIdentityHint, PSKAPIBasicAuthUsername, PSKAPIBasicAuthPassword and
+	// PSKAPIEndpoint.
+	// If UsePSK is true, the client will use PSKKeys instead of the certificate
+	// and private key.
+	UsePSK                  bool
+	PSKKeys                 *cache.Cache
+	PSKCacheExpiration      time.Duration
+	PSKIdentityHint         string
+	PSKAPITimeout           time.Duration
+	PSKAPIBasicAuthUsername string
+	PSKAPIBasicAuthPassword string
+	PSKAPIEndpoint          string
+	UseDTLS                 bool
+	SelfSigned              bool
+	Certificate             *tls.Certificate
+	PrivateKey              crypto.PrivateKey
+	PerformanceLogTime      time.Duration
+	PredefinedTopics        topics.PredefinedTopics
+	AuthEnabled             bool
 	// TRetry in MQTT-SN specification
 	RetryDelay time.Duration
 	// NRetry in MQTT-SN specification
@@ -56,32 +71,70 @@ func newDTLSListener(ctx context.Context, cfg *GatewayConfig, address *net.UDPAd
 	var certificate *tls.Certificate
 	var err error
 
-	if cfg.SelfSigned {
-		var cert tls.Certificate
-		cert, err = selfsign.GenerateSelfSigned()
-		certificate = &cert
-	} else {
-		privateKey := cfg.PrivateKey
-		if privateKey == nil {
-			err = errors.New("private key is missing")
-		}
-		if certificate = cfg.Certificate; certificate != nil {
-			certificate.PrivateKey = privateKey
+	logger := util.NewProductionLogger("gateway")
+
+	if !cfg.UsePSK && cfg.UseDTLS {
+		if cfg.SelfSigned {
+			var cert tls.Certificate
+			cert, err = selfsign.GenerateSelfSigned()
+			certificate = &cert
 		} else {
-			err = errors.New("TLS certificate is missing")
+			privateKey := cfg.PrivateKey
+			if privateKey == nil {
+				err = errors.New("private key is missing")
+			}
+
+			certificate = cfg.Certificate
+			if certificate == nil {
+				err = errors.New("TLS certificate is missing")
+			} else {
+				certificate.PrivateKey = privateKey
+			}
 		}
 	}
+
 	if err != nil {
 		return nil, err
 	}
 
 	dtlsConfig := &dtls.Config{
-		Certificates:         []tls.Certificate{*certificate},
 		ExtendedMasterSecret: dtls.RequireExtendedMasterSecret,
 		ConnectContextMaker: func() (context.Context, func()) {
 			return context.WithTimeout(ctx, dtlsConnectTimeout)
 		},
 	}
+
+	if !cfg.UsePSK && cfg.UseDTLS && certificate != nil {
+		dtlsConfig.Certificates = []tls.Certificate{*certificate}
+	}
+
+	if cfg.UsePSK && cfg.UseDTLS {
+		dtlsConfig.CipherSuites = []dtls.CipherSuiteID{dtls.TLS_PSK_WITH_AES_128_GCM_SHA256}
+		dtlsConfig.PSK = func(hint []byte) ([]byte, error) {
+			psk, ok := cfg.PSKKeys.Get(string(hint))
+			if ok {
+				return psk.([]byte), nil
+			}
+
+			psk, ok = util.GetPSKKeyFromAPI(
+				string(hint),
+				cfg.PSKAPIEndpoint,
+				cfg.PSKAPIBasicAuthUsername,
+				cfg.PSKAPIBasicAuthPassword,
+				cfg.PSKAPITimeout,
+				logger,
+			)
+
+			if ok {
+				cfg.PSKKeys.Set(string(hint), psk, cfg.PSKCacheExpiration)
+				return psk.([]byte), nil
+			}
+
+			return nil, errors.New("PSK key not found")
+		}
+		dtlsConfig.PSKIdentityHint = []byte(cfg.PSKIdentityHint)
+	}
+
 	return dtls.Listen("udp", address, dtlsConfig)
 }
 

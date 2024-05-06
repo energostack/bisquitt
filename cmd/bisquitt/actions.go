@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/patrickmn/go-cache"
 	"github.com/urfave/cli/v2"
 
 	"github.com/energomonitor/bisquitt/gateway"
@@ -25,12 +26,19 @@ func handleAction() cli.ActionFunc {
 	return func(c *cli.Context) error {
 		useDTLS := c.Bool(DtlsFlag)
 		useSelfSigned := c.Bool(SelfSignedFlag)
+		usePSK := c.Bool(PskFlag)
+		pskCacheExpiration := c.Duration(PskCacheExpirationFlag)
+		pskIdentity := c.String(PskIdentityFlag)
+		pskAPITimeout := c.Duration(PSKAPITimeoutFlag)
+		pskAPIBasicAuthUsername := c.String(PSKAPIBasicAuthUsernameFlag)
+		pskAPIBasicAuthPassword := c.String(PSKAPIBasicAuthPasswordFlag)
+		pskAPIEndpoint := c.String(PSKAPIEndpointFlag)
 		certFile := c.Path(CertFlag)
 		keyFile := c.Path(KeyFlag)
 		debug := c.Bool(DebugFlag)
 		syslog := c.Bool(SyslogFlag)
 
-		if useDTLS && (certFile == "" || keyFile == "") && !useSelfSigned {
+		if useDTLS && ((certFile == "" || keyFile == "") && !useSelfSigned) && !usePSK {
 			return fmt.Errorf(`options "--%s" and "--%s" are mandatory when using DTLS. Use "--%s" to generate self-signed certificate.`,
 				CertFlag, KeyFlag, SelfSignedFlag)
 		}
@@ -116,19 +124,27 @@ func handleAction() cli.ActionFunc {
 		performanceLogTime := c.Duration(PerformanceLogTimeFlag)
 
 		gwConfig := &gateway.GatewayConfig{
-			MqttBrokerAddress:     mqttBrokerAddress,
-			MqttConnectionTimeout: mqttConnectionTimeout,
-			MqttUser:              mqttUser,
-			MqttPassword:          mqttPassword,
-			UseDTLS:               useDTLS,
-			SelfSigned:            useSelfSigned,
-			Certificate:           certificate,
-			PrivateKey:            privateKey,
-			PerformanceLogTime:    performanceLogTime,
-			PredefinedTopics:      predefinedTopics,
-			AuthEnabled:           authEnabled,
-			RetryDelay:            10 * time.Second,
-			RetryCount:            4,
+			MqttBrokerAddress:       mqttBrokerAddress,
+			MqttConnectionTimeout:   mqttConnectionTimeout,
+			MqttUser:                mqttUser,
+			MqttPassword:            mqttPassword,
+			UseDTLS:                 useDTLS,
+			UsePSK:                  usePSK,
+			PSKKeys:                 cache.New(pskCacheExpiration, 5*time.Minute),
+			PSKCacheExpiration:      pskCacheExpiration,
+			PSKIdentityHint:         pskIdentity,
+			PSKAPITimeout:           pskAPITimeout,
+			PSKAPIBasicAuthUsername: pskAPIBasicAuthUsername,
+			PSKAPIBasicAuthPassword: pskAPIBasicAuthPassword,
+			PSKAPIEndpoint:          pskAPIEndpoint,
+			SelfSigned:              useSelfSigned,
+			Certificate:             certificate,
+			PrivateKey:              privateKey,
+			PerformanceLogTime:      performanceLogTime,
+			PredefinedTopics:        predefinedTopics,
+			AuthEnabled:             authEnabled,
+			RetryDelay:              10 * time.Second,
+			RetryCount:              4,
 		}
 
 		logTag := "gw"
