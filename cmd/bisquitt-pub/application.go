@@ -6,7 +6,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	"github.com/energomonitor/bisquitt"
+	"github.com/energostack/bisquitt"
 )
 
 const (

@@ -1,9 +1,9 @@
 VERSION := $(shell cat version.txt)
 
-DOCKER_REGISTRY ?= docker.io
+DOCKER_REGISTRY ?= ghcr.io
 DOCKER_BUILDER_VERSION ?= 1.17.8-bullseye
 DOCKER_RUNTIME_VERSION ?= bullseye-20220228-slim
-DOCKER_IMAGE = energomonitor/bisquitt
+DOCKER_IMAGE = energostack/bisquitt
 
 # Enable data race detection in the compiled binaries.
 ifeq ($(WITH_RACE_DETECTION), 1)

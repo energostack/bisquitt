@@ -6,8 +6,8 @@ import (
 
 	mqPkts "github.com/eclipse/paho.mqtt.golang/packets"
 
-	snPkts1 "github.com/energomonitor/bisquitt/packets1"
-	"github.com/energomonitor/bisquitt/transactions"
+	snPkts1 "github.com/energostack/bisquitt/packets1"
+	"github.com/energostack/bisquitt/transactions"
 )
 
 type brokerPublishQOS1Transaction struct {

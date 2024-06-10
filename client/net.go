@@ -8,9 +8,9 @@ import (
 
 	dtlsProtocol "github.com/pion/dtls/v2/pkg/protocol"
 
-	pkts "github.com/energomonitor/bisquitt/packets"
-	pkts1 "github.com/energomonitor/bisquitt/packets1"
-	"github.com/energomonitor/bisquitt/util"
+	pkts "github.com/energostack/bisquitt/packets"
+	pkts1 "github.com/energostack/bisquitt/packets1"
+	"github.com/energostack/bisquitt/util"
 )
 
 func (c *Client) send(pkt pkts.Packet) error {

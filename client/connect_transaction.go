@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	pkts "github.com/energomonitor/bisquitt/packets"
-	pkts1 "github.com/energomonitor/bisquitt/packets1"
-	"github.com/energomonitor/bisquitt/transactions"
-	"github.com/energomonitor/bisquitt/util"
+	pkts "github.com/energostack/bisquitt/packets"
+	pkts1 "github.com/energostack/bisquitt/packets1"
+	"github.com/energostack/bisquitt/transactions"
+	"github.com/energostack/bisquitt/util"
 )
 
 type connectTransaction struct {

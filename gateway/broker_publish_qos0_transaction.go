@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	snPkts1 "github.com/energomonitor/bisquitt/packets1"
-	"github.com/energomonitor/bisquitt/transactions"
+	snPkts1 "github.com/energostack/bisquitt/packets1"
+	"github.com/energostack/bisquitt/transactions"
 )
 
 type brokerPublishQOS0Transaction struct {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	pkts "github.com/energomonitor/bisquitt/packets"
+	pkts "github.com/energostack/bisquitt/packets"
 )
 
 func TestWillMsgRespConstructor(t *testing.T) {

@@ -12,8 +12,8 @@ package client
 import (
 	"fmt"
 
-	pkts1 "github.com/energomonitor/bisquitt/packets1"
-	"github.com/energomonitor/bisquitt/transactions"
+	pkts1 "github.com/energostack/bisquitt/packets1"
+	"github.com/energostack/bisquitt/transactions"
 )
 
 type brokerPublishQOS2Transaction struct {

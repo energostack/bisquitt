@@ -1,9 +1,9 @@
 package client
 
 import (
-	pkts1 "github.com/energomonitor/bisquitt/packets1"
-	"github.com/energomonitor/bisquitt/transactions"
-	"github.com/energomonitor/bisquitt/util"
+	pkts1 "github.com/energostack/bisquitt/packets1"
+	"github.com/energostack/bisquitt/transactions"
+	"github.com/energostack/bisquitt/util"
 )
 
 // Transactions states constants type.

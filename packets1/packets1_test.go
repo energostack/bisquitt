@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	pkts "github.com/energomonitor/bisquitt/packets"
+	pkts "github.com/energostack/bisquitt/packets"
 )
 
 func testPacketMarshal(t *testing.T, pkt1 pkts.Packet) pkts.Packet {

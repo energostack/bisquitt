@@ -30,11 +30,11 @@ import (
 	mqPkts "github.com/eclipse/paho.mqtt.golang/packets"
 	"golang.org/x/sync/errgroup"
 
-	snPkts "github.com/energomonitor/bisquitt/packets"
-	snPkts1 "github.com/energomonitor/bisquitt/packets1"
-	"github.com/energomonitor/bisquitt/topics"
-	"github.com/energomonitor/bisquitt/transactions"
-	"github.com/energomonitor/bisquitt/util"
+	snPkts "github.com/energostack/bisquitt/packets"
+	snPkts1 "github.com/energostack/bisquitt/packets1"
+	"github.com/energostack/bisquitt/topics"
+	"github.com/energostack/bisquitt/transactions"
+	"github.com/energostack/bisquitt/util"
 )
 
 type handler1 struct {
@@ -650,12 +650,12 @@ func (h *handler1) handleUnsubscribe(snUnsubscribe *snPkts1.Unsubscribe) error {
 // Check whether the given packet is legal in the current Handler's state.
 //
 // We check only packets received in the "disconnected" state because:
-// 1. It is the only state before authentication, hence illegal packets could
-//    potentially be used to attack the gateway by an unauthenticated user.
-// 2. Packets in other states are correctly handled by their respective
-//    transactions. Also unexpected packets can be caused by delayed UDP
-//    packets etc. therefore we do not want to close the connection
-//    when such packet appears.
+//  1. It is the only state before authentication, hence illegal packets could
+//     potentially be used to attack the gateway by an unauthenticated user.
+//  2. Packets in other states are correctly handled by their respective
+//     transactions. Also unexpected packets can be caused by delayed UDP
+//     packets etc. therefore we do not want to close the connection
+//     when such packet appears.
 func (h *handler1) checkPacketLegal(pkt snPkts.Packet) error {
 	state := h.state.Get()
 	if state != util.StateDisconnected {

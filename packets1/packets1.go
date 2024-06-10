@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	pkts "github.com/energomonitor/bisquitt/packets"
+	pkts "github.com/energostack/bisquitt/packets"
 )
 
 // MQTT-SN specification version 1.2, section 5.2.1 defines maximal packet size

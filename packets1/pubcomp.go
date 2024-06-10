@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	pkts "github.com/energomonitor/bisquitt/packets"
+	pkts "github.com/energostack/bisquitt/packets"
 )
 
 const pubcompVarPartLength uint16 = 2

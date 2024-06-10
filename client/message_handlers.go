@@ -5,7 +5,7 @@ import (
 	"strings"
 	"sync"
 
-	pkts1 "github.com/energomonitor/bisquitt/packets1"
+	pkts1 "github.com/energostack/bisquitt/packets1"
 )
 
 // Subscribed message handler callback type.
