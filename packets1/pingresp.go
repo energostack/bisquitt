@@ -1,7 +1,7 @@
 package packets1
 
 import (
-	pkts "github.com/energomonitor/bisquitt/packets"
+	pkts "github.com/energostack/bisquitt/packets"
 )
 
 const pingrespVarPartLength uint16 = 0

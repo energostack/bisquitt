@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          path: "go/src/github.com/energomonitor/bisquitt"
+          path: "go/src/github.com/energostack/bisquitt"
 
       - uses: actions/setup-go@v2
         with:
@@ -31,11 +31,11 @@ jobs:
 
       - name: Download dependencies
         run: "make tidy"
-        working-directory: "go/src/github.com/energomonitor/bisquitt"
+        working-directory: "go/src/github.com/energostack/bisquitt"
 
       - name: Run tests
         run: "go version && make test"
-        working-directory: "go/src/github.com/energomonitor/bisquitt"
+        working-directory: "go/src/github.com/energostack/bisquitt"
 
   fmt-check:
     name: Code format - go ${{ matrix.go_version }}
@@ -46,7 +46,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          path: "go/src/github.com/energomonitor/bisquitt"
+          path: "go/src/github.com/energostack/bisquitt"
 
       - uses: actions/setup-go@v2
         with:
@@ -54,11 +54,11 @@ jobs:
 
       - name: Install goimports
         run: "go get golang.org/x/tools/cmd/goimports"
-        working-directory: "go/src/github.com/energomonitor/bisquitt"
+        working-directory: "go/src/github.com/energostack/bisquitt"
 
       - name: Run format check
         run: "./tools/ci/run_fmt_check.bash"
-        working-directory: "go/src/github.com/energomonitor/bisquitt"
+        working-directory: "go/src/github.com/energostack/bisquitt"
 
   integration-tests:
     name: Integration tests - builder ${{ matrix.builder_version }}
@@ -70,10 +70,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          path: "go/src/github.com/energomonitor/bisquitt"
+          path: "go/src/github.com/energostack/bisquitt"
 
       - name: Run test
         run: "make docker/test"
         env:
           DOCKER_BUILDER_VERSION: "${{ matrix.builder_version }}"
-        working-directory: "go/src/github.com/energomonitor/bisquitt"
+        working-directory: "go/src/github.com/energostack/bisquitt"

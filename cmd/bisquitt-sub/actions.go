@@ -18,11 +18,11 @@ import (
 	"github.com/patrickmn/go-cache"
 	"github.com/urfave/cli/v2"
 
-	snClient "github.com/energomonitor/bisquitt/client"
-	pkts1 "github.com/energomonitor/bisquitt/packets1"
-	"github.com/energomonitor/bisquitt/topics"
-	"github.com/energomonitor/bisquitt/util"
-	cryptoutils "github.com/energomonitor/bisquitt/util/crypto"
+	snClient "github.com/energostack/bisquitt/client"
+	pkts1 "github.com/energostack/bisquitt/packets1"
+	"github.com/energostack/bisquitt/topics"
+	"github.com/energostack/bisquitt/util"
+	cryptoutils "github.com/energostack/bisquitt/util/crypto"
 )
 
 func handleAction() cli.ActionFunc {

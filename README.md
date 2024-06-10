@@ -3,9 +3,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/energomonitor/bisquitt/actions/workflows/bisquitt-tests.yaml"><img src="https://img.shields.io/github/workflow/status/energomonitor/bisquitt/bisquitt%20tests?style=flat-square" alt="Build status"></a>
-  <a href="https://pkg.go.dev/github.com/energomonitor/bisquitt"><img src="https://pkg.go.dev/badge/github.com/energomonitor/bisquitt.svg" alt="Go Reference"></a>
-  <a href="https://github.com/energomonitor/bisquitt#license"><img src="https://img.shields.io/github/license/energomonitor/bisquitt?style=flat-square" alt="License"></a>
+  <a href="https://github.com/energostack/bisquitt/actions/workflows/bisquitt-tests.yaml"><img src="https://img.shields.io/github/workflow/status/energostack/bisquitt/bisquitt%20tests?style=flat-square" alt="Build status"></a>
+  <a href="https://pkg.go.dev/github.com/energostack/bisquitt"><img src="https://pkg.go.dev/badge/github.com/energostack/bisquitt.svg" alt="Go Reference"></a>
+  <a href="https://github.com/energostack/bisquitt#license"><img src="https://img.shields.io/github/license/energostack/bisquitt?style=flat-square" alt="License"></a>
 </p>
 
 Bisquitt is a transparent MQTT-SN gateway. It provides a simple, secure, and
@@ -23,8 +23,11 @@ command-line MQTT-SN clients and can be used as a Go MQTT-SN library.
 
 The easiest way to install Bisquitt is to use its Docker image:
 
+### Deprecation warning
+Dockerhub registry images is now deprecated. Please use GitHub Container Registry (ghcr.io) instead.
+Also, we renamed from **energomonitor** to **energostack**.
 ```console
-$ docker pull energomonitor/bisquitt
+$ docker pull ghcr.io/energostack/bisquitt
 ```
 
 The image contains the gateway itself (`bisquitt`), which is started by default,
@@ -33,9 +36,9 @@ and the command-line MQTT-SN clients (`bisquitt-sub` and `bisquitt-pub`).
 Alternatively, you can install the gateway and clients using `go install`:
 
 ```console
-$ go install github.com/energomonitor/bisquitt/cmd/bisquitt@latest
-$ go install github.com/energomonitor/bisquitt/cmd/bisquitt-pub@latest
-$ go install github.com/energomonitor/bisquitt/cmd/bisquitt-sub@latest
+$ go install github.com/energostack/bisquitt/cmd/bisquitt@latest
+$ go install github.com/energostack/bisquitt/cmd/bisquitt-pub@latest
+$ go install github.com/energostack/bisquitt/cmd/bisquitt-sub@latest
 ```
 
 Note that Bisquitt requires Go 1.16 or higher.
@@ -61,7 +64,7 @@ open-source MQTT server) using Docker Compose:
 
      services:
        bisquitt:
-         image: energomonitor/bisquitt
+         image: energostack/bisquitt
          environment:
            MQTT_HOST: mosquitto
            BISQUITT_USER: bisquitt

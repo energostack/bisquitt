@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	pkts "github.com/energomonitor/bisquitt/packets"
+	pkts "github.com/energostack/bisquitt/packets"
 )
 
 // Authentication reason constants.

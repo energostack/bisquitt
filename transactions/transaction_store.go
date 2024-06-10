@@ -3,7 +3,7 @@ package transactions
 import (
 	"sync"
 
-	pkts "github.com/energomonitor/bisquitt/packets"
+	pkts "github.com/energostack/bisquitt/packets"
 )
 
 // TransactionStore stores transactions by MessageID or PacketType

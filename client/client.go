@@ -9,8 +9,8 @@
 //		"fmt"
 //		"time"
 //
-//		"github.com/energomonitor/bisquitt/client"
-//		"github.com/energomonitor/bisquitt/util"
+//		"github.com/energostack/bisquitt/client"
+//		"github.com/energostack/bisquitt/util"
 //	)
 //
 //	func main() {
@@ -70,11 +70,11 @@ import (
 	"github.com/pion/dtls/v2/pkg/crypto/selfsign"
 	"golang.org/x/sync/errgroup"
 
-	pkts "github.com/energomonitor/bisquitt/packets"
-	pkts1 "github.com/energomonitor/bisquitt/packets1"
-	"github.com/energomonitor/bisquitt/topics"
-	"github.com/energomonitor/bisquitt/transactions"
-	"github.com/energomonitor/bisquitt/util"
+	pkts "github.com/energostack/bisquitt/packets"
+	pkts1 "github.com/energostack/bisquitt/packets1"
+	"github.com/energostack/bisquitt/topics"
+	"github.com/energostack/bisquitt/transactions"
+	"github.com/energostack/bisquitt/util"
 )
 
 type ClientConfig struct {

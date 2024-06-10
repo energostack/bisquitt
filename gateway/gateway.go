@@ -16,8 +16,8 @@ import (
 	"github.com/pion/dtls/v2/pkg/crypto/selfsign"
 	"github.com/pion/udp"
 
-	"github.com/energomonitor/bisquitt/topics"
-	"github.com/energomonitor/bisquitt/util"
+	"github.com/energostack/bisquitt/topics"
+	"github.com/energostack/bisquitt/util"
 )
 
 type GatewayConfig struct {

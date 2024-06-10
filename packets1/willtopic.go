@@ -3,7 +3,7 @@ package packets1
 import (
 	"fmt"
 
-	pkts "github.com/energomonitor/bisquitt/packets"
+	pkts "github.com/energostack/bisquitt/packets"
 )
 
 const willTopicFlagsLength uint16 = 1

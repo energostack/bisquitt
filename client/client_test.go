@@ -14,11 +14,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	pkts "github.com/energomonitor/bisquitt/packets"
-	pkts1 "github.com/energomonitor/bisquitt/packets1"
-	"github.com/energomonitor/bisquitt/topics"
-	"github.com/energomonitor/bisquitt/transactions"
-	"github.com/energomonitor/bisquitt/util"
+	pkts "github.com/energostack/bisquitt/packets"
+	pkts1 "github.com/energostack/bisquitt/packets1"
+	"github.com/energostack/bisquitt/topics"
+	"github.com/energostack/bisquitt/transactions"
+	"github.com/energostack/bisquitt/util"
 )
 
 const (

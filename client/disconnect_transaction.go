@@ -1,9 +1,9 @@
 package client
 
 import (
-	pkts "github.com/energomonitor/bisquitt/packets"
-	pkts1 "github.com/energomonitor/bisquitt/packets1"
-	"github.com/energomonitor/bisquitt/transactions"
+	pkts "github.com/energostack/bisquitt/packets"
+	pkts1 "github.com/energostack/bisquitt/packets1"
+	"github.com/energostack/bisquitt/transactions"
 )
 
 type disconnectTransaction struct {

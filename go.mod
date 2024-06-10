@@ -1,4 +1,4 @@
-module github.com/energomonitor/bisquitt
+module github.com/energostack/bisquitt
 
 go 1.16
 
