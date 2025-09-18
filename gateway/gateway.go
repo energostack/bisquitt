@@ -181,7 +181,7 @@ func (gw *Gateway) ListenAndServe(ctx context.Context, address string) error {
 		clientConn, err := snListener.Accept()
 		if err != nil {
 			if _, ok := err.(*dtls.HandshakeError); ok {
-				gw.log.Debug("Client TLS handshake error")
+				gw.log.Error("Client TLS handshake error: %s", err)
 				continue
 			}
 			if err == udp.ErrClosedListener {
