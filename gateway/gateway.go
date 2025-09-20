@@ -58,7 +58,7 @@ type Gateway struct {
 }
 
 // Timeout for DTLS connection establishment.
-const dtlsConnectTimeout = 30 * time.Second
+const dtlsConnectTimeout = 300 * time.Second
 
 func NewGateway(log util.Logger, cfg *GatewayConfig) *Gateway {
 	return &Gateway{
