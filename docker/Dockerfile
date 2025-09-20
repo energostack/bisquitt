@@ -25,9 +25,9 @@ COPY --from=builder \
     /opt/bisquitt/cmd/bisquitt-sub/bisquitt-sub \
     /usr/local/bin/
 
-RUN addgroup --system --gid 1883 bisquitt 2>/dev/null && \
-    adduser --system --uid 1883 --disabled-password --no-create-home \
-        --home /var/empty --shell /sbin/nologin --ingroup bisquitt bisquitt 2>/dev/null
+RUN groupadd --system --gid 983 bisquitt && \
+    useradd --system --uid 983 --no-create-home --home-dir /var/empty \
+        --shell /sbin/nologin --gid bisquitt bisquitt
 
 EXPOSE 1883:1883/udp
 
