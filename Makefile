@@ -34,11 +34,11 @@ test:
 
 .PHONY: docker/test
 docker/test:
-	docker-compose -f docker-compose.test.yaml build \
+	docker compose -f docker-compose.test.yaml build \
 					--build-arg "WITH_RACE_DETECTION=1" \
 					--build-arg "DOCKER_BUILDER_VERSION=$(DOCKER_BUILDER_VERSION)" \
 					--build-arg "DOCKER_RUNTIME_VERSION=$(DOCKER_RUNTIME_VERSION)"
-	docker-compose -f docker-compose.test.yaml up --remove-orphans --abort-on-container-exit --exit-code-from bisquitt-test
+	docker compose -f docker-compose.test.yaml up --remove-orphans --abort-on-container-exit --exit-code-from bisquitt-test
 
 .PHONY: docker/build
 docker/build:
@@ -55,6 +55,6 @@ docker/push:
 
 .PHONY: docker/run
 docker/run:
-	docker-compose build --build-arg "DOCKER_BUILDER_VERSION=$(DOCKER_BUILDER_VERSION)" \
+	docker compose build --build-arg "DOCKER_BUILDER_VERSION=$(DOCKER_BUILDER_VERSION)" \
 					--build-arg "DOCKER_RUNTIME_VERSION=$(DOCKER_RUNTIME_VERSION)"
-	docker-compose up --remove-orphans --abort-on-container-exit
+	docker compose up --remove-orphans --abort-on-container-exit
